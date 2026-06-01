@@ -1,0 +1,66 @@
+.footer {
+  background: $teal-dark;
+  color: rgba($white, .8);
+  padding: 4rem 0 2rem;
+  font-size: .9375rem;
+}
+
+.footer__brand {
+  margin-bottom: 1.5rem;
+
+  .footer__logo {
+    width: 36px;
+    height: 36px;
+    margin-bottom: .75rem;
+  }
+
+  .footer__name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $white;
+  }
+
+  .footer__tagline {
+    font-size: .875rem;
+    color: rgba($white, .55);
+    max-width: 260px;
+    line-height: 1.6;
+  }
+}
+
+.footer__heading {
+  font-size: .8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: $white;
+  margin-bottom: 1rem;
+}
+
+.footer__links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    margin-bottom: .5rem;
+  }
+
+  a {
+    color: rgba($white, .65);
+    text-decoration: none;
+    transition: color .15s ease;
+
+    &:hover {
+      color: $white;
+    }
+  }
+}
+
+.footer__bottom {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba($white, .1);
+  font-size: .8125rem;
+  color: rgba($white, .4);
+}
