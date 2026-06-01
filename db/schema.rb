@@ -10,9 +10,50 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_01_132251) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_01_140140) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "conversations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_conversations_on_user_id"
+  end
+
+  create_table "documents", force: :cascade do |t|
+    t.text "content"
+    t.datetime "created_at", null: false
+    t.datetime "date_injection"
+    t.bigint "folder_id", null: false
+    t.string "title"
+    t.string "type"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["folder_id"], name: "index_documents_on_folder_id"
+    t.index ["user_id"], name: "index_documents_on_user_id"
+  end
+
+  create_table "folders", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.bigint "folder_id", null: false
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["folder_id"], name: "index_folders_on_folder_id"
+    t.index ["user_id"], name: "index_folders_on_user_id"
+  end
+
+  create_table "messages", force: :cascade do |t|
+    t.text "content"
+    t.bigint "conversation_id", null: false
+    t.datetime "created_at", null: false
+    t.string "role"
+    t.datetime "updated_at", null: false
+    t.index ["conversation_id"], name: "index_messages_on_conversation_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -25,4 +66,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_132251) do
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
+
+  add_foreign_key "conversations", "users"
+  add_foreign_key "documents", "folders"
+  add_foreign_key "documents", "users"
+  add_foreign_key "folders", "folders"
+  add_foreign_key "folders", "users"
+  add_foreign_key "messages", "conversations"
 end
