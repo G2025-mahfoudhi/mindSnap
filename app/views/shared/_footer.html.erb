@@ -1,0 +1,46 @@
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-5 mb-4 mb-md-0">
+        <div class="footer__brand">
+          <%= image_tag "logo_MindSnap.png", alt: "MindSnap", class: "footer__logo" %>
+          <p class="footer__name">MindSnap</p>
+          <p class="footer__tagline">Ton deuxième cerveau. Capture, organise et retrouve toutes tes connaissances.</p>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-2 mb-3">
+        <p class="footer__heading">Produit</p>
+        <ul class="footer__links">
+          <li><%= link_to "Fonctionnalités", "#features" %></li>
+          <li><%= link_to "Comment ça marche", "#how-it-works" %></li>
+          <li><%= link_to "Blog", "#" %></li>
+        </ul>
+      </div>
+
+      <div class="col-6 col-md-2 mb-3">
+        <p class="footer__heading">Entreprise</p>
+        <ul class="footer__links">
+          <li><%= link_to "À propos", "#" %></li>
+          <li><%= link_to "Contact", "#" %></li>
+        </ul>
+      </div>
+
+      <div class="col-6 col-md-2 mb-3">
+        <p class="footer__heading">Légal</p>
+        <ul class="footer__links">
+          <li><%= link_to "Mentions légales", "#" %></li>
+          <li><%= link_to "Confidentialité", "#" %></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <div class="row">
+        <div class="col-md-6">
+          &copy; <%= Date.today.year %> MindSnap. Tous droits réservés.
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
