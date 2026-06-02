@@ -1,12 +1,12 @@
 <div class="folder-show-page">
   <%= link_to folders_path, class: "back-link" do %>
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><polyline points="15 18 9 12 15 6"/></svg>
     Tous les dossiers
   <% end %>
 
   <div class="show-header">
     <div class="show-header-left">
-      <span class="show-header-icon">📂</span>
+      <span class="show-header-icon" aria-hidden="true">📂</span>
       <div>
         <h1 class="show-title"><%= @folder.name %></h1>
         <% if @folder.description.present? %>
@@ -32,7 +32,7 @@
   <div class="section-block">
     <div class="section-header">
       <h2 class="section-title">
-        <span>📂</span> Sous-dossiers
+        <span aria-hidden="true">📂</span> Sous-dossiers
       </h2>
       <span class="section-count"><%= @children.count %></span>
     </div>
@@ -41,7 +41,7 @@
       <div class="item-grid">
         <% @children.each do |child| %>
           <%= link_to folder_path(child), class: "subfolder-card" do %>
-            <span class="subfolder-card-icon">📁</span>
+            <span class="subfolder-card-icon" aria-hidden="true">📁</span>
             <div class="subfolder-card-name"><%= child.name %></div>
           <% end %>
         <% end %>
@@ -55,7 +55,7 @@
   <div class="section-block">
     <div class="section-header">
       <h2 class="section-title">
-        <span>📄</span> Documents
+        <span aria-hidden="true">📄</span> Documents
       </h2>
       <div class="d-flex align-items-center gap-2">
         <span class="section-count"><%= @documents.count %></span>
@@ -67,7 +67,7 @@
       <div class="doc-list">
         <% @documents.each do |doc| %>
           <%= link_to document_path(doc), class: "doc-item" do %>
-            <span class="doc-item-icon">📄</span>
+            <span class="doc-item-icon" aria-hidden="true">📄</span>
             <span class="doc-item-title"><%= doc.title %></span>
             <% if doc.document_type.present? %>
               <span class="doc-item-type"><%= doc.document_type %></span>

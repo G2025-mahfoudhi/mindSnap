@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
   <head>
     <title><%= content_for(:title) || "Mind Snap" %></title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -23,10 +23,14 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body style="padding-bottom: 3rem;"><%= render "shared/navbar" %>
-<%= render "shared/flashes" %>
+  <body style="padding-bottom: 3rem;">
+    <a href="#main-content" class="visually-hidden-focusable">Aller au contenu principal</a>
+    <%= render "shared/navbar" %>
+    <%= render "shared/flashes" %>
 
-    <%= yield %>
+    <div id="main-content">
+      <%= yield %>
+    </div>
     <%= render "shared/conversation_actions" %>
     <%= render "shared/footer" %>
   </body>
