@@ -1,12 +1,10 @@
 class Folder < ApplicationRecord
   belongs_to :user
-  belongs_to :parent
-
-  has_many :documents, dependent: :destroy
-
   belongs_to :parent,
              class_name: 'Folder',
              optional: true
+
+  has_many :documents, dependent: :destroy
 
   has_many :children,
            class_name: 'Folder',

@@ -12,7 +12,7 @@ class FoldersController < ApplicationController
   end
 
   def new
-    @folder = Folder.new
+    @folder = Folder.new(parent_id: params[:parent_id])
   end
 
   def create

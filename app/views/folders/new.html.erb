@@ -1,20 +1,31 @@
-<%# <h1>Folders#new</h1>
-<p>Find me in app/views/folders/new.html.erb</p> %>
+<div class="folder-form-page">
+  <%= link_to folders_path, class: "form-back-link" do %>
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Retour aux dossiers
+  <% end %>
 
-<h1>Nouveau dossier</h1>
-
-<%= form_with model: @folder, local: true do |f| %>
-  <div>
-    <%= f.label :name %><br>
-    <%= f.text_field :name %>
+  <div class="form-header">
+    <h1>Nouveau dossier</h1>
+    <p>Organisez vos documents en créant un dossier.</p>
   </div>
 
-  <div>
-    <%= f.label :description %><br>
-    <%= f.text_area :description %>
-  </div>
+  <div class="form-card">
+    <%= form_with model: @folder, local: true do |f| %>
+      <%= f.hidden_field :parent_id %>
+      <div class="form-group">
+        <%= f.label :name, "Nom du dossier" %>
+        <%= f.text_field :name, placeholder: "Ex: Factures 2024", autofocus: true %>
+      </div>
 
-  <div>
-    <%= f.submit "Créer" %>
+      <div class="form-group">
+        <%= f.label :description, "Description" %>
+        <%= f.text_area :description, placeholder: "Une courte description (optionnel)" %>
+      </div>
+
+      <div class="form-actions">
+        <%= f.submit "Créer le dossier", class: "btn-submit" %>
+        <%= link_to "Annuler", folders_path, class: "btn-cancel" %>
+      </div>
+    <% end %>
   </div>
-<% end %>
+</div>
