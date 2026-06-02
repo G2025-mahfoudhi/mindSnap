@@ -154,15 +154,12 @@ GEM
       net-http (~> 0.5)
     faraday-retry (2.4.0)
       faraday (~> 2.0)
-<<<<<<< HEAD
-=======
     ffi (1.17.4-aarch64-linux-gnu)
     ffi (1.17.4-aarch64-linux-musl)
     ffi (1.17.4-arm-linux-gnu)
     ffi (1.17.4-arm-linux-musl)
     ffi (1.17.4-arm64-darwin)
     ffi (1.17.4-x86_64-darwin)
->>>>>>> 76f8c5e73ba828b20c090bec275a2afeae4d95b6
     ffi (1.17.4-x86_64-linux-gnu)
     font-awesome-sass (6.7.2)
       sassc (~> 2.0)
