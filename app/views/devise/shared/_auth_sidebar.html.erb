@@ -1,0 +1,35 @@
+<%# ============================================================
+  Partial : devise/shared/_auth_sidebar
+  Colonne droite des pages d'auth (visible uniquement sur desktop ≥ lg).
+
+  Affiche une illustration SVG Undraw + une citation inspirante
+  qui renforce le message produit selon la page.
+
+  Locals attendus (passés via le render) :
+    - illustration [String] : nom du fichier SVG (sans extension .svg)
+                              dans app/assets/images/
+    - citation   [String] : texte d'accompagnement
+
+  Exemple d'usage :
+    render "devise/shared/auth_sidebar",
+      illustration: "auth-login",
+      citation: "Ton deuxième cerveau t'attend."
+
+  Le partial est masqué sur mobile (d-none) et affiché en flex
+  sur desktop (d-lg-flex) pour un layout 2 colonnes.
+  Cf. .opencode/design/DECISIONS.md #007, #009
+============================================================ %>
+<div class="auth-sidebar d-none d-lg-flex flex-column align-items-center justify-content-center text-center px-4">
+  <%# Illustration SVG Undraw — responsive, max-width contrainte %>
+  <div class="auth-sidebar__illustration mb-4">
+    <%= image_tag "#{illustration}.svg",
+          alt: "", # décoratif uniquement, le texte de la citation porte le sens
+          class: "img-fluid",
+          style: "max-width: 360px;" %>
+  </div>
+
+  <%# Citation inspirante — style épuré, couleur atténuée %>
+  <p class="auth-sidebar__quote" style="color: rgba(26, 26, 26, 0.5); font-size: 1.125rem; max-width: 340px; line-height: 1.7;">
+    <%= citation %>
+  </p>
+</div>

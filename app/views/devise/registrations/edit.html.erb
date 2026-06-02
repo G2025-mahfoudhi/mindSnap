@@ -1,35 +1,86 @@
-<h2>Edit <%= resource_name.to_s.humanize %></h2>
+<%# ============================================================
+  Page : Modifier le profil (Devise registrations/edit)
+  Layout 1 colonne centrée (pas de sidebar, c'est un réglage).
+  Champs : Prénom, Nom, Email, Nouveau MDP (optionnel),
+           Confirmation, MDP actuel, Supprimer compte.
+  Cf. DECISIONS.md #008 (first/last name)
+============================================================ %>
 
-<%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
-  <%= f.error_notification %>
+<%# Carte centrée seule — max-width via la classe auth-card %>
+<div class="auth-card mx-auto">
+  <h2 class="auth-card__title">Modifier mon profil</h2>
+  <p class="auth-card__subtitle">Tes informations personnelles.</p>
 
-  <div class="form-inputs">
-    <%= f.input :email, required: true, autofocus: true %>
+  <%# Formulaire Devise — Simple Form gère le markup Bootstrap %>
+  <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
+    <%= f.error_notification %>
 
-    <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-      <p>Currently waiting confirmation for: <%= resource.unconfirmed_email %></p>
-    <% end %>
+    <div class="form-inputs">
+      <%# Prénom + Nom sur la même ligne %>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <%= f.input :first_name,
+                      required: true,
+                      autofocus: true,
+                      label: "Prénom",
+                      input_html: { autocomplete: "given-name" } %>
+        </div>
+        <div class="col-md-6 mb-3">
+          <%= f.input :last_name,
+                      required: true,
+                      label: "Nom",
+                      input_html: { autocomplete: "family-name" } %>
+        </div>
+      </div>
 
-    <%= f.input :password,
-                hint: "leave it blank if you don't want to change it",
-                required: false,
-                input_html: { autocomplete: "new-password" } %>
-    <%= f.input :password_confirmation,
-                required: false,
-                input_html: { autocomplete: "new-password" } %>
-    <%= f.input :current_password,
-                hint: "we need your current password to confirm your changes",
-                required: true,
-                input_html: { autocomplete: "current-password" } %>
+      <%= f.input :email, required: true %>
+
+      <%# Message si email en attente de confirmation %>
+      <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+        <p class="text-muted small">En attente de confirmation pour : <%= resource.unconfirmed_email %></p>
+      <% end %>
+
+      <%# Mot de passe (optionnel) %>
+      <%= f.input :password,
+                  label: "Nouveau mot de passe",
+                  hint: "Laisse vide si tu ne veux pas le changer",
+                  required: false,
+                  input_html: { autocomplete: "new-password" } %>
+
+      <%= f.input :password_confirmation,
+                  label: "Confirmation du nouveau mot de passe",
+                  required: false,
+                  input_html: { autocomplete: "new-password" } %>
+
+      <%# Mot de passe actuel (obligatoire pour toute modification) %>
+      <%= f.input :current_password,
+                  label: "Mot de passe actuel",
+                  hint: "Nous avons besoin de ton mot de passe actuel pour confirmer les changements",
+                  required: true,
+                  input_html: { autocomplete: "current-password" } %>
+    </div>
+
+    <div class="form-actions mt-3">
+      <%= f.button :submit, "Mettre à jour", class: "btn btn-primary w-100" %>
+    </div>
+  <% end %>
+
+  <%# ============================================================
+    Zone dangereuse : suppression du compte.
+    Séparée visuellement par un divider.
+    Bouton danger outline pour éviter les clics accidentels.
+  ============================================================ %>
+  <div class="auth-card__danger-zone">
+    <p class="danger-zone__label">Zone dangereuse</p>
+    <%= button_to "Supprimer mon compte",
+                  registration_path(resource_name),
+                  data: { confirm: "Es-tu sûr ? Cette action est irréversible.", turbo_confirm: "Es-tu sûr ? Cette action est irréversible." },
+                  method: :delete,
+                  class: "btn btn-outline-danger btn-sm" %>
   </div>
 
-  <div class="form-actions">
-    <%= f.button :submit, "Update" %>
+  <%# Lien retour %>
+  <div class="text-center mt-3">
+    <%= link_to "← Retour", :back, class: "text-muted small" %>
   </div>
-<% end %>
-
-<h3>Cancel my account</h3>
-
-<div>Unhappy? <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" }, method: :delete %></div>
-
-<%= link_to "Back", :back %>
+</div>

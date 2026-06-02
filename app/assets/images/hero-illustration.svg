@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="500" height="400" fill="none">
+  <!-- Brain/neural network illustration -->
+  <circle cx="250" cy="200" r="120" stroke="#549695" stroke-width="2" fill="#E8F4F3" opacity="0.8"/>
+  <circle cx="220" cy="170" r="15" fill="#549695" opacity="0.6"/>
+  <circle cx="280" cy="170" r="12" fill="#549695" opacity="0.5"/>
+  <circle cx="190" cy="220" r="10" fill="#549695" opacity="0.7"/>
+  <circle cx="310" cy="220" r="14" fill="#549695" opacity="0.55"/>
+  <circle cx="230" cy="250" r="11" fill="#549695" opacity="0.65"/>
+  <circle cx="270" cy="250" r="8" fill="#549695" opacity="0.5"/>
+  <line x1="220" y1="170" x2="190" y2="220" stroke="#549695" stroke-width="1.5" opacity="0.4"/>
+  <line x1="220" y1="170" x2="280" y2="170" stroke="#549695" stroke-width="1.5" opacity="0.4"/>
+  <line x1="280" y1="170" x2="310" y2="220" stroke="#549695" stroke-width="1.5" opacity="0.4"/>
+  <line x1="190" y1="220" x2="230" y2="250" stroke="#549695" stroke-width="1.5" opacity="0.4"/>
+  <line x1="310" y1="220" x2="270" y2="250" stroke="#549695" stroke-width="1.5" opacity="0.4"/>
+  <line x1="230" y1="250" x2="270" y2="250" stroke="#549695" stroke-width="1.5" opacity="0.4"/>
+  <!-- Document floating elements -->
+  <rect x="80" y="60" width="70" height="90" rx="6" fill="white" stroke="#549695" stroke-width="1.5" transform="rotate(-10 115 105)"/>
+  <line x1="90" y1="80" x2="140" y2="80" stroke="#549695" stroke-width="1.5" opacity="0.5" transform="rotate(-10 115 105)"/>
+  <line x1="90" y1="90" x2="130" y2="90" stroke="#549695" stroke-width="1.5" opacity="0.5" transform="rotate(-10 115 105)"/>
+  <line x1="90" y1="100" x2="135" y2="100" stroke="#549695" stroke-width="1.5" opacity="0.5" transform="rotate(-10 115 105)"/>
+  <rect x="350" y="250" width="60" height="80" rx="6" fill="white" stroke="#549695" stroke-width="1.5" transform="rotate(8 380 290)"/>
+  <line x1="360" y1="268" x2="400" y2="268" stroke="#549695" stroke-width="1.5" opacity="0.5" transform="rotate(8 380 290)"/>
+  <line x1="360" y1="278" x2="395" y2="278" stroke="#549695" stroke-width="1.5" opacity="0.5" transform="rotate(8 380 290)"/>
+  <line x1="360" y1="288" x2="390" y2="288" stroke="#549695" stroke-width="1.5" opacity="0.5" transform="rotate(8 380 290)"/>
+  <!-- Magnifying glass -->
+  <circle cx="380" cy="100" r="30" stroke="#549695" stroke-width="2.5" fill="none"/>
+  <line x1="402" y1="122" x2="430" y2="150" stroke="#549695" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

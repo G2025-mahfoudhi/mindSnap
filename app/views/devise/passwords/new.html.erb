@@ -1,18 +1,37 @@
-<h2>Forgot your password?</h2>
+<%# ============================================================
+  Page : Mot de passe oublié (Devise passwords/new)
+  Layout 2 colonnes desktop : carte + sidebar.
+  Mobile : carte centrée seule.
+============================================================ %>
 
-<%= simple_form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
-  <%= f.error_notification %>
+<div class="auth-wrapper">
+  <%# Colonne gauche : carte %>
+  <div class="auth-card">
+    <h2 class="auth-card__title">Mot de passe oublié ?</h2>
+    <p class="auth-card__subtitle">Pas de panique, on te renvoie un lien de réinitialisation.</p>
 
-  <div class="form-inputs">
-    <%= f.input :email,
-                required: true,
-                autofocus: true,
-                input_html: { autocomplete: "email" } %>
+    <%= simple_form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+      <%= f.error_notification %>
+
+      <div class="form-inputs">
+        <%= f.input :email,
+                    required: true,
+                    autofocus: true,
+                    input_html: { autocomplete: "email" } %>
+      </div>
+
+      <div class="form-actions mt-3">
+        <%= f.button :submit, "Envoyer les instructions", class: "btn btn-primary w-100" %>
+      </div>
+    <% end %>
+
+    <div class="auth-card__footer">
+      <%= render "devise/shared/links" %>
+    </div>
   </div>
 
-  <div class="form-actions">
-    <%= f.button :submit, "Send me password reset instructions" %>
-  </div>
-<% end %>
-
-<%= render "devise/shared/links" %>
+  <%# Colonne droite : illustration "message envoyé" %>
+  <%= render "devise/shared/auth_sidebar",
+        illustration: "auth-message",
+        citation: "On s'occupe de tout. Vérifie ta boîte mail dans quelques secondes." %>
+</div>
