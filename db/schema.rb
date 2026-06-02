@@ -26,7 +26,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_093535) do
     t.text "content"
     t.datetime "created_at", null: false
     t.datetime "date_injection"
-    t.bigint "folder_id", null: false
+    t.bigint "folder_id"
     t.string "title"
     t.string "type"
     t.datetime "updated_at", null: false
