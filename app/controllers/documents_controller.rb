@@ -50,13 +50,13 @@ class DocumentsController < ApplicationController
     folder_id = params.dig(:document, :folder_id)
     if folder_id == "new"
       name = params[:new_folder_name].presence
-      current_user.folders.create!(name: name) if name
+      current_user.folders.create(name: name) if name
     elsif folder_id.present?
       current_user.folders.find_by(id: folder_id)
     end
   end
 
   def document_params
-    params.require(:document).permit(:title, :content, :type, :date_injection, file: [])
+    params.require(:document).permit(:title, :content, :document_type, :date_injection, file: [])
   end
 end
