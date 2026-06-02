@@ -1,7 +1,7 @@
 <div class="container py-4" style="max-width: 800px;">
   <div class="d-flex justify-content-between align-items-start mb-4">
     <div>
-      <span class="badge bg-secondary mb-2"><%= @document.type %></span>
+      <span class="badge bg-secondary mb-2"><%= @document.document_type %></span>
       <h1 class="h3 mb-0"><%= @document.title %></h1>
       <small class="text-muted">
         Ajouté le <%= @document.date_injection&.strftime("%d/%m/%Y à %H:%M") %>
