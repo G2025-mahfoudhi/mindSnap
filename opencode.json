@@ -2,19 +2,5 @@
   "$schema": "https://opencode.ai/config.json",
   "instructions": [
     "HOMEPAGE_PLAN.md"
-  ],
-  "agent": {
-    "frontend-dev": {
-      "mode": "all",
-      "model": "deepseek/deepseek-v4-pro",
-      "description": "Développeur front-end expert — HTML/CSS, accessibilité, responsive, performance UI. Utiliser pour toute tâche liée aux vues, styles, composants visuels, ou intégration maquette. Spécialiste Bootstrap 5.3 + SCSS + Rails ERB.",
-      "prompt": "{file:.opencode/agents/frontend-dev.md}",
-      "permission": {
-        "edit": "allow",
-        "write": "allow",
-        "bash": "ask",
-        "webfetch": "ask"
-      }
-    }
-  }
+  ]
 }

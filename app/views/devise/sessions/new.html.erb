@@ -1,20 +1,48 @@
-<h2>Log in</h2>
+<%# ============================================================
+  Page : Connexion (Devise sessions/new)
+  Layout 2 colonnes desktop : carte login + sidebar illustration.
+  Mobile : carte centrée seule.
+  Cf. DECISIONS.md #007 (layout 2 colonnes)
+============================================================ %>
 
-<%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
-  <div class="form-inputs">
-    <%= f.input :email,
-                required: false,
-                autofocus: true,
-                input_html: { autocomplete: "email" } %>
-    <%= f.input :password,
-                required: false,
-                input_html: { autocomplete: "current-password" } %>
-    <%= f.input :remember_me, as: :boolean if devise_mapping.rememberable? %>
+<div class="auth-wrapper">
+  <%# ============================================================
+    Colonne gauche : carte de connexion
+    Formulaire Simple Form avec Bootstrap natif (pas de CSS custom).
+  ============================================================ %>
+  <div class="auth-card">
+    <h2 class="auth-card__title">Content de te revoir</h2>
+    <p class="auth-card__subtitle">Connecte-toi pour accéder à ton espace.</p>
+
+    <%# Formulaire Devise — Simple Form gère le markup Bootstrap %>
+    <%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+      <div class="form-inputs">
+        <%= f.input :email,
+                    required: false,
+                    autofocus: true,
+                    input_html: { autocomplete: "email" } %>
+        <%= f.input :password,
+                    required: false,
+                    input_html: { autocomplete: "current-password" } %>
+        <%= f.input :remember_me, as: :boolean if devise_mapping.rememberable? %>
+      </div>
+
+      <div class="form-actions mt-3">
+        <%= f.button :submit, "Se connecter", class: "btn btn-primary w-100" %>
+      </div>
+    <% end %>
+
+    <%# Liens : mot de passe oublié + pas encore de compte %>
+    <div class="auth-card__footer">
+      <%= render "devise/shared/links" %>
+    </div>
   </div>
 
-  <div class="form-actions">
-    <%= f.button :submit, "Log in" %>
-  </div>
-<% end %>
-
-<%= render "devise/shared/links" %>
+  <%# ============================================================
+    Colonne droite : illustration + citation (desktop uniquement)
+    SVG Undraw "auth-login" — personnage heureux.
+  ============================================================ %>
+  <%= render "devise/shared/auth_sidebar",
+        illustration: "auth-login",
+        citation: "Ton deuxième cerveau t'attend. Capture, organise, retrouve — tout est là." %>
+</div>
