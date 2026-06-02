@@ -9,7 +9,7 @@
       style="border-top: 10px solid rgba(255,255,255,0.25) !important;"
     >
 
-      <%= button_to chats_path, method: :post, class: "btn w-100 d-flex align-items-center justify-content-center gap-2 fw-medium text-white border-0",
+      <%= button_to conversations_path, method: :post, class: "btn w-100 d-flex align-items-center justify-content-center gap-2 fw-medium text-white border-0",
     style: "background-color: #40c074;",
     onmouseover: "this.style.backgroundColor='#36a862'",
     onmouseout: "this.style.backgroundColor='#40c074'" do %>
@@ -42,7 +42,7 @@
           >
             <i class="fa-solid fa-comment text-white-50"></i>
 
-            <span class="text-truncate small" id="chat-title-<%= chat.id %>">
+            <span class="text-truncate small" id="chat-title-<%= conversation.id %>">
               <%= conversation.name %>
             </span>
           </a>
@@ -55,7 +55,7 @@
               <i class="fa-solid fa-pen" style="font-size:12px;"></i>
             </button>
 
-            <%= button_to chat_path(chat), method: :delete,
+            <%= button_to conversation_path(conversation), method: :delete,
                   class: "btn btn-sm p-0 px-1 text-white-50",
                   form_class: "d-inline",
                   data: { turbo_confirm: "Supprimer cette conversation ?" } do %>
@@ -84,7 +84,7 @@
         "
         style="width:32px; height:32px; background:rgba(255,255,255,0.18); font-size:12px; flex-shrink:0;"
       >
-        <%= current_user.first_name[0] %><%= current_user.last_name[0] %>
+        <%= current_user.first_name&.first %><%= current_user.last_name&.first %>
       </div>
 
       <!-- Nom utilisateur -->
