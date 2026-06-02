@@ -1,0 +1,89 @@
+.how-it-works {
+  padding: 5rem 0;
+  background: $white;
+}
+
+.how-it-works__header {
+  text-align: center;
+  margin-bottom: 3.5rem;
+}
+
+.how-it-works__title {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 700;
+  color: $near-black;
+  margin-bottom: .75rem;
+}
+
+.how-it-works__subtitle {
+  font-size: 1.125rem;
+  color: rgba($near-black, .6);
+}
+
+.step {
+  text-align: center;
+  padding: 1.5rem 1rem;
+}
+
+.step__number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: $teal;
+  color: $white;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.step__illustration {
+  width: 220px;
+  height: 160px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+  }
+}
+
+.step__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $near-black;
+  margin-bottom: .5rem;
+}
+
+.step__text {
+  font-size: .9375rem;
+  color: rgba($near-black, .65);
+  line-height: 1.6;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+// Connecting line between steps (desktop only)
+.steps-row {
+  position: relative;
+
+  @include media-breakpoint-up(md) {
+    &::before {
+      content: "";
+      position: absolute;
+      top: 28px;
+      left: calc(16.666% + 20px);
+      right: calc(16.666% + 20px);
+      height: 2px;
+      background: $teal-light;
+      z-index: 1;
+    }
+  }
+}

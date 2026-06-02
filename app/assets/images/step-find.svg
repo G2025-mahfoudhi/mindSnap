@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 160" fill="none">
+  <!-- Magnifying glass -->
+  <circle cx="100" cy="72" r="35" stroke="#549695" stroke-width="2.5" fill="#E8F4F3" opacity="0.8"/>
+  <line x1="125" y1="97" x2="165" y2="137" stroke="#549695" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Search results (documents showing through glass) -->
+  <rect x="68" y="50" width="50" height="35" rx="3" fill="white" stroke="#549695" stroke-width="1" transform="rotate(-5 93 67)"/>
+  <line x1="75" y1="60" x2="110" y2="60" stroke="#549695" stroke-width="1" opacity="0.5" transform="rotate(-5 93 67)"/>
+  <line x1="75" y1="68" x2="105" y2="68" stroke="#549695" stroke-width="1" opacity="0.5" transform="rotate(-5 93 67)"/>
+  <!-- Sparkles -->
+  <path d="M170 30 L172 24 L174 30 L180 32 L174 34 L172 40 L170 34 L164 32Z" fill="#549695" opacity="0.6"/>
+</svg>
