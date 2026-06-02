@@ -3,31 +3,37 @@ class FoldersController < ApplicationController
   before_action :set_folder, only: [:show, :destroy]
 
   def index
-    @folders = [] # temporaire, en attendant le modèle
+    @folders = current_user.folders.where(parent_id: nil)
   end
 
   def show
-    # temporaire
+    @children = @folder.children
+    @documents = @folder.documents
   end
 
   def new
-    @folder = nil  # temporaire
+    @folder = Folder.new
   end
 
   def create
-    # temporaire
-    redirect_to folders_path
+    @folder = current_user.folders.new(folder_params)
+
+    if @folder.save
+      redirect_to folders_path, notice: "Folder créé"
+    else
+      render :new, status: :unprocessable_entity
+    end
   end
 
   def destroy
-    # temporaire
-    redirect_to folders_path
+    @folder.destroy
+    redirect_to folders_path, notice: "Folder supprimé"
   end
 
   private
 
   def set_folder
-    # temporaire
+    @folder = current_user.folders.find(params[:id])
   end
 
   def folder_params

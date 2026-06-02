@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_01_140140) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_02_084740) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -26,7 +26,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_140140) do
     t.text "content"
     t.datetime "created_at", null: false
     t.datetime "date_injection"
-    t.bigint "folder_id", null: false
+    t.bigint "folder_id"
     t.string "title"
     t.string "type"
     t.datetime "updated_at", null: false
@@ -38,11 +38,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_140140) do
   create_table "folders", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "description"
-    t.bigint "folder_id", null: false
     t.string "name"
+    t.bigint "parent_id"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
-    t.index ["folder_id"], name: "index_folders_on_folder_id"
+    t.index ["parent_id"], name: "index_folders_on_parent_id"
     t.index ["user_id"], name: "index_folders_on_user_id"
   end
 
@@ -70,7 +70,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_140140) do
   add_foreign_key "conversations", "users"
   add_foreign_key "documents", "folders"
   add_foreign_key "documents", "users"
-  add_foreign_key "folders", "folders"
+  add_foreign_key "folders", "folders", column: "parent_id"
   add_foreign_key "folders", "users"
   add_foreign_key "messages", "conversations"
 end

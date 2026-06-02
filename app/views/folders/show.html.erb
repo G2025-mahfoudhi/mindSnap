@@ -1,2 +1,44 @@
-<h1>Folders#show</h1>
-<p>Find me in app/views/folders/show.html.erb</p>
+<%# <h1>Folders#show</h1>
+<p>Find me in app/views/folders/show.html.erb</p> %>
+
+<h1>📁 <%= @folder.name %></h1>
+
+<p><%= @folder.description %></p>
+
+<hr>
+
+<!-- ACTIONS -->
+<%= link_to "⬅️ Retour", folders_path %> |
+<%= link_to "🗑 Supprimer", folder_path(@folder), data: { turbo_method: :delete, turbo_confirm: "Supprimer ce dossier ?" } %>
+
+<hr>
+
+<!-- SOUS-DOSSIERS -->
+<h3>📂 Sous-dossiers</h3>
+
+<% if @children.any? %>
+  <ul>
+    <% @children.each do |child| %>
+      <li>
+        <%= link_to child.name, folder_path(child) %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>Aucun sous-dossier</p>
+<% end %>
+
+<hr>
+
+<!-- DOCUMENTS -->
+<h3>📄 Documents</h3>
+
+<% if @documents.any? %>
+  <ul>
+    <% @documents.each do |doc| %>
+      <li><%= doc.title %></li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>Aucun document</p>
+<% end %>
