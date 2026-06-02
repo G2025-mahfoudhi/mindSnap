@@ -6,7 +6,7 @@ class DocumentsController < ApplicationController
   end
 
   def new
-    @document = current_user.documents.build(date_injection: Time.current)
+    @document = current_user.documents.build(date_injection: Time.current, folder_id: params[:folder_id])
   end
 
   def create

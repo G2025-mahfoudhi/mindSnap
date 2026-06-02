@@ -4,10 +4,7 @@
       <span class="folders-header-icon">📁</span>
       <h1 class="folders-title">Mes dossiers</h1>
     </div>
-    <%= link_to new_folder_path, class: "btn-new" do %>
-      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Nouveau dossier
-    <% end %>
+    <%= link_to "Nouveau dossier", new_folder_path, class: "btn btn-primary" %>
   </div>
 
   <hr class="folders-divider">
@@ -31,7 +28,7 @@
     <div class="empty-state">
       <span class="empty-state-icon">📁</span>
       <p>Aucun dossier pour le moment</p>
-      <%= link_to "Créer mon premier dossier", new_folder_path, class: "btn-new", style: "display:inline-flex;" %>
+      <%= link_to "Créer mon premier dossier", new_folder_path, class: "btn btn-primary" %>
     </div>
   <% end %>
 </div>

@@ -1,12 +1,12 @@
 <div class="folder-form-page">
-  <%= link_to folders_path, class: "form-back-link" do %>
+  <%= link_to folder_path(@folder), class: "form-back-link" do %>
     <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    Retour aux dossiers
+    Retour au dossier
   <% end %>
 
   <div class="form-header">
-    <h1>Nouveau dossier</h1>
-    <p>Organisez vos documents en créant un dossier.</p>
+    <h1>Modifier le dossier</h1>
+    <p>Mettez à jour le nom ou la description.</p>
   </div>
 
   <div class="form-card">
@@ -14,7 +14,7 @@
       <%= f.hidden_field :parent_id %>
       <div class="form-group">
         <%= f.label :name, "Nom du dossier" %>
-        <%= f.text_field :name, placeholder: "Ex: Factures 2024", autofocus: true %>
+        <%= f.text_field :name, autofocus: true %>
       </div>
 
       <div class="form-group">
@@ -23,8 +23,8 @@
       </div>
 
       <div class="form-actions">
-        <%= f.submit "Créer le dossier", class: "btn btn-primary" %>
-        <%= link_to "Annuler", folders_path, class: "btn btn-outline-secondary" %>
+        <%= f.submit "Enregistrer", class: "btn btn-primary" %>
+        <%= link_to "Annuler", folder_path(@folder), class: "btn btn-outline-secondary" %>
       </div>
     <% end %>
   </div>

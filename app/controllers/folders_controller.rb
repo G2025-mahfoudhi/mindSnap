@@ -1,6 +1,6 @@
 class FoldersController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_folder, only: [:show, :destroy]
+  before_action :set_folder, only: [:show, :edit, :update, :destroy]
 
   def index
     @folders = current_user.folders.where(parent_id: nil)
@@ -22,6 +22,17 @@ class FoldersController < ApplicationController
       redirect_to folders_path, notice: "Folder créé"
     else
       render :new, status: :unprocessable_entity
+    end
+  end
+
+  def edit
+  end
+
+  def update
+    if @folder.update(folder_params)
+      redirect_to folder_path(@folder), notice: "Dossier modifié"
+    else
+      render :edit, status: :unprocessable_entity
     end
   end
 
