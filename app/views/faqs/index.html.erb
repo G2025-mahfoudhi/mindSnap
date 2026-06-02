@@ -1,0 +1,261 @@
+<%# ============================================================
+  Page : FAQ (FaqsController#index)
+  Layout : application (navbar + footer)
+  Accessible sans connexion.
+
+  Structure :
+  - Header : illustration + titre + barre de recherche
+  - Layout flex : sidebar sticky (catégories) + contenu (accordéon)
+  - 20 questions réparties en 5 catégories
+  - Recherche en temps réel via Stimulus (faq-search)
+  - ScrollSpy Bootstrap pour highlight du sidebar
+
+  Cf. .opencode/design/DECISIONS.md
+============================================================ %>
+
+<% content_for :title, "FAQ — MindSnap" %>
+
+<%# ============================================================
+  Données : 20 questions réparties en 5 catégories.
+  Structure : [{ id:, category:, icon:, question:, answer: }, ...]
+  Les IDs sont utilisés pour les ancres et le ScrollSpy.
+============================================================ %>
+
+<div class="container py-5"
+     data-controller="faq-search"
+     data-faq-search-empty-class="d-none">
+
+  <%# ============================================================
+    Header : illustration à gauche + titre/recherche à droite
+    Sur mobile, empilé (illustration masquée).
+  ============================================================ %>
+  <header class="faq-header">
+    <div class="faq-header__illustration">
+      <%= image_tag "faq-illustration.svg", alt: "", class: "img-fluid" %>
+    </div>
+    <div class="faq-header__text">
+      <h1 class="faq-header__title">Une question ? On a la réponse.</h1>
+      <p class="faq-header__subtitle">
+        Parcours les questions les plus fréquentes ou utilise la recherche pour trouver rapidement ce que tu cherches.
+      </p>
+      <%# Barre de recherche avec icône loupe %>
+      <div class="faq-search">
+        <i class="fa-solid fa-magnifying-glass faq-search__icon" aria-hidden="true"></i>
+        <input type="text"
+               class="faq-search__input"
+               placeholder="Rechercher une question..."
+               data-faq-search-target="input"
+               data-action="input->faq-search#filter"
+               aria-label="Rechercher dans la FAQ">
+      </div>
+    </div>
+  </header>
+
+  <%# ============================================================
+    Layout sidebar + contenu
+  ============================================================ %>
+  <div class="faq-layout">
+
+    <%# ============================================================
+      Sidebar gauche — navigation par catégorie
+      Sticky sur desktop, barre horizontale scrollable sur mobile.
+    ============================================================ %>
+    <aside class="faq-sidebar" aria-label="Catégories de la FAQ">
+      <a href="#category-general" class="faq-sidebar__link active" data-faq-search-target="sidebarLink" data-action="click->faq-search#scrollTo">
+        <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+        Général
+      </a>
+      <a href="#category-compte" class="faq-sidebar__link" data-faq-search-target="sidebarLink" data-action="click->faq-search#scrollTo">
+        <i class="fa-solid fa-lock" aria-hidden="true"></i>
+        Compte &amp; Sécurité
+      </a>
+      <a href="#category-documents" class="faq-sidebar__link" data-faq-search-target="sidebarLink" data-action="click->faq-search#scrollTo">
+        <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+        Documents
+      </a>
+      <a href="#category-ia" class="faq-sidebar__link" data-faq-search-target="sidebarLink" data-action="click->faq-search#scrollTo">
+        <i class="fa-solid fa-robot" aria-hidden="true"></i>
+        IA &amp; Recherche
+      </a>
+      <a href="#category-prix" class="faq-sidebar__link" data-faq-search-target="sidebarLink" data-action="click->faq-search#scrollTo">
+        <i class="fa-solid fa-tag" aria-hidden="true"></i>
+        Offres &amp; Prix
+      </a>
+    </aside>
+
+    <%# ============================================================
+      Contenu principal — accordéon par catégorie
+    ============================================================ %>
+    <main class="faq-content" data-faq-search-target="content">
+
+      <%# ==========================================================
+        Catégorie : Général
+      ========================================================== %>
+      <section id="category-general" data-faq-search-target="category">
+        <h2 class="faq-category">
+          <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+          <span>Général</span>
+        </h2>
+
+        <div class="faq-accordion">
+          <%= render "shared/faq_item",
+                id: "q1",
+                question: "MindSnap, c'est quoi exactement ?",
+                answer: "MindSnap est ton deuxième cerveau numérique. C'est une application qui te permet de <strong>capturer</strong> tes documents (cours, notes, photos), de les <strong>organiser</strong> dans des dossiers, et de les <strong>retrouver</strong> instantanément grâce à l'intelligence artificielle. En gros, tout ton savoir au même endroit, accessible à tout moment." %>
+
+          <%= render "shared/faq_item",
+                id: "q2",
+                question: "Qui peut utiliser MindSnap ?",
+                answer: "Tout le monde ! Étudiants qui veulent centraliser leurs cours, professionnels qui gèrent des documents, ou simplement curieux qui veulent mieux organiser leurs connaissances. L'interface est conçue pour être simple et intuitive, sans besoin de compétences techniques." %>
+
+          <%= render "shared/faq_item",
+                id: "q3",
+                question: "Est-ce que c'est gratuit ?",
+                answer: "<strong>Oui !</strong> MindSnap propose une offre gratuite généreuse avec 50 documents, 10 dossiers, et l'accès à l'IA. Pour les utilisateurs avancés, des offres payantes débloquent plus de stockage et des fonctionnalités supplémentaires. Consulte la section <em>Offres &amp; Prix</em> pour le détail." %>
+
+          <%= render "shared/faq_item",
+                id: "q4",
+                question: "Puis-je utiliser MindSnap sur mon téléphone ?",
+                answer: "Absolument. MindSnap est entièrement responsive et fonctionne sur ordinateur, tablette et smartphone. Tu peux même prendre une photo d'un document directement depuis ton téléphone et l'IA analysera le texte automatiquement grâce à la reconnaissance optique de caractères (OCR)." %>
+        </div>
+      </section>
+
+      <%# ==========================================================
+        Catégorie : Compte & Sécurité
+      ========================================================== %>
+      <section id="category-compte" data-faq-search-target="category">
+        <h2 class="faq-category">
+          <i class="fa-solid fa-lock" aria-hidden="true"></i>
+          <span>Compte &amp; Sécurité</span>
+        </h2>
+
+        <div class="faq-accordion">
+          <%= render "shared/faq_item",
+                id: "q5",
+                question: "Comment créer un compte ?",
+                answer: "Rien de plus simple : clique sur <strong>Créer un compte</strong> en haut à droite, remplis ton prénom, ton nom et ton email, choisis un mot de passe, et c'est tout ! Tu peux aussi utiliser ton compte Google ou Apple pour t'inscrire en un clic." %>
+
+          <%= render "shared/faq_item",
+                id: "q6",
+                question: "J'ai oublié mon mot de passe, que faire ?",
+                answer: "Pas de panique ! Sur la page de connexion, clique sur <strong>Mot de passe oublié ?</strong>. Tu recevras un email avec un lien pour réinitialiser ton mot de passe en quelques secondes. Pense à vérifier tes spams si tu ne le vois pas arriver." %>
+
+          <%= render "shared/faq_item",
+                id: "q7",
+                question: "Mes données sont-elles en sécurité ?",
+                answer: "La sécurité est notre priorité. Toutes tes données sont <strong>chiffrées</strong> (en transit et au repos). Tes mots de passe sont hashés avec des algorithmes robustes. Nous ne partageons jamais tes documents ni tes informations personnelles avec des tiers. Consulte notre politique de confidentialité pour plus de détails." %>
+
+          <%= render "shared/faq_item",
+                id: "q8",
+                question: "Comment supprimer mon compte ?",
+                answer: "Tu peux supprimer ton compte à tout moment depuis la page <strong>Paramètres</strong> (accessible via le menu en haut à droite). Tout en bas, tu trouveras un bouton <em>Supprimer mon compte</em>. Attention, cette action est <strong>irréversible</strong> : tous tes documents, dossiers et données seront définitivement effacés." %>
+        </div>
+      </section>
+
+      <%# ==========================================================
+        Catégorie : Documents
+      ========================================================== %>
+      <section id="category-documents" data-faq-search-target="category">
+        <h2 class="faq-category">
+          <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+          <span>Documents</span>
+        </h2>
+
+        <div class="faq-accordion">
+          <%= render "shared/faq_item",
+                id: "q9",
+                question: "Quels types de documents puis-je importer ?",
+                answer: "MindSnap accepte une large variété de formats : <strong>PDF, Word, Excel, PowerPoint, images (JPG, PNG), et texte brut</strong>. Tu peux aussi prendre une photo directement depuis l'appli — l'OCR intégré extraira le texte automatiquement. Les scans de documents papier fonctionnent parfaitement." %>
+
+          <%= render "shared/faq_item",
+                id: "q10",
+                question: "Comment fonctionne la capture de documents ?",
+                answer: "Deux options : <strong>1)</strong> Importe un fichier existant depuis ton ordinateur ou téléphone. <strong>2)</strong> Prends une photo directement dans l'appli. Dans les deux cas, l'IA analyse le contenu, extrait le texte (OCR pour les images), et rend le document <strong>recherchable</strong> immédiatement. Tu peux ensuite le classer dans le dossier de ton choix." %>
+
+          <%= render "shared/faq_item",
+                id: "q11",
+                question: "Y a-t-il une limite de stockage ?",
+                answer: "L'offre gratuite inclut <strong>50 documents</strong>. Les offres payantes augmentent cette limite : 500 documents (Premium) et documents illimités (Pro). La taille maximale par document est de 25 Mo, ce qui est largement suffisant pour la plupart des PDF, présentations et photos." %>
+
+          <%= render "shared/faq_item",
+                id: "q12",
+                question: "Puis-je exporter mes documents ?",
+                answer: "Oui, à tout moment. Tu peux exporter individuellement un document au format PDF, Word, ou texte brut. Nous travaillons sur une fonction d'export en lot pour télécharger tous tes documents d'un coup. Tes données t'appartiennent — tu n'es jamais prisonnier de MindSnap." %>
+        </div>
+      </section>
+
+      <%# ==========================================================
+        Catégorie : IA & Recherche
+      ========================================================== %>
+      <section id="category-ia" data-faq-search-target="category">
+        <h2 class="faq-category">
+          <i class="fa-solid fa-robot" aria-hidden="true"></i>
+          <span>IA &amp; Recherche</span>
+        </h2>
+
+        <div class="faq-accordion">
+          <%= render "shared/faq_item",
+                id: "q13",
+                question: "Comment l'IA m'aide-t-elle à retrouver mes documents ?",
+                answer: "L'IA indexe le contenu de <strong>tous</strong> tes documents — y compris le texte dans les images grâce à l'OCR. Quand tu fais une recherche, elle ne se limite pas aux titres : elle analyse le sens de ta question et retrouve les passages pertinents, même si les mots exacts ne correspondent pas. Un peu comme Google, mais pour tes documents personnels." %>
+
+          <%= render "shared/faq_item",
+                id: "q14",
+                question: "Puis-je poser des questions sur le contenu de mes documents ?",
+                answer: "Oui, et c'est l'une des fonctionnalités phares ! Depuis la section <strong>Chat</strong>, tu peux discuter avec l'IA en lui posant des questions précises sur tes documents. Par exemple : <em>« Résume le chapitre 3 de mon cours d'économie »</em> ou <em>« Quels sont les points communs entre mes notes sur la Renaissance et mon cours d'histoire de l'art ? »</em>." %>
+
+          <%= render "shared/faq_item",
+                id: "q15",
+                question: "L'IA comprend-elle le français ?",
+                answer: "Oui, parfaitement. L'IA est multilingue et comprend <strong>le français, l'anglais, l'espagnol, l'allemand, et bien d'autres langues</strong>. Tu peux même avoir des documents dans plusieurs langues et poser tes questions en français — l'IA fera le lien automatiquement." %>
+
+          <%= render "shared/faq_item",
+                id: "q16",
+                question: "Est-ce que l'IA apprend de mes documents ?",
+                answer: "<strong>Non.</strong> Tes documents restent strictement privés. L'IA les analyse pour répondre à tes questions, mais elle ne les utilise pas pour entraîner ses modèles. Tes données ne quittent pas ton espace personnel. C'est un principe fondamental de MindSnap : ton savoir t'appartient." %>
+        </div>
+      </section>
+
+      <%# ==========================================================
+        Catégorie : Offres & Prix
+      ========================================================== %>
+      <section id="category-prix" data-faq-search-target="category">
+        <h2 class="faq-category">
+          <i class="fa-solid fa-tag" aria-hidden="true"></i>
+          <span>Offres &amp; Prix</span>
+        </h2>
+
+        <div class="faq-accordion">
+          <%= render "shared/faq_item",
+                id: "q17",
+                question: "Quelles sont les offres disponibles ?",
+                answer: "MindSnap propose <strong>trois offres</strong> : <strong>Gratuit</strong> (50 documents, 10 dossiers, IA incluse), <strong>Premium</strong> (500 documents, dossiers illimités, OCR avancé, export batch), et <strong>Pro</strong> (documents illimités, gestion d'équipe, API, support prioritaire). Les prix sont affichés sur la page dédiée." %>
+
+          <%= render "shared/faq_item",
+                id: "q18",
+                question: "Que contient l'offre gratuite ?",
+                answer: "L'offre gratuite est <strong>vraiment</strong> gratuite — pas de carte bancaire requise. Elle inclut : 50 documents, 10 dossiers, la recherche intelligente par IA, l'OCR pour les photos, et l'accès au chat IA. C'est parfait pour découvrir MindSnap et voir si ça correspond à tes besoins avant de passer à une offre payante." %>
+
+          <%= render "shared/faq_item",
+                id: "q19",
+                question: "Puis-je changer d'offre à tout moment ?",
+                answer: "Oui, tu peux upgrader ou downgrader ton offre quand tu veux. Si tu downgrades, tu conserves l'accès aux fonctionnalités premium jusqu'à la fin de ta période de facturation. Tes documents existants restent accessibles, mais tu ne pourras plus en ajouter au-delà de la limite de ta nouvelle offre." %>
+
+          <%= render "shared/faq_item",
+                id: "q20",
+                question: "Proposez-vous des offres pour les étudiants ?",
+                answer: "On y travaille ! Nous prévoyons un <strong>tarif étudiant</strong> avec une réduction significative sur l'offre Premium. Inscris-toi avec ton adresse email universitaire et tu seras automatiquement notifié dès que cette offre sera disponible. En attendant, l'offre gratuite est déjà très complète pour un usage étudiant." %>
+        </div>
+      </section>
+
+      <%# ==========================================================
+        État vide : affiché quand la recherche ne trouve rien
+      ========================================================== %>
+      <div class="faq-empty" data-faq-search-target="empty">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <p>Aucune question ne correspond à ta recherche.<br>Essaie avec d'autres mots-clés.</p>
+      </div>
+
+    </main>
+  </div>
+</div>

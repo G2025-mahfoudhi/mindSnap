@@ -1,0 +1,340 @@
+// ============================================================
+// Composant : FAQ
+// Styles pour la page FAQ : sidebar sticky, accordéon, recherche.
+//
+// Structure :
+// - .faq-layout       : conteneur flex sidebar + contenu
+// - .faq-sidebar      : colonne gauche sticky (navigation catégories)
+// - .faq-content      : colonne droite (header + accordéon)
+// - .faq-accordion    : liste des questions/réponses
+// - .faq-item         : une question + sa réponse
+//
+// Cf. DESIGN_SYSTEM.md pour les variables utilisées.
+// ============================================================
+
+// ----------------------------------------------------------
+// Layout principal : sidebar (280px) + contenu (reste)
+// Sur mobile (<lg), le sidebar passe au-dessus en horizontal
+// ----------------------------------------------------------
+.faq-layout {
+  @include media-breakpoint-up(lg) {
+    display: flex;
+    gap: 3rem;
+  }
+}
+
+// ----------------------------------------------------------
+// Sidebar gauche — sticky, navigation par catégorie.
+// Mobile : barre horizontale scrollable.
+// Desktop : colonne verticale sticky à 280px.
+// ----------------------------------------------------------
+.faq-sidebar {
+  @include media-breakpoint-down(lg) {
+    // Mobile : barre horizontale avec scroll
+    display: flex;
+    overflow-x: auto;
+    gap: .5rem;
+    padding-bottom: .75rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba($near-black, .06);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  @include media-breakpoint-up(lg) {
+    width: 260px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 5rem;  // en dessous de la navbar sticky
+    align-self: flex-start;
+    max-height: calc(100vh - 7rem);
+    overflow-y: auto;
+  }
+}
+
+// ----------------------------------------------------------
+// Lien de catégorie dans le sidebar.
+// Mobile : badge/pill horizontal.
+// Desktop : lien pleine largeur avec icône.
+// ----------------------------------------------------------
+.faq-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  padding: .625rem .875rem;
+  border-radius: $border-radius;
+  color: rgba($near-black, .6);
+  text-decoration: none;
+  font-size: .875rem;
+  font-weight: 500;
+  transition: background .15s ease, color .15s ease;
+  white-space: nowrap;  // mobile : pas de retour à la ligne dans les pills
+
+  i {
+    font-size: 1rem;
+    width: 1.25rem;  // largeur fixe pour aligner les icônes
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: rgba($teal, .08);
+    color: $teal;
+  }
+
+  // État actif (géré par Bootstrap ScrollSpy via classe .active)
+  &.active {
+    background: $teal-light;
+    color: $teal;
+    font-weight: 600;
+  }
+}
+
+// ----------------------------------------------------------
+// Zone de contenu principale (colonne droite)
+// ----------------------------------------------------------
+.faq-content {
+  flex: 1;
+  min-width: 0;  // évite le débordement flex
+}
+
+// ----------------------------------------------------------
+// Header FAQ : illustration + titre + barre de recherche
+// ----------------------------------------------------------
+.faq-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+
+  @include media-breakpoint-up(lg) {
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    margin-bottom: 3rem;
+  }
+}
+
+.faq-header__illustration {
+  display: none;
+
+  @include media-breakpoint-up(lg) {
+    display: block;
+    flex-shrink: 0;
+    width: 200px;
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+  }
+}
+
+.faq-header__text {
+  flex: 1;
+}
+
+.faq-header__title {
+  font-family: $headers-font;
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 700;
+  color: $near-black;
+  margin-bottom: .5rem;
+}
+
+.faq-header__subtitle {
+  font-size: 1.0625rem;
+  color: rgba($near-black, .55);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+// ----------------------------------------------------------
+// Barre de recherche
+// ----------------------------------------------------------
+.faq-search {
+  position: relative;
+  max-width: 480px;
+
+  .faq-search__icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba($near-black, .35);
+    font-size: 1rem;
+    pointer-events: none;
+  }
+
+  .faq-search__input {
+    width: 100%;
+    padding: .75rem 1rem .75rem 2.75rem;  // espace pour l'icône
+    border: 1.5px solid rgba($near-black, .12);
+    border-radius: $border-radius;
+    font-size: .9375rem;
+    font-family: $body-font;
+    color: $near-black;
+    background: $white;
+    transition: border-color .15s ease, box-shadow .15s ease;
+
+    &::placeholder {
+      color: rgba($near-black, .35);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $teal;
+      box-shadow: 0 0 0 3px rgba($teal, .15);
+    }
+  }
+}
+
+// ----------------------------------------------------------
+// Titre de catégorie dans le contenu
+// Icône Font Awesome + texte, sépare les groupes de questions
+// ----------------------------------------------------------
+.faq-category {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  margin-top: 1.5rem;
+  margin-bottom: .75rem;
+  padding-bottom: .5rem;
+  border-bottom: 1px solid rgba($near-black, .06);
+
+  &:first-child {
+    margin-top: 0;
+  }
+
+  i {
+    color: $teal;
+    font-size: 1.125rem;
+    width: 1.5rem;
+    text-align: center;
+  }
+
+  span {
+    font-family: $headers-font;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: $near-black;
+  }
+}
+
+// ----------------------------------------------------------
+// Accordéon FAQ — chaque item question/réponse.
+// Basé sur Bootstrap Collapse mais stylé MindSnap.
+// ----------------------------------------------------------
+.faq-accordion {
+  // Conteneur global — pas de style particulier
+}
+
+// Un item FAQ (question + réponse)
+.faq-item {
+  border: 1px solid rgba($near-black, .06);
+  border-radius: $border-radius;
+  margin-bottom: .5rem;
+  overflow: hidden;
+  transition: border-color .15s ease;
+
+  &:hover {
+    border-color: rgba($near-black, .12);
+  }
+
+  // Quand la réponse est ouverte
+  &.faq-item--open {
+    border-color: rgba($teal, .25);
+    background: rgba($teal, .02);
+  }
+}
+
+// Bouton question (le déclencheur de l'accordéon)
+.faq-item__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: $headers-font;
+  font-size: 1rem;
+  font-weight: 600;
+  color: $near-black;
+  text-align: left;
+  line-height: 1.5;
+  gap: 1rem;
+
+  &:hover {
+    color: $teal;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $teal;
+    outline-offset: -2px;
+    border-radius: $border-radius;
+  }
+}
+
+// Icône chevron (+ / -) à droite
+.faq-item__icon {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba($near-black, .05);
+  color: rgba($near-black, .4);
+  font-size: .75rem;
+  transition: transform .25s ease, background .15s ease, color .15s ease;
+
+  .faq-item__trigger:hover & {
+    background: rgba($teal, .1);
+    color: $teal;
+  }
+
+  // Rotation quand ouvert — géré par Bootstrap Collapse via aria-expanded
+  .faq-item__trigger[aria-expanded="true"] & {
+    transform: rotate(45deg);  // + devient ×
+    background: $teal-light;
+    color: $teal;
+  }
+}
+
+// Contenu de la réponse
+.faq-item__answer {
+  padding: 0 1.25rem 1.25rem;
+  font-size: .9375rem;
+  line-height: 1.7;
+  color: rgba($near-black, .7);
+
+  p {
+    margin-bottom: .75rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// ----------------------------------------------------------
+// État "aucun résultat" quand la recherche ne trouve rien
+// ----------------------------------------------------------
+.faq-empty {
+  display: none;  // caché par défaut, affiché via JS
+  text-align: center;
+  padding: 3rem 1rem;
+  color: rgba($near-black, .4);
+
+  i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  p {
+    font-size: 1rem;
+    margin: 0;
+  }
+}
