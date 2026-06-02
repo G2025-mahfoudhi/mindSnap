@@ -1,25 +1,73 @@
-<h2>Sign up</h2>
+<%# ============================================================
+  Page : Inscription (Devise registrations/new)
+  Layout 2 colonnes desktop : carte signup + sidebar illustration.
+  Champs : Prénom, Nom, Email, Mot de passe, Confirmation.
+  Mobile : carte centrée seule.
+  Cf. DECISIONS.md #007 (layout 2 colonnes), #008 (first/last name)
+============================================================ %>
 
-<%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
-  <%= f.error_notification %>
+<div class="auth-wrapper">
+  <%# ============================================================
+    Colonne gauche : carte d'inscription
+  ============================================================ %>
+  <div class="auth-card">
+    <h2 class="auth-card__title">Rejoins MindSnap</h2>
+    <p class="auth-card__subtitle">Crée ton compte en 30 secondes.</p>
 
-  <div class="form-inputs">
-    <%= f.input :email,
-                required: true,
-                autofocus: true,
-                input_html: { autocomplete: "email" }%>
-    <%= f.input :password,
-                required: true,
-                hint: ("#{@minimum_password_length} characters minimum" if @minimum_password_length),
-                input_html: { autocomplete: "new-password" } %>
-    <%= f.input :password_confirmation,
-                required: true,
-                input_html: { autocomplete: "new-password" } %>
+    <%# Formulaire Devise — Simple Form gère le markup Bootstrap %>
+    <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+      <%# Erreurs globales (ex: email déjà pris) %>
+      <%= f.error_notification %>
+
+      <div class="form-inputs">
+        <%# Prénom + Nom sur la même ligne en desktop %>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <%= f.input :first_name,
+                        required: true,
+                        autofocus: true,
+                        label: "Prénom",
+                        input_html: { autocomplete: "given-name" } %>
+          </div>
+          <div class="col-md-6 mb-3">
+            <%= f.input :last_name,
+                        required: true,
+                        label: "Nom",
+                        input_html: { autocomplete: "family-name" } %>
+          </div>
+        </div>
+
+        <%= f.input :email,
+                    required: true,
+                    input_html: { autocomplete: "email" } %>
+
+        <%= f.input :password,
+                    required: true,
+                    hint: ("#{@minimum_password_length} caractères minimum" if @minimum_password_length),
+                    input_html: { autocomplete: "new-password" } %>
+
+        <%= f.input :password_confirmation,
+                    required: true,
+                    label: "Confirmation du mot de passe",
+                    input_html: { autocomplete: "new-password" } %>
+      </div>
+
+      <div class="form-actions mt-3">
+        <%= f.button :submit, "Créer mon compte", class: "btn btn-primary w-100" %>
+      </div>
+    <% end %>
+
+    <%# Lien : déjà un compte ? Se connecter %>
+    <div class="auth-card__footer">
+      <%= render "devise/shared/links" %>
+    </div>
   </div>
 
-  <div class="form-actions">
-    <%= f.button :submit, "Sign up" %>
-  </div>
-<% end %>
-
-<%= render "devise/shared/links" %>
+  <%# ============================================================
+    Colonne droite : illustration + citation (desktop uniquement)
+    Réutilisation de hero-illustration.svg (déjà dans assets/images).
+  ============================================================ %>
+<%= render "devise/shared/auth_sidebar",
+      illustration: "auth-signup",
+      citation: "Capture, organise, retrouve — ton savoir n'a jamais été aussi accessible." %>
+</div>

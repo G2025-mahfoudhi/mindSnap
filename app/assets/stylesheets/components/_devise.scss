@@ -1,0 +1,123 @@
+// ============================================================
+// Composant : Auth (Devise)
+// Styles pour les pages d'authentification Devise.
+//
+// Structure :
+// - .auth-wrapper : conteneur flex 2 colonnes (desktop)
+// - .auth-card     : carte blanche contenant le formulaire
+// - .auth-sidebar  : colonne droite illustration + citation
+//
+// Règles :
+// - Bootstrap natif pour les inputs (pas de surcharge CSS)
+// - Mobile-first : sidebar masquée, carte pleine largeur
+// - Desktop ≥lg  : 2 colonnes avec gap
+//
+// Cf. .opencode/design/DESIGN_SYSTEM.md §8.3 (cartes), §8.8 (auth card)
+// Cf. .opencode/design/DECISIONS.md #007 (layout 2 colonnes), #011 (inputs natifs)
+// ============================================================
+
+// ----------------------------------------------------------
+// Conteneur principal du layout auth.
+// Mobile : stack vertical (carte seule).
+// Desktop (≥lg) : 2 colonnes avec gap 4rem, max-width 960px.
+// ----------------------------------------------------------
+.auth-wrapper {
+  width: 100%;
+  max-width: 960px;
+  padding: 0 1rem;
+
+  @include media-breakpoint-up(lg) {
+    display: flex;
+    align-items: center;
+    gap: 4rem;
+  }
+}
+
+// ----------------------------------------------------------
+// Carte blanche du formulaire.
+// Mobile : 100% width, padding réduit.
+// Desktop : max-width 440px, padding confortable.
+// Ombre subtile cohérente avec les feature cards.
+// ----------------------------------------------------------
+.auth-card {
+  background: $white;
+  border-radius: $border-radius-lg;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, .06);
+  padding: 1.5rem;
+  width: 100%;
+
+  @include media-breakpoint-up(lg) {
+    flex: 0 0 440px;   // flex-grow:0, flex-shrink:0, flex-basis:440px — taille fixe
+    padding: 2.5rem;
+  }
+}
+
+// ----------------------------------------------------------
+// Titre h2 dans la carte auth.
+// Nunito 700, responsive via clamp(), near-black.
+// ----------------------------------------------------------
+.auth-card__title {
+  font-family: $headers-font;
+  font-size: clamp(1.25rem, 3vw, 1.5rem);
+  font-weight: 700;
+  color: $near-black;
+  margin-bottom: .25rem;
+}
+
+// ----------------------------------------------------------
+// Sous-titre dans la carte auth.
+// Work Sans, couleur atténuée rgba(near-black, .55).
+// ----------------------------------------------------------
+.auth-card__subtitle {
+  font-size: .9375rem;
+  color: rgba($near-black, .55);
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+// ----------------------------------------------------------
+// Pied de carte : zone des liens (mot de passe oublié, etc.).
+// Centré, texte small, liens teal avec hover underline.
+// ----------------------------------------------------------
+.auth-card__footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: .875rem;
+  color: rgba($near-black, .55);
+
+  a {
+    color: $teal;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// ----------------------------------------------------------
+// Colonne droite : illustration + citation.
+// Masquée sur mobile (géré par d-none d-lg-flex dans le partial).
+// Prend l'espace restant en flex.
+// ----------------------------------------------------------
+.auth-sidebar {
+  flex: 1 1 auto;  // basis = taille du contenu, puis grow pour remplir l'espace restant
+}
+
+// ----------------------------------------------------------
+// Zone dangereuse dans la page edit profile.
+// Séparateur + label discret + bouton danger outline.
+// ----------------------------------------------------------
+.auth-card__danger-zone {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba($near-black, .08);
+  text-align: center;
+
+  .danger-zone__label {
+    font-size: .8125rem;
+    color: rgba($near-black, .4);
+    margin-bottom: .75rem;
+  }
+}

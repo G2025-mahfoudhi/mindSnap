@@ -1,25 +1,46 @@
+<%# ============================================================
+  Partial : devise/shared/_links
+  Liens de navigation entre les pages Devise
+  (connexion, inscription, mot de passe oublié, etc.).
+
+  Modifications par rapport au template Devise par défaut :
+  - Suppression des balises <p> autour de chaque lien
+    (le padding est géré par .auth-card__footer dans le parent)
+  - Liens en display:block pour un espacement vertical propre
+  - Pas de bouton pour OmniAuth (non utilisé)
+
+  Ce partial est rendu dans .auth-card__footer qui gère
+  le centrage et la taille de police.
+============================================================ %>
+
+<%# Lien vers la connexion (affiché partout sauf sur login) %>
 <%- if controller_name != 'sessions' %>
-  <p><%= link_to "Log in", new_session_path(resource_name) %></p>
+  <%= link_to "Se connecter", new_session_path(resource_name), class: "d-block mb-2" %>
 <% end %>
 
+<%# Lien vers l'inscription (affiché si l'inscription est activée) %>
 <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
-  <p><%= link_to "Sign up", new_registration_path(resource_name) %></p>
+  <%= link_to "Créer un compte", new_registration_path(resource_name), class: "d-block mb-2" %>
 <% end %>
 
+<%# Mot de passe oublié (affiché sur login, pas sur signup ni reset) %>
 <%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
-  <p><%= link_to "Forgot your password?", new_password_path(resource_name) %></p>
+  <%= link_to "Mot de passe oublié ?", new_password_path(resource_name), class: "d-block mb-2" %>
 <% end %>
 
+<%# Renvoyer la confirmation %>
 <%- if devise_mapping.confirmable? && controller_name != 'confirmations' %>
-  <p><%= link_to "Didn't receive confirmation instructions?", new_confirmation_path(resource_name) %></p>
+  <%= link_to "Renvoyer les instructions de confirmation", new_confirmation_path(resource_name), class: "d-block mb-2" %>
 <% end %>
 
+<%# Débloquer le compte %>
 <%- if devise_mapping.lockable? && resource_class.unlock_strategy_enabled?(:email) && controller_name != 'unlocks' %>
-  <p><%= link_to "Didn't receive unlock instructions?", new_unlock_path(resource_name) %></p>
+  <%= link_to "Renvoyer les instructions de déblocage", new_unlock_path(resource_name), class: "d-block mb-2" %>
 <% end %>
 
+<%# OmniAuth — non utilisé pour MindSnap, laissé pour compatibilité %>
 <%- if devise_mapping.omniauthable? %>
   <%- resource_class.omniauth_providers.each do |provider| %>
-    <p><%= button_to "Sign in with #{OmniAuth::Utils.camelize(provider)}", omniauth_authorize_path(resource_name, provider), data: { turbo: false } %></p>
+    <%= button_to "Se connecter avec #{OmniAuth::Utils.camelize(provider)}", omniauth_authorize_path(resource_name, provider), data: { turbo: false }, class: "d-block mb-2" %>
   <% end %>
 <% end %>

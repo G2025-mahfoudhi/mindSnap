@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="500" height="400" fill="none">
   <!-- Brain/neural network illustration -->
   <circle cx="250" cy="200" r="120" stroke="#549695" stroke-width="2" fill="#E8F4F3" opacity="0.8"/>
   <circle cx="220" cy="170" r="15" fill="#549695" opacity="0.6"/>

@@ -1,19 +1,37 @@
-<h2>Resend unlock instructions</h2>
+<%# ============================================================
+  Page : Débloquer le compte (Devise unlocks/new)
+  Layout 2 colonnes desktop : carte + sidebar.
+  Mobile : carte centrée seule.
+============================================================ %>
 
-<%= simple_form_for(resource, as: resource_name, url: unlock_path(resource_name), html: { method: :post }) do |f| %>
-  <%= f.error_notification %>
-  <%= f.full_error :unlock_token %>
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <h2 class="auth-card__title">Débloquer ton compte</h2>
+    <p class="auth-card__subtitle">Trop de tentatives de connexion ? Reçois un lien de déblocage par email.</p>
 
-  <div class="form-inputs">
-    <%= f.input :email,
-                required: true,
-                autofocus: true,
-                input_html: { autocomplete: "email" } %>
+    <%= simple_form_for(resource, as: resource_name, url: unlock_path(resource_name), html: { method: :post }) do |f| %>
+      <%= f.error_notification %>
+      <%= f.full_error :unlock_token %>
+
+      <div class="form-inputs">
+        <%= f.input :email,
+                    required: true,
+                    autofocus: true,
+                    input_html: { autocomplete: "email" } %>
+      </div>
+
+      <div class="form-actions mt-3">
+        <%= f.button :submit, "Renvoyer les instructions", class: "btn btn-primary w-100" %>
+      </div>
+    <% end %>
+
+    <div class="auth-card__footer">
+      <%= render "devise/shared/links" %>
+    </div>
   </div>
 
-  <div class="form-actions">
-    <%= f.button :submit, "Resend unlock instructions" %>
-  </div>
-<% end %>
-
-<%= render "devise/shared/links" %>
+  <%# Colonne droite : illustration "message envoyé" %>
+  <%= render "devise/shared/auth_sidebar",
+        illustration: "auth-message",
+        citation: "Aucun stress, ça arrive. On te renvoie un lien tout de suite." %>
+</div>
