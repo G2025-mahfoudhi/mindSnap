@@ -1,0 +1,53 @@
+.hero {
+  padding: 5rem 0 4rem;
+  background: $white;
+  overflow: hidden;
+
+  @include media-breakpoint-up(lg) {
+    padding: 6rem 0 5rem;
+  }
+}
+
+.hero__tagline {
+  color: $teal;
+  font-weight: 600;
+  font-size: .875rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 1rem;
+}
+
+.hero__title {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+  color: $near-black;
+  margin-bottom: 1.25rem;
+}
+
+.hero__subtitle {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: rgba($near-black, .7);
+  max-width: 480px;
+  margin-bottom: 2rem;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+.hero__illustration {
+  display: none;
+
+  @include media-breakpoint-up(lg) {
+    display: block;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}

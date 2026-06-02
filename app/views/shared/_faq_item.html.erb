@@ -1,0 +1,49 @@
+<%# ============================================================
+  Partial : shared/_faq_item
+  Un item de l'accordéon FAQ : question cliquable + réponse
+  dépliante. Utilise Bootstrap Collapse avec parent pour
+  fermer automatiquement les autres items.
+
+  Locals :
+    - id       [String] : identifiant unique (ex: "q1")
+    - question [String] : texte de la question
+    - answer   [String] : texte de la réponse (HTML autorisé)
+
+  Accessibilité :
+    - aria-expanded sur le bouton
+    - aria-controls lie le bouton au panneau
+    - role="region" sur le panneau de réponse
+============================================================ %>
+
+<div class="faq-item"
+     data-faq-search-target="item"
+     data-faq-search-words-value="<%= question.downcase.gsub(/[^a-z0-9\s]/, '') %>">
+  <%# Identifiants Bootstrap Collapse %>
+  <% heading_id = "faq-heading-#{id}" %>
+  <% collapse_id = "faq-collapse-#{id}" %>
+
+  <%# Bouton question — déclencheur de l'accordéon %>
+  <button class="faq-item__trigger"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#<%= collapse_id %>"
+          aria-expanded="false"
+          aria-controls="<%= collapse_id %>"
+          id="<%= heading_id %>">
+    <span class="faq-item__question"><%= question %></span>
+    <%# Icône + / × — rotation gérée en CSS via aria-expanded %>
+    <span class="faq-item__icon" aria-hidden="true">
+      <i class="fa-solid fa-plus"></i>
+    </span>
+  </button>
+
+  <%# Panneau réponse — Bootstrap Collapse %>
+  <div class="collapse"
+       id="<%= collapse_id %>"
+       aria-labelledby="<%= heading_id %>"
+       data-bs-parent=".faq-accordion">
+    <div class="faq-item__answer">
+      <%= answer.html_safe %>
+    </div>
+  </div>
+</div>

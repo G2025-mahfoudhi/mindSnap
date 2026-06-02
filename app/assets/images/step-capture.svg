@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 160" fill="none">
+  <!-- Camera -->
+  <rect x="50" y="30" width="120" height="90" rx="12" fill="#E8F4F3" stroke="#549695" stroke-width="2"/>
+  <rect x="75" y="15" width="70" height="15" rx="4" fill="#549695" opacity="0.8"/>
+  <circle cx="110" cy="75" r="25" fill="white" stroke="#549695" stroke-width="2.5"/>
+  <circle cx="110" cy="75" r="10" fill="#549695" opacity="0.7"/>
+  <!-- Flash -->
+  <rect x="140" y="45" width="18" height="12" rx="3" fill="#549695" opacity="0.5"/>
+  <!-- Document below camera -->
+  <rect x="35" y="110" width="150" height="40" rx="4" fill="white" stroke="#549695" stroke-width="1.5"/>
+  <line x1="50" y1="122" x2="170" y2="122" stroke="#549695" stroke-width="1" opacity="0.4"/>
+  <line x1="50" y1="132" x2="150" y2="132" stroke="#549695" stroke-width="1" opacity="0.4"/>
+  <line x1="50" y1="142" x2="160" y2="142" stroke="#549695" stroke-width="1" opacity="0.4"/>
+</svg>

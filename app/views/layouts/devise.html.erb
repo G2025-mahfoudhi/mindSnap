@@ -1,0 +1,67 @@
+<%# ============================================================
+  Layout Devise — MindSnap
+  Layout épuré pour toutes les pages d'authentification Devise.
+  Pas de navbar, pas de footer : logo centré + contenu uniquement.
+  Fond warm-gray (#F7F5F4) cohérent avec la homepage.
+
+  Décision : utiliser un layout séparé via layout_by_resource
+  plutôt qu'une condition dans application.html.erb.
+  Cf. .opencode/design/DECISIONS.md #005, #006
+============================================================ %>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "MindSnap" %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="MindSnap">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%# Favicons (identiques au layout principal) %>
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%# Stylesheets (les mêmes fichiers que le layout principal) %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <%# ============================================================
+      Flash messages — réutilise le partial existant shared/_flashes.
+      Position fixed bottom-right, identique au layout principal.
+    ============================================================ %>
+    <%= render "shared/flashes" %>
+
+    <%# ============================================================
+      Conteneur principal :
+      - Fond warm-gray pleine page
+      - Flex column centré verticalement ET horizontalement
+      - Padding vertical pour éviter le collage sur mobile
+      - min-height: 100vh pour occuper tout l'écran
+    ============================================================ %>
+    <main class="d-flex flex-column align-items-center justify-content-center min-vh-100 py-5" style="background-color: #F7F5F4;">
+
+      <%# ============================================================
+        Logo MindSnap — lien vers l'accueil.
+        Centré au-dessus du formulaire, cliquable.
+        Le logo est le seul élément de navigation dans ce layout.
+      ============================================================ %>
+      <%= link_to root_path, class: "text-decoration-none mb-4" do %>
+        <%= image_tag "logo_MindSnap.png", alt: "MindSnap — Retour à l'accueil", width: 40, height: 40, class: "me-2" %>
+        <span class="fw-bold fs-5" style="color: #1A1A1A;">MindSnap</span>
+      <% end %>
+
+      <%# ============================================================
+        Zone de contenu : injecte la vue Devise (login, signup, etc.)
+        La vue est responsable de sa propre structure (carte, grille, etc.)
+      ============================================================ %>
+      <%= yield %>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,79 @@
+<div class="container" >
+<%= simple_form_for document, defaults: { required: false }, html: { data: { controller: "document-type" } } do |f| %>
+  <%= f.error_notification %>
+
+  <div class="mb-3">
+    <%= f.input :title, label: "Titre", placeholder: "Titre du document" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.input :document_type,
+                label: "Type",
+                as: :select,
+                collection: ["Note", "Article", "Lien", "Fichier"],
+                prompt: "Choisir un type",
+                input_html: {
+                  data: {
+                    "document-type-target": "select",
+                    action: "change->document-type#update"
+                  }
+                } %>
+  </div>
+
+  <div class="mb-3" data-controller="folder-select">
+    <label class="form-label">Dossier</label>
+    <select name="document[folder_id]"
+            class="form-select"
+            data-folder-select-target="select"
+            data-action="change->folder-select#toggle">
+      <option value="">Sans dossier</option>
+      <% current_user.folders.each do |folder| %>
+        <% if document.folder_id == folder.id %>
+          <option value="<%= folder.id %>" selected><%= folder.name %></option>
+        <% else %>
+          <option value="<%= folder.id %>"><%= folder.name %></option>
+        <% end %>
+      <% end %>
+      <option value="new">+ Créer un nouveau dossier...</option>
+    </select>
+
+    <div data-folder-select-target="newFolderField" hidden class="mt-2">
+      <input type="text"
+             name="new_folder_name"
+             class="form-control"
+             placeholder="Nom du nouveau dossier"
+             autocomplete="off">
+    </div>
+  </div>
+
+  <%# Affiché pour Article et Fichier %>
+  <div class="mb-3" data-document-type-target="fileField" hidden>
+    <%= f.input :file, label: "Fichiers", as: :file, input_html: { multiple: true } %>
+    <% if document.file.attached? %>
+      <ul class="mt-1 list-unstyled text-muted small">
+        <% document.file.each do |attachment| %>
+          <li><%= attachment.filename %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+
+  <%# Affiché pour Lien %>
+  <div class="mb-3" data-document-type-target="urlField" hidden>
+    <%= f.input :content,
+                label: "URL",
+                placeholder: "https://...",
+                input_html: { type: "url", autocomplete: "off" } %>
+  </div>
+
+  <%# Contenu auto-généré après sauvegarde — masqué dans le formulaire %>
+  <div class="mb-3" hidden>
+    <%= f.input :content, label: "Contenu", as: :text, input_html: { rows: 8, placeholder: "Contenu du document..." } %>
+  </div>
+
+  <div class="d-flex gap-2">
+    <%= f.button :submit, class: "btn btn-primary" %>
+    <%= link_to "Annuler", documents_path, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>
+</div>
