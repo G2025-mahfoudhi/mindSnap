@@ -1,0 +1,86 @@
+<div class="folder-show-page">
+  <%= link_to folders_path, class: "back-link" do %>
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Tous les dossiers
+  <% end %>
+
+  <div class="show-header">
+    <div class="show-header-left">
+      <span class="show-header-icon">📂</span>
+      <div>
+        <h1 class="show-title"><%= @folder.name %></h1>
+        <% if @folder.description.present? %>
+          <p class="show-desc"><%= @folder.description %></p>
+        <% else %>
+          <p class="show-desc" style="font-style:italic;">Aucune description</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="show-actions">
+      <%= link_to new_folder_path(parent_id: @folder.id), class: "btn-action btn-subfolder" do %>
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Sous-dossier
+      <% end %>
+
+<%= link_to folder_path(@folder),
+            method: :delete,
+            data: { turbo_method: :delete, turbo_confirm: "Supprimer ce dossier ?" },
+            class: "btn-action btn-delete" do %>
+        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        Supprimer
+      <% end %>
+    </div>
+  </div>
+
+  <hr class="show-divider">
+
+  <%# ——— SOUS-DOSSIERS ——— %>
+  <div class="section-block">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span>📂</span> Sous-dossiers
+      </h2>
+      <span class="section-count"><%= @children.count %></span>
+    </div>
+
+    <% if @children.any? %>
+      <div class="item-grid">
+        <% @children.each do |child| %>
+          <%= link_to folder_path(child), class: "subfolder-card" do %>
+            <span class="subfolder-card-icon">📁</span>
+            <div class="subfolder-card-name"><%= child.name %></div>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="empty-block">Aucun sous-dossier</div>
+    <% end %>
+  </div>
+
+  <%# ——— DOCUMENTS ——— %>
+  <div class="section-block">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span>📄</span> Documents
+      </h2>
+      <span class="section-count"><%= @documents.count %></span>
+    </div>
+
+    <% if @documents.any? %>
+      <div class="doc-list">
+        <% @documents.each do |doc| %>
+          <div class="doc-item">
+            <span class="doc-item-icon">📄</span>
+            <span class="doc-item-title"><%= doc.title %></span>
+            <% if doc.respond_to?(:doc_type) && doc.doc_type.present? %>
+              <span class="doc-item-type"><%= doc.doc_type %></span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="empty-block">Aucun document dans ce dossier</div>
+    <% end %>
+  </div>
+</div>
