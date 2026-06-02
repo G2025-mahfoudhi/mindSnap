@@ -1,15 +1,16 @@
 class Folder < ApplicationRecord
   belongs_to :user
-  belongs_to :parent
-
-  has_many :documents, dependent: :destroy
-
   belongs_to :parent,
-             class_name: 'Folder',
+             class_name: "Folder",
+             foreign_key: "folder_id",
              optional: true
 
   has_many :children,
-           class_name: 'Folder',
-           foreign_key: 'parent_id',
+           class_name: "Folder",
+           foreign_key: "folder_id",
            dependent: :destroy
+
+  has_many :documents, dependent: :destroy
+
+  validates :name, presence: true
 end

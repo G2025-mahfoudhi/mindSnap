@@ -1,0 +1,17 @@
+import { Controller } from "@hotwired/stimulus"
+
+const FILE_TYPES = ["Article", "Fichier"]
+
+export default class extends Controller {
+  static targets = ["select", "fileField", "urlField"]
+
+  connect() {
+    this.update()
+  }
+
+  update() {
+    const type = this.selectTarget.value
+    this.fileFieldTarget.hidden = !FILE_TYPES.includes(type)
+    this.urlFieldTarget.hidden = type !== "Lien"
+  }
+}
