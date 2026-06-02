@@ -4,13 +4,13 @@ class ConversationsController < ApplicationController
   end
 
   def create
-    @conversation = Conversation.new(conversation_params)
-    @conversation.user = current_user
-
+    @conversation = current_user.conversations.build(
+      name: params.dig(:conversation, :name).presence || "Conversation du #{Time.current.strftime('%d/%m à %H:%M')}"
+    )
     if @conversation.save
       redirect_to conversation_path(@conversation)
     else
-      render :new, status: :unprocessable_entity
+      redirect_to conversations_path, alert: "Impossible de créer la conversation."
     end
   end
 
