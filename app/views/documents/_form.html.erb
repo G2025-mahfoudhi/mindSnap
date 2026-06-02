@@ -66,8 +66,8 @@
                 input_html: { type: "url", autocomplete: "off" } %>
   </div>
 
-  <%# cette div doit se générer automatiquement si le document est sauvegardé %>
-  <div class=" mb-3">
+  <%# Contenu auto-généré après sauvegarde — masqué dans le formulaire %>
+  <div class="mb-3" hidden>
     <%= f.input :content, label: "Contenu", as: :text, input_html: { rows: 8, placeholder: "Contenu du document..." } %>
   </div>
 

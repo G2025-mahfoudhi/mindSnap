@@ -1,5 +1,5 @@
 class DocumentsController < ApplicationController
-  before_action :set_document, only: %I[show edit update destroy]
+  before_action :set_document, only: %i[show edit update destroy]
 
   def index
     @documents = current_user.documents
