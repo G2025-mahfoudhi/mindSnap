@@ -22,12 +22,18 @@
         </li>
         <% if user_signed_in? %>
           <li class="nav-item">
-            <%= link_to "Mon espace", "#", class: "nav-link" %>
+            <%= link_to "Mon espace", espaces_path, class: "nav-link" %>
           </li>
           <li class="nav-item dropdown">
-            <a href="#" class="avatar" id="navbarDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <%= image_tag "https://ui-avatars.com/api/?name=User&background=549695&color=fff&size=40", class: "avatar rounded-circle", alt: "Mon compte", width: 36, height: 36 %>
-            </a>
+            <button class="btn p-0 border-0 rounded-circle d-flex align-items-center justify-content-center fw-semibold text-white"
+                    id="navbarDropdown"
+                    data-bs-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    aria-label="Mon compte"
+                    style="width: 36px; height: 36px; background-color: #549695; font-size: 13px;">
+              <%= current_user.first_name&.first&.upcase || "?" %><%= current_user.last_name&.first&.upcase %>
+            </button>
             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
               <%= link_to "Paramètres", edit_user_registration_path, class: "dropdown-item" %>
               <div class="dropdown-divider"></div>
