@@ -6,11 +6,10 @@ class User < ApplicationRecord
 
   has_many :documents, dependent: :destroy
   has_many :folders, dependent: :destroy
-  has many :conversations, dependent: :destroy
-  has many :messages, through: :conversations
+  has_many :conversations, dependent: :destroy
+  has_many :messages, through: :conversations
 
-  validates :first_name, presence: true
-  validates :last_name, presence: true
+  # validates :first_name, presence: true
+  # validates :last_name, presence: true
   validates :email, uniqueness: { scope: :password }
-
 end

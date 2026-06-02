@@ -1,0 +1,7 @@
+<%= turbo_stream.replace "conversation_header" do %>
+  <%= render partial: "conversations/header", locals: { conversation: @conversation } %>
+<% end %>
+
+<%= turbo_stream.update "conversation-name-#{@conversation.id}" do %>
+  <%= @conversation.name %>
+<% end %>

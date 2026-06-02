@@ -14,6 +14,18 @@ class ConversationsController < ApplicationController
     end
   end
 
+  def show
+    @conversation = current_user.conversations.find(params[:id])
+    @messages = @conversation.messages.order(:created_at)
+    @message  = Message.new
+  end
+
+  def destroy
+    @conversation = current_user.conversations.find(params[:id])
+    @conversation.destroy
+    redirect_to conversations_path, notice: "Conversation supprimée.", status: :see_other
+  end
+
   private
 
   def conversation_params
