@@ -2,13 +2,12 @@
 
 > **Date** : 2026-06-03
 > **Stack** : Rails 8.1.3 / Ruby 3.3.5 / PostgreSQL + pgvector / Hotwire / Bootstrap 5.3
-> **LLM** : OpenRouter (`deepseek/deepseek-v4-flash`)
+> **LLM** : OpenRouter via `OpenRouterService` (Faraday) — `deepseek/deepseek-v4-flash`
 > **Embeddings** : OpenRouter (`qwen/qwen3-embedding-8b` — 4096 dimensions)
 > **TTS** : OpenRouter (`hexgrad/kokoro-82m`, voix `ff_siwis`)
 > **STT** : OpenRouter (`openai/whisper-large-v3-turbo`)
-> **Jobs** : Solid Queue (plugin Puma, single dyno Basic $7/mois)
-> **Hébergement** : Heroku Basic ($7) + Postgres Essential-0 ($5) = **$12/mois**
-> **Budget crédits étudiants** : $13/mois → marge $1 pour APIs
+> **Jobs** : Solid Queue (plugin Puma)
+> **Hébergement** : Heroku (géré séparément, hors scope de ce plan)
 
 ---
 
@@ -20,7 +19,7 @@
 4. [Phase 2 — RAG (le cœur)](#phase-2--rag-le-cœur)
 5. [Phase 3 — Scraping + Enrichissement](#phase-3--scraping--enrichissement)
 6. [Phase 4 — Chat contextuel + Recherche sémantique](#phase-4--chat-contextuel--recherche-sémantique)
-7. [Phase 5 — Voice (STT/TTS) + Déploiement](#phase-5--voice-stttts--déploiement)
+7. [Phase 5 — Voice (STT/TTS)](#phase-5--voice-stttts)
 8. [Récapitulatif — Tous les fichiers](#récapitulatif--tous-les-fichiers)
 
 ---
@@ -28,18 +27,17 @@
 ## Architecture cible
 
 ```
-Heroku Basic dyno ($7/mois) ─ toujours allumé, 512 MB RAM
 ┌─────────────────────────────────────────────────┐
 │  Puma + Solid Queue (plugin Puma, même process)  │
 │                                                   │
 │  ┌──────────┐  ┌──────────┐  ┌───────────────┐  │
 │  │Controllers│  │  Jobs    │  │  Services     │  │
 │  │           │  │          │  │               │  │
-│  │ Messages  │  │ EmbedDoc │  │ RagService    │  │
-│  │ TTS / STT │  │ ScrapeLk │  │ ChunkingSvc   │  │
-│  │ Search    │  │ Summarize│  │ EmbeddingSvc  │  │
-│  │ FolderChat│  │ TagDoc   │  │ ScrapingSvc   │  │
-│  └──────────┘  │ SynthSpch│  │ LlmTools      │  │
+│  │ Messages  │  │ EmbedDoc │  │ OpenRouterSvc │  │
+│  │ TTS / STT │  │ ScrapeLk │  │ RagService    │  │
+│  │ Search    │  │ Summarize│  │ ChunkingSvc   │  │
+│  │ FolderChat│  │ TagDoc   │  │ EmbeddingSvc  │  │
+│  └──────────┘  │ SynthSpch│  │ ScrapingSvc   │  │
 │                 └──────────┘  └───────────────┘  │
 │                       │                           │
 └───────────────────────┼───────────────────────────┘
@@ -49,8 +47,7 @@ Heroku Basic dyno ($7/mois) ─ toujours allumé, 512 MB RAM
    ┌─────────┐   ┌──────────┐   ┌─────────────┐
    │ PG      │   │ OpenRouter│   │ Cloudinary  │
    │ +vector │   │ LLM/Emb  │   │ fichiers    │
-   │ $5/mois │   │ TTS/STT   │   │ gratuit tier│
-   │ 1 GB    │   │           │   │             │
+   │         │   │ TTS/STT   │   │             │
    └─────────┘   └──────────┘   └─────────────┘
 ```
 
@@ -65,7 +62,7 @@ Phase 1 ──► Phase 2 ──► Phase 3
                 (chat contextuel + recherche)
 
 Phase 1 ──► Phase 5
-              (voice + déploiement)
+              (voice STT/TTS)
 ```
 
 Phase 5 peut démarrer **dès que Phase 1 est terminée** (chat UI fonctionnel).
@@ -92,21 +89,11 @@ bundle install
 ### Variables d'environnement
 
 ```bash
-# .env (développement)
-OPENROUTER_API_KEY=sk-or-v1-...
+# .env — ajouter si absent
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-CLOUDINARY_URL=cloudinary://...
 ```
 
-### Configuration RubyLLM → OpenRouter
-
-```ruby
-# config/initializers/ruby_llm.rb
-RubyLLM.configure do |config|
-  config.openai_api_base = ENV["OPENROUTER_BASE_URL"]
-  config.openai_api_key = ENV["OPENROUTER_API_KEY"]
-end
-```
+> `OPENROUTER_API_KEY` et `CLOUDINARY_URL` sont déjà dans `.env`.
 
 ### Mission Control Jobs
 
@@ -305,114 +292,39 @@ def embed_async
 end
 ```
 
-### 1.7 UI Chat — partial manquant
+### 1.7 UI Chat — messages (DÉJÀ EXISTANT, à modifier)
+
+> **Note** : `app/views/messages/_message.html.erb` et `create.turbo_stream.erb` existent déjà (créés par PR messages). On les modifie pour ajouter le bouton TTS.
 
 ```erb
-<!-- app/views/messages/_message.html.erb -->
-<div class="message <%= message.role == 'user' ? 'message--user' : 'message--assistant' %> mb-3"
-     data-role="<%= message.role %>">
-  <div class="d-flex align-items-start gap-2">
-    <div class="message__avatar pt-1">
-      <% if message.role == "user" %>
-        <i class="fa-solid fa-user text-teal"></i>
-      <% else %>
-        <i class="fa-solid fa-robot text-teal"></i>
-      <% end %>
-    </div>
-    <div class="message__body flex-grow-1">
-      <div class="message__text">
-        <%= simple_format(message.content) %>
-      </div>
-      <div class="d-flex align-items-center gap-2 mt-1">
-        <small class="text-muted"><%= time_ago_in_words(message.created_at) %></small>
-        <% if message.role == "assistant" %>
-          <button type="button"
-                  data-action="click->voice#speak"
-                  data-voice-text-param="<%= message.content %>"
-                  class="btn btn-sm btn-link p-0"
-                  aria-label="Lire la réponse à voix haute">
-            <i class="fa-solid fa-volume-high"></i>
-          </button>
-        <% end %>
-      </div>
-    </div>
-  </div>
-</div>
-```
-
-```erb
-<!-- app/views/messages/create.turbo_stream.erb -->
-<%= turbo_stream.append "messages" do %>
-  <%= render @user_message %>
-  <%= render @ai_message %>
-<% end %>
-
-<%= turbo_stream.replace "new_message_form" do %>
-  <%= render "messages/form", conversation: @conversation, message: Message.new %>
+<!-- app/views/messages/_message.html.erb — AJOUTER après le <small> -->
+<% if message.role == "assistant" %>
+  <button type="button"
+          data-action="click->voice#speak"
+          data-voice-text-param="<%= message.content %>"
+          class="btn btn-sm btn-link p-0 ms-2"
+          aria-label="Lire la réponse à voix haute">
+    <i class="fa-solid fa-volume-high"></i>
+  </button>
 <% end %>
 ```
 
 ```erb
-<!-- app/views/messages/_form.html.erb (extraire le form de show) -->
-<%= simple_form_for [conversation, message],
-      html: {
-        data: {
-          controller: "voice",
-          action: "turbo:submit-end->voice#clearInput"
-        }
-      } do |f| %>
-  <div class="input-group">
-    <%= f.input :content,
-          label: false,
-          placeholder: "Écris ton message...",
-          input_html: {
-            data: { voice_target: "input" },
-            rows: 2,
-            class: "form-control",
-            autofocus: true
-          } %>
-    <button type="button"
-            data-action="voice#startRecording"
-            class="btn btn-outline-secondary"
-            aria-label="Dicter un message">
-      <i class="fa-solid fa-microphone"></i>
-    </button>
-    <%= f.button :submit, "Envoyer", class: "btn btn-primary" %>
-  </div>
-<% end %>
+<!-- app/views/messages/create.turbo_stream.erb — EXISTANT, PAS DE MODIF -->
 ```
 
-### 1.8 Correction conversations/show.html.erb
+### 1.8 conversations/show.html.erb — ajouter form + voice
+
+> **Note** : La vue existante (sidebar + header + chat-scroll + textarea-autoresize) est plus aboutie que la version simplifiée du plan initial. On la **garde telle quelle** et on y ajoute juste le `data-controller="voice"` sur le formulaire existant.
 
 ```erb
-<!-- app/views/conversations/show.html.erb -->
-<main class="d-flex flex-column" style="min-height: calc(100vh - 70px); padding-top: 70px;">
-  <!-- Zone messages scrollable -->
-  <div class="flex-grow-1 overflow-auto px-3 py-4"
-       style="max-width: 800px; margin: 0 auto; width: 100%;">
-    <div id="messages" role="log" aria-label="Historique des messages" aria-live="polite">
-      <% if @messages&.any? %>
-        <%= render @messages %>
-      <% else %>
-        <div class="text-center text-muted py-5">
-          <i class="fa-solid fa-comments fa-3x mb-3 d-block"></i>
-          <p>Pose ta première question à MindSnap.</p>
-          <p class="small">L'IA répond en s'appuyant sur tes documents.</p>
-        </div>
-      <% end %>
-    </div>
-  </div>
-
-  <!-- Barre de saisie fixée en bas -->
-  <div class="border-top bg-white p-3">
-    <div style="max-width: 800px; margin: 0 auto;">
-      <%= turbo_frame_tag "new_message_form" do %>
-        <%= render "messages/form", conversation: @conversation, message: Message.new %>
-      <% end %>
-    </div>
-  </div>
-</main>
+<!-- app/views/conversations/show.html.erb — MODIFIER le formulaire existant -->
+<!-- Ajouter data: { controller: "voice", action: "turbo:submit-end->voice#clearInput" } -->
+<!-- Ajouter le bouton micro dans l'input-group existant -->
+<!-- Ajouter data-voice-target="input" sur le textarea -->
 ```
+
+Le formulaire reste inline dans `show.html.erb` (pas de partial `_form.html.erb` séparé).
 
 ### Phase 1 — Checklist
 
@@ -424,10 +336,8 @@ end
 - [ ] `EmbeddingService` appel OpenRouter `qwen3-embedding-8b`
 - [ ] `EmbedDocumentJob` (Solid Queue, queue `:ai`)
 - [ ] `after_commit :embed_async` sur Document
-- [ ] `app/views/messages/_message.html.erb`
-- [ ] `app/views/messages/_form.html.erb`
-- [ ] `app/views/messages/create.turbo_stream.erb`
-- [ ] Correction `conversations/show.html.erb`
+- [ ] Ajout bouton TTS dans `_message.html.erb` existant
+- [ ] Ajout `data-controller="voice"` + bouton micro dans `conversations/show.html.erb`
 - [ ] `rails db:migrate` passe
 - [ ] `rails test` passe (vérifier non-régression)
 
@@ -482,34 +392,28 @@ class RagService
 end
 ```
 
-### 2.2 MessagesController — RAG intégré
+### 2.2 OpenRouterService — enrichir avec RAG
+
+> **Note** : Le `OpenRouterService` existe déjà (`app/services/open_router_service.rb`, 85 lignes, Faraday). On le **modifie** pour injecter le contexte RAG plutôt que de créer un nouveau service.
 
 ```ruby
-# app/controllers/messages_controller.rb — méthode call_llm modifiée
+# app/services/open_router_service.rb — MODIFIER la méthode #call
 
-def call_llm
+def call
   # 1. Recherche RAG
-  rag = RagService.new(current_user)
+  rag = RagService.new(@user)
   folder_id = @conversation.context_id if @conversation.context_type == "Folder"
   chunks = rag.search(@user_message.content, folder_id: folder_id, limit: 5)
   context = rag.format_context(chunks)
 
-  # 2. Appel LLM avec contexte
-  llm = RubyLLM.chat(model: @conversation.model || "deepseek/deepseek-v4-flash")
-  llm.with_instructions(build_system_prompt(context))
+  # 2. Construire le prompt système enrichi
+  system_prompt = build_system_prompt_with_context(context)
 
-  # 3. Injecter l'historique de conversation (max 15 derniers messages)
-  previous = @conversation.messages
-    .where(role: %w[user assistant])
-    .where.not(id: @user_message.id)
-    .order(:created_at)
-    .last(15)
-  previous.each { |m| llm.add_message(role: m.role.to_sym, content: m.content) }
-
-  llm.ask(@user_message.content).content
+  # 3. Appel OpenRouter (code existant + prompt enrichi)
+  # ... le reste du code existant de OpenRouterService#call ...
 end
 
-def build_system_prompt(context)
+def build_system_prompt_with_context(context)
   <<~PROMPT
     Tu es MindSnap, un assistant de gestion de connaissances personnelles.
     Tu aides l'utilisateur à retrouver, comprendre et connecter ses documents.
@@ -526,6 +430,8 @@ def build_system_prompt(context)
   PROMPT
 end
 ```
+
+> **⚠️ Important** : Lire d'abord le `OpenRouterService` existant pour comprendre sa structure avant de le modifier. Le service actuel a déjà un `API_URL`, un `system_prompt`, une logique de fallback — on enrichit, on ne casse rien.
 
 ### 2.3 Test manuel RAG
 
@@ -556,11 +462,13 @@ chunks.map { |c| c.document.title }
 ### Phase 2 — Checklist
 
 - [ ] `RagService` avec `search` (vector cosine) et `format_context`
-- [ ] `MessagesController#call_llm` modifié → appel RAG avant LLM
-- [ ] `MessagesController#build_system_prompt` avec contexte documentaire
+- [ ] **Lire** `OpenRouterService` existant avant de le modifier
+- [ ] Modifier `OpenRouterService#call` → appel RAG avant LLM
+- [ ] Ajouter `build_system_prompt_with_context` dans OpenRouterService
 - [ ] Scope folder dans RagService (préparé pour Phase 4)
 - [ ] Test manuel : créer doc → poser question → réponse cite le document
 - [ ] Gestion cas "aucun document trouvé"
+- [ ] Vérifier que le fallback multi-modèles fonctionne toujours
 
 ---
 
@@ -712,9 +620,7 @@ class SummarizeDocumentJob < ApplicationJob
     document = Document.find(document_id)
     return if document.content.blank?
 
-    llm = RubyLLM.chat(model: "deepseek/deepseek-v4-flash")
-    summary = llm.ask(build_prompt(document.content)).content
-
+    summary = LlmCallService.oneshot(build_prompt(document.content))
     document.update!(summary: summary&.strip)
   rescue StandardError => e
     Rails.logger.error "SummarizeDocumentJob échec doc #{document_id}: #{e.message}"
@@ -735,6 +641,32 @@ class SummarizeDocumentJob < ApplicationJob
 end
 ```
 
+> **Note** : `LlmCallService.oneshot(prompt)` est un nouveau service utilitaire qui appelle OpenRouter en one-shot (pas d'historique). Code ci-dessous.
+
+```ruby
+# app/services/llm_call_service.rb (NOUVEAU — ajouté en Phase 3)
+class LlmCallService
+  def self.oneshot(prompt, model: "deepseek/deepseek-v4-flash")
+    uri = URI("#{ENV['OPENROUTER_BASE_URL'] || 'https://openrouter.ai/api/v1'}/chat/completions")
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    http.read_timeout = 30
+
+    request = Net::HTTP::Post.new(uri)
+    request["Authorization"] = "Bearer #{ENV['OPENROUTER_API_KEY']}"
+    request["Content-Type"] = "application/json"
+    request.body = {
+      model: model,
+      messages: [{ role: "user", content: prompt }]
+    }.to_json
+
+    response = http.request(request)
+    body = JSON.parse(response.body)
+    body.dig("choices", 0, "message", "content")
+  end
+end
+```
+
 ### 3.6 Job tags
 
 ```ruby
@@ -748,8 +680,7 @@ class TagDocumentJob < ApplicationJob
     document = Document.find(document_id)
     return if document.content.blank?
 
-    llm = RubyLLM.chat(model: "deepseek/deepseek-v4-flash")
-    response = llm.ask(build_prompt(document.content)).content
+    response = LlmCallService.oneshot(build_prompt(document.content))
 
     tag_names = response
       .split(",")
@@ -910,11 +841,11 @@ end
 </div>
 ```
 
-### 4.5 MessagesController — adaptation scope folder
+### 4.5 OpenRouterService — adaptation scope folder
 
 ```ruby
-# app/controllers/messages_controller.rb — call_llm déjà géré en Phase 2
-# La détection du folder_id est intégrée dans call_llm :
+# app/services/open_router_service.rb — la détection est déjà faite en Phase 2
+# dans la méthode #call modifiée :
 
 folder_id = @conversation.context_id if @conversation.context_type == "Folder"
 chunks = rag.search(@user_message.content, folder_id: folder_id, limit: 5)
@@ -1019,12 +950,12 @@ end
 
 ---
 
-## Phase 5 — Voice (STT/TTS) + Déploiement
+## Phase 5 — Voice (STT/TTS)
 
-**Objectif** : Chat vocal complet. Déploiement Heroku production.
-**Durée estimée** : 4-5h
+**Objectif** : Chat vocal complet : dicter un message et écouter la réponse.
+**Durée estimée** : 3-4h
 **Dépendances** : Phase 1 (chat UI fonctionnel)
-**Valeur livrée** : On peut dicter un message et écouter la réponse. App en production.
+**Valeur livrée** : On peut dicter un message et écouter la réponse.
 
 ### 5.1 Routes voice
 
@@ -1255,98 +1186,14 @@ export default class extends Controller {
 }
 ```
 
-### 5.5 Déploiement Heroku
-
-```procfile
-# Procfile
-web: bundle exec rails server -p $PORT
-```
-
-```ruby
-# config/puma.rb — ajout en fin de fichier
-plugin :solid_queue
-```
-
-```yaml
-# config/queue.yml — création si absent
-production:
-  workers:
-    - queues: [ default, ai, mailers ]
-      threads: 2
-      polling_interval: 2
-```
-
-```yaml
-# config/storage.yml — ajout production
-production:
-  service: Cloudinary
-```
-
-```ruby
-# config/environments/production.rb — vérifier
-config.active_storage.service = :cloudinary
-config.action_mailer.default_url_options = { host: "mindsnap.herokuapp.com" }
-config.force_ssl = true
-```
-
-### Commandes de déploiement
-
-```bash
-# Créer l'app
-heroku create mindsnap --region eu
-
-# Addons
-heroku addons:create heroku-postgresql:essential-0 --app mindsnap
-# Cloudinary via addon ou variable d'env
-
-# Variables d'environnement
-heroku config:set OPENROUTER_API_KEY=sk-or-v1-... --app mindsnap
-heroku config:set OPENROUTER_BASE_URL=https://openrouter.ai/api/v1 --app mindsnap
-heroku config:set CLOUDINARY_URL=cloudinary://... --app mindsnap
-heroku config:set RAILS_MASTER_KEY=$(cat config/credentials/production.key) --app mindsnap
-
-# Déployer
-git push heroku master
-
-# Base de données
-heroku run rails db:migrate --app mindsnap
-heroku run rails db:schema:load --app mindsnap
-
-# Activer pgvector (une seule fois)
-heroku run rails runner \
-  "ActiveRecord::Base.connection.execute('CREATE EXTENSION IF NOT EXISTS vector')" \
-  --app mindsnap
-
-# Ouvrir
-heroku open --app mindsnap
-```
-
-### 5.6 Vérifications post-déploiement
-
-```bash
-# Vérifier que pgvector est bien activé
-heroku run rails runner "puts ActiveRecord::Base.connection.execute('SELECT * FROM pg_extension WHERE extname = \'vector\'').to_a"
-
-# Vérifier les jobs
-heroku run rails runner "puts SolidQueue::Job.count"
-heroku open /jobs  # Mission Control (si configuré en dev uniquement)
-```
-
 ### Phase 5 — Checklist
 
 - [ ] Routes `tts/speak` + `transcribe`
 - [ ] `TtsController#speak` — proxy Kokoro → audio/mpeg
 - [ ] `TranscriptionsController#create` — proxy Whisper → JSON { text }
 - [ ] `voice_controller.js` Stimulus (enregistrement + lecture)
-- [ ] Boutons micro + haut-parleur dans le chat (Phase 1 déjà codé)
-- [ ] `Procfile` avec `web` uniquement (Solid Queue en plugin Puma)
-- [ ] `config/puma.rb` → `plugin :solid_queue`
-- [ ] `config/queue.yml` → config production
-- [ ] `config/storage.yml` → Cloudinary production
-- [ ] `config/environments/production.rb` → host, SSL
-- [ ] Déploiement → `heroku create` + `git push heroku master`
-- [ ] Activation pgvector → `CREATE EXTENSION IF NOT EXISTS vector`
-- [ ] Test end-to-end : signup → créer doc → chat RAG → STT → TTS
+- [ ] Boutons micro + haut-parleur dans le chat (Phase 1 déjà préparé)
+- [ ] Test: enregistrer un message vocal → transcription → envoi → réponse → TTS
 
 ---
 
@@ -1369,43 +1216,52 @@ heroku open /jobs  # Mission Control (si configuré en dev uniquement)
 | 11 | `app/services/embedding_service.rb` | 1 |
 | 12 | `app/services/rag_service.rb` | 2 |
 | 13 | `app/services/scraping_service.rb` | 3 |
-| 14 | `app/jobs/embed_document_job.rb` | 1 |
-| 15 | `app/jobs/scrape_link_job.rb` | 3 |
-| 16 | `app/jobs/summarize_document_job.rb` | 3 |
-| 17 | `app/jobs/tag_document_job.rb` | 3 |
-| 18 | `app/controllers/searches_controller.rb` | 4 |
-| 19 | `app/controllers/tts_controller.rb` | 5 |
-| 20 | `app/controllers/transcriptions_controller.rb` | 5 |
-| 21 | `app/views/messages/_message.html.erb` | 1 |
-| 22 | `app/views/messages/_form.html.erb` | 1 |
-| 23 | `app/views/messages/create.turbo_stream.erb` | 1 |
-| 24 | `app/views/searches/index.html.erb` | 4 |
-| 25 | `app/javascript/controllers/voice_controller.js` | 5 |
-| 26 | `config/queue.yml` | 5 |
-| 27 | `config/initializers/ruby_llm.rb` | Préreq |
+| 14 | `app/services/llm_call_service.rb` | 3 |
+| 15 | `app/jobs/embed_document_job.rb` | 1 |
+| 16 | `app/jobs/scrape_link_job.rb` | 3 |
+| 17 | `app/jobs/summarize_document_job.rb` | 3 |
+| 18 | `app/jobs/tag_document_job.rb` | 3 |
+| 19 | `app/controllers/searches_controller.rb` | 4 |
+| 20 | `app/controllers/tts_controller.rb` | 5 |
+| 21 | `app/controllers/transcriptions_controller.rb` | 5 |
+| 22 | `app/views/searches/index.html.erb` | 4 |
+| 23 | `app/javascript/controllers/voice_controller.js` | 5 |
 
-### Fichiers modifiés (11)
+### Fichiers modifiés (13)
 
-| # | Fichier | Phase |
-|---|---------|:-----:|
-| 1 | `Gemfile` (+ neighbor, mission_control-jobs, tokenizers) | Préreq |
-| 2 | `app/models/document.rb` (+ callbacks, relations chunks/tags) | 1, 3 |
-| 3 | `app/models/conversation.rb` (+ context polymorphic, model) | 4 |
-| 4 | `app/controllers/messages_controller.rb` (+ RAG, scope folder) | 2 |
-| 5 | `app/controllers/folders_controller.rb` (+ action chat) | 4 |
-| 6 | `app/views/conversations/show.html.erb` (refonte complète) | 1 |
-| 7 | `app/views/folders/show.html.erb` (+ bouton chat) | 4 |
-| 8 | `app/views/shared/_document_card.html.erb` (+ summary, tags, scraping) | 3 |
-| 9 | `app/views/shared/_navbar.html.erb` (+ lien recherche) | 4 |
-| 10 | `config/routes.rb` (+ search, tts, transcribe, folder chat) | 2, 4, 5 |
-| 11 | `config/puma.rb` (+ plugin :solid_queue) | 5 |
+| # | Fichier | Phase | Action |
+|---|---------|:-----:|--------|
+| 1 | `Gemfile` | Préreq | + neighbor, mission_control-jobs |
+| 2 | `app/models/document.rb` | 1, 3 | + callbacks, relations chunks/tags |
+| 3 | `app/models/conversation.rb` | 4 | + context polymorphic, model |
+| 4 | `app/services/open_router_service.rb` | 2 | + appel RAG, prompt enrichi |
+| 5 | `app/controllers/folders_controller.rb` | 4 | + action chat |
+| 6 | `app/views/messages/_message.html.erb` | 1 | + bouton TTS |
+| 7 | `app/views/conversations/show.html.erb` | 1 | + data-controller voice, bouton micro |
+| 8 | `app/views/folders/show.html.erb` | 4 | + bouton "Discuter avec ce dossier" |
+| 9 | `app/views/shared/_document_card.html.erb` | 3 | + summary, tags, badge scraping |
+| 10 | `app/views/shared/_navbar.html.erb` | 4 | + lien Recherche |
+| 11 | `config/routes.rb` | 2, 4, 5 | + search, tts, transcribe, folder chat |
+| 12 | `config/puma.rb` | 5 | SOLID_QUEUE_IN_PUMA=1 (déjà présent, à vérifier) |
+| 13 | `.env` | Préreq | + OPENROUTER_BASE_URL (si absent) |
+
+### Fichiers déjà existants — NON modifiés
+
+| Fichier | Statut |
+|---------|--------|
+| `app/views/messages/create.turbo_stream.erb` | ✅ Existant, pas de modif nécessaire |
+| `app/controllers/messages_controller.rb` | ✅ Existant, pas de modif nécessaire (RAG dans OpenRouterService) |
+| `config/queue.yml` | ✅ Déjà existant (`queues: "*"`), ajouter queue `:ai` si nécessaire |
 
 ---
 
 ## Notes
 
 - **Les phases sont indépendantes** : Phase 5 peut démarrer après Phase 1. Phases 3-4 peuvent se faire en parallèle après Phase 2.
-- **Coûts API estimés** : ~$1-2/mois pour usage étudiant (quelques centaines de messages + embeddings + TTS/STT). Rester sous les $13 de crédit Heroku.
-- **Limite 1 GB disque Postgres** : surveiller la taille des embeddings (16 KB/vecteur → ~60K vecteurs max). Pour la démo, c'est amplement suffisant.
-- **Solid Queue plugin Puma** : les jobs tournent dans le même process que le serveur web. Pas idéal en production lourde mais parfait pour le budget contraint.
-- **Améliorations futures** : reranker cross-encoder (quand budget dispo), chunking avec tokenizer précis, streaming LLM (Server-Sent Events), extension navigateur.
+- **Stratégie LLM** : On utilise `OpenRouterService` existant (Faraday) enrichi avec le RAG. Pas de dépendance RubyLLM.
+- **`LlmCallService.oneshot`** : Nouveau service utilitaire pour les appels LLM ponctuels (résumé, tags). Utilisé par les jobs Phase 3.
+- **`_message.html.erb` et `create.turbo_stream.erb`** : Déjà créés par la PR messages. On les modifie légèrement, pas de création.
+- **Pas de `_form.html.erb`** : Le formulaire reste inline dans `conversations/show.html.erb`.
+- **`OPENROUTER_BASE_URL`** pas dans `.env` → à ajouter (le `OpenRouterService` actuel a l'URL hardcodée).
+- **Déploiement Heroku** : Hors scope de ce plan. Géré séparément.
+- **Améliorations futures** : reranker cross-encoder, chunking avec tokenizer précis, streaming LLM (SSE), extension navigateur.
