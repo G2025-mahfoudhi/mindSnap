@@ -33,12 +33,8 @@ class DocumentsController < ApplicationController
       raise ActiveRecord::RecordNotFound
     end
 
-    # On télécharge via Rails (credentials serveur) pour contourner les restrictions
-    # d'accès public sur Cloudinary (Strict Transformations activé sur le compte).
-    send_data blob.download,
-              filename: blob.filename.to_s,
-              type: blob.content_type,
-              disposition: "attachment"
+    redirect_to blob.url(disposition: "attachment", expires_in: 5.minutes),
+                allow_other_host: true
   end
 
   def edit
