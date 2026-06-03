@@ -42,7 +42,7 @@ class DocumentsController < ApplicationController
       public_id,
       resource_type: resource_type,
       type:          "upload",
-      flags:         "attachment:#{blob.filename}",
+      flags:         "attachment",
       secure:        true
     )
 
