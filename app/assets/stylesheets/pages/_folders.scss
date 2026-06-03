@@ -208,6 +208,8 @@
     resize: vertical;
 
     &:focus {
+      outline: 2px solid $teal;
+      outline-offset: 0;
       border-color: #111;
       background: #fff;
       box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);

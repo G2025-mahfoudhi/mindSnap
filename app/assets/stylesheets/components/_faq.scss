@@ -180,7 +180,8 @@
     }
 
     &:focus {
-      outline: none;
+      outline: 2px solid $teal;
+      outline-offset: 0;
       border-color: $teal;
       box-shadow: 0 0 0 3px rgba($teal, .15);
     }

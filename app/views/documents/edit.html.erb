@@ -1,3 +1,4 @@
+<% content_for :title, "Modifier #{@document.title} — MindSnap" %>
 <div class="container py-4" style="max-width: 700px;">
   <h1 class="h3 mb-4">Modifier "<%= @document.title %>"</h1>
   <%= render "form", document: @document %>
