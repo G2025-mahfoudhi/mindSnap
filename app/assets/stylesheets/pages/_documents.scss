@@ -1,3 +1,15 @@
+// ——— HAUTEURS FIXES ———
+:root {
+  --navbar-height: 56px;
+  --footer-height: 88px; // mobile : footer wrap sur plusieurs lignes
+}
+
+@include media-breakpoint-up(md) {
+  :root {
+    --footer-height: 60px; // desktop : footer sur une ligne
+  }
+}
+
 // ——— SIDEBAR ———
 
 .sidebar-doc-item {
