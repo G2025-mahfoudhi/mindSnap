@@ -1,4 +1,3 @@
-<div class="container" >
 <%= simple_form_for document, defaults: { required: false }, html: { data: { controller: "document-type" } } do |f| %>
   <%= f.error_notification %>
 
@@ -21,8 +20,9 @@
   </div>
 
   <div class="mb-3" data-controller="folder-select">
-    <label class="form-label">Dossier</label>
+    <label class="form-label" for="document_folder_id">Dossier</label>
     <select name="document[folder_id]"
+            id="document_folder_id"
             class="form-select"
             data-folder-select-target="select"
             data-action="change->folder-select#toggle">
@@ -42,6 +42,7 @@
              name="new_folder_name"
              class="form-control"
              placeholder="Nom du nouveau dossier"
+             aria-label="Nom du nouveau dossier"
              autocomplete="off">
     </div>
   </div>
@@ -72,7 +73,6 @@
 
   <div class="d-flex gap-2">
     <%= f.button :submit, class: "btn btn-primary" %>
-    <%= link_to "Annuler", documents_path, class: "btn btn-outline-secondary" %>
+    <%= link_to "Annuler", espaces_path, class: "btn btn-outline-secondary" %>
   </div>
 <% end %>
-</div>

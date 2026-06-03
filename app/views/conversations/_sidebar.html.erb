@@ -1,0 +1,56 @@
+<aside class="d-flex flex-column" style="width: 260px; min-width: 260px; background-color: #2A4B4B; height: 100%;">
+
+  <div class="p-3 border-bottom border-white border-opacity-25">
+    <%= button_to conversations_path,
+                  method: :post,
+                  class: "btn w-100 d-flex align-items-center justify-content-center gap-2 fw-medium text-white btn-primary" do %>
+      <i class="fa-solid fa-plus" aria-hidden="true"></i>
+      <span>Nouvelle conversation</span>
+    <% end %>
+  </div>
+
+  <h2 class="px-3 pt-3 pb-1 mb-0 text-uppercase text-white-50" style="font-size: 11px; letter-spacing: 0.06em;">
+    Mes conversations
+  </h2>
+
+  <div class="flex-grow-1 overflow-auto px-2 pb-3" id="chatList">
+    <% conversations.each do |conversation| %>
+      <div class="d-flex align-items-center gap-2 px-2 py-2 rounded mb-1 chat-link <%= 'active-conversation' if conversation == current_conversation %>">
+        <%= link_to conversation_path(conversation),
+                    class: "d-flex align-items-center gap-2 flex-grow-1 text-decoration-none text-white",
+                    style: "min-width: 0;" do %>
+          <i class="fa-solid fa-comment text-white-50" aria-hidden="true"></i>
+          <span class="text-truncate small" id="chat-title-<%= conversation.id %>">
+            <%= conversation.name %>
+          </span>
+        <% end %>
+
+        <div class="chat-actions d-flex gap-1">
+          <%= button_to conversation_path(conversation),
+                        method: :delete,
+                        class: "btn btn-sm p-0 px-1 text-white-50",
+                        form_class: "d-inline",
+                        data: { turbo_confirm: "Supprimer cette conversation ?" },
+                        aria: { label: "Supprimer #{conversation.name}" } do %>
+            <i class="fa-solid fa-trash" style="font-size: 12px;" aria-hidden="true"></i>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="py-2 px-3 border-top border-white border-opacity-25 d-flex align-items-center justify-content-center gap-2 bg-primary">
+    <span role="img"
+          aria-label="<%= current_user.first_name %> <%= current_user.last_name %>"
+          class="rounded-circle d-flex align-items-center justify-content-center text-white fw-semibold flex-shrink-0"
+          style="width: 36px; height: 36px; background: rgba(255,255,255,0.2); font-size: 13px;">
+      <%= current_user.first_name&.first&.upcase || "?" %><%= current_user.last_name&.first&.upcase %>
+    </span>
+    <div style="min-width: 0;">
+      <div class="text-white small fw-semibold text-truncate">
+        <%= current_user.first_name.presence || current_user.email %>
+        <%= current_user.last_name %>
+      </div>
+    </div>
+  </div>
+</aside>
