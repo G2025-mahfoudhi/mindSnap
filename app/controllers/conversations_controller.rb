@@ -16,6 +16,7 @@ class ConversationsController < ApplicationController
 
   def show
     @conversation = current_user.conversations.find(params[:id])
+    @conversations = current_user.conversations.order(created_at: :desc)
     @messages = @conversation.messages.order(:created_at)
     @message  = Message.new
   end

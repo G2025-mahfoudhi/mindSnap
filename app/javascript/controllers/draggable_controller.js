@@ -13,15 +13,17 @@ export default class extends Controller {
     this.element.style.cursor = "grab"
     this.element.style.userSelect = "none"
 
-    this.onMouseDown = this.onMouseDown.bind(this)
-    this.onMouseMove = this.onMouseMove.bind(this)
-    this.onMouseUp   = this.onMouseUp.bind(this)
+    this.onMouseDown  = this.onMouseDown.bind(this)
+    this.onMouseMove  = this.onMouseMove.bind(this)
+    this.onMouseUp    = this.onMouseUp.bind(this)
     this.onTouchStart = this.onTouchStart.bind(this)
     this.onTouchMove  = this.onTouchMove.bind(this)
     this.onTouchEnd   = this.onTouchEnd.bind(this)
+    this.onResize     = this.onResize.bind(this)
 
     this.element.addEventListener("mousedown",  this.onMouseDown)
     this.element.addEventListener("touchstart", this.onTouchStart, { passive: true })
+    window.addEventListener("resize", this.onResize)
 
     this.restorePosition()
   }
@@ -33,6 +35,43 @@ export default class extends Controller {
     document.removeEventListener("mouseup",   this.onMouseUp)
     document.removeEventListener("touchmove", this.onTouchMove)
     document.removeEventListener("touchend",  this.onTouchEnd)
+    window.removeEventListener("resize", this.onResize)
+  }
+
+  onResize() {
+    // En mode CSS (position non customisée), Bootstrap gère via right/bottom — rien à faire.
+    // En mode drag (left/top inline), on recadre dans les nouvelles limites de l'écran.
+    if (!this.isDragged()) return
+
+    const left = parseFloat(this.element.style.left)
+    const top  = parseFloat(this.element.style.top)
+    const maxX = window.innerWidth  - this.element.offsetWidth
+    const maxY = window.innerHeight - this.element.offsetHeight - this.footerHeight
+
+    // Si la position sauvegardée sort de l'écran réduit, on revient à la position par défaut.
+    if (left > maxX || top > maxY || left < 0 || top < 0) {
+      this.resetToDefault()
+    } else {
+      const clampedLeft = Math.min(Math.max(0, left), maxX)
+      const clampedTop  = Math.min(Math.max(0, top),  maxY)
+      this.element.style.left = `${clampedLeft}px`
+      this.element.style.top  = `${clampedTop}px`
+      this.savePosition(clampedLeft, clampedTop)
+    }
+  }
+
+  // Vérifie si l'élément est en mode positionnement par drag (left/top) ou CSS (right/bottom).
+  isDragged() {
+    const left = this.element.style.left
+    return left && left !== "" && left !== "auto"
+  }
+
+  resetToDefault() {
+    this.element.style.left   = ""
+    this.element.style.top    = ""
+    this.element.style.right  = "1.5rem"
+    this.element.style.bottom = "6rem"
+    localStorage.removeItem(this.storageKeyValue)
   }
 
   onMouseDown(e) {
@@ -82,7 +121,6 @@ export default class extends Controller {
     this.startLeft = rect.left
     this.startTop  = rect.top
 
-    // Switch to top/left absolute positioning
     this.element.style.right  = "auto"
     this.element.style.bottom = "auto"
     this.element.style.left   = `${rect.left}px`
@@ -117,7 +155,6 @@ export default class extends Controller {
       parseFloat(this.element.style.top)
     )
 
-    // Prevent the click event if the element was dragged
     if (this.moved) {
       const stop = (e) => { e.preventDefault(); e.stopPropagation() }
       this.element.addEventListener("click", stop, { once: true, capture: true })
@@ -128,22 +165,28 @@ export default class extends Controller {
     localStorage.setItem(this.storageKeyValue, JSON.stringify({ left, top }))
   }
 
-  get footerHeight() {
-    const footer = document.querySelector(".footer")
-    return footer ? footer.offsetHeight : 0
-  }
-
   restorePosition() {
     const saved = localStorage.getItem(this.storageKeyValue)
     if (!saved) return
 
     const { left, top } = JSON.parse(saved)
-    const maxX   = window.innerWidth  - this.element.offsetWidth
-    const maxY   = window.innerHeight - this.element.offsetHeight - this.footerHeight
+    const maxX = window.innerWidth  - this.element.offsetWidth
+    const maxY = window.innerHeight - this.element.offsetHeight - this.footerHeight
+
+    // Si la position sauvegardée ne tient plus dans l'écran actuel, on revient au défaut.
+    if (left > maxX || top > maxY || left < 0 || top < 0) {
+      this.resetToDefault()
+      return
+    }
 
     this.element.style.right  = "auto"
     this.element.style.bottom = "auto"
     this.element.style.left   = `${Math.min(Math.max(0, left), maxX)}px`
     this.element.style.top    = `${Math.min(Math.max(0, top),  maxY)}px`
+  }
+
+  get footerHeight() {
+    const footer = document.querySelector(".footer")
+    return footer ? footer.offsetHeight : 0
   }
 }

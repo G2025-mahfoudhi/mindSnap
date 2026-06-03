@@ -1,0 +1,10 @@
+<div class="d-flex mb-3 <%= message.role == 'user' ? 'justify-content-end' : 'justify-content-start' %>"
+     id="<%= dom_id(message) %>">
+  <div class="rounded-3 px-3 py-2 <%= message.role == 'user' ? 'bg-primary text-white' : 'bg-light border' %>"
+       style="max-width: 75%;">
+    <div class="small fw-semibold mb-1 <%= message.role == 'user' ? 'text-white-50' : 'text-muted' %>">
+      <%= message.role == 'user' ? 'Vous' : 'MindSnap AI' %>
+    </div>
+    <%= simple_format message.content, {}, wrapper_tag: "div" %>
+  </div>
+</div>
