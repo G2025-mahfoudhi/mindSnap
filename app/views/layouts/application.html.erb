@@ -23,12 +23,12 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body style="padding-bottom: 3rem;">
+  <body style="padding-bottom: 3rem;" class="<%= content_for(:body_class) %>">
     <a href="#main-content" class="visually-hidden-focusable">Aller au contenu principal</a>
     <%= render "shared/navbar" %>
     <%= render "shared/flashes" %>
 
-    <div id="main-content">
+    <div id="main-content" style="<%= content_for(:main_style) %>">
       <%= yield %>
     </div>
     <%= render "shared/conversation_actions" %>

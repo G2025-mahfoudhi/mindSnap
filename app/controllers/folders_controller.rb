@@ -10,6 +10,7 @@ class FoldersController < ApplicationController
     @children = @folder.children
     @documents = @folder.documents
     @folders = current_user.folders.where(parent_id: nil).includes(:documents)
+    @sidebar_folders = current_user.folders.includes(:documents).to_a
     @documents_without_folder = current_user.documents.where(folder_id: nil)
   end
 
