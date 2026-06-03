@@ -12,5 +12,13 @@ class Folder < ApplicationRecord
 
   has_many :documents, dependent: :destroy
 
+  before_validation :set_default_name
+
   validates :name, presence: true
+
+  private
+
+  def set_default_name
+    self.name = "Nouveau dossier" if name.blank?
+  end
 end
