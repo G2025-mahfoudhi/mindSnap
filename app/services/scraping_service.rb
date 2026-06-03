@@ -1,3 +1,6 @@
+# Extrait le contenu textuel d'une page web via Nokogiri.
+# Supprime les éléments non pertinents (scripts, nav, footer, etc.)
+# et limite la sortie à MAX_CONTENT_LENGTH caractères.
 class ScrapingService
   MAX_CONTENT_LENGTH = 50_000
 

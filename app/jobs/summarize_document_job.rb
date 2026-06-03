@@ -1,3 +1,6 @@
+# Job asynchrone de résumé automatique.
+# Appelle le LLM (via LlmCallService) pour générer un résumé de 3 phrases
+# qui est stocké dans la colonne documents.summary.
 class SummarizeDocumentJob < ApplicationJob
   queue_as :ai
 

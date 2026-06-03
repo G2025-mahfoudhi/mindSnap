@@ -1,3 +1,9 @@
+# Service de chat IA via OpenRouter (Faraday HTTP).
+# Gère l'historique de conversation, le fallback multi-modèles,
+# et enrichit le prompt système avec le contexte RAG (Phase 2).
+#
+# Flux : call → build_rag_context (pgvector search) → system_prompt enrichi
+#        → modèle principal → fallback si rate-limit → réponse
 class OpenRouterService
   API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
@@ -79,6 +85,10 @@ class OpenRouterService
     PROMPT
   end
 
+  # Construit le contexte documentaire via RAG (Phase 2).
+  # Cherche dans les chunks vectoriels les plus proches de la question,
+  # puis formate le résultat pour l'injection dans le prompt système.
+  # Si la conversation est scopée à un dossier, limite la recherche à ce dossier.
   def build_rag_context
     user = @conversation.user
     rag = RagService.new(user)

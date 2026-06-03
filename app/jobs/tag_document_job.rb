@@ -1,3 +1,6 @@
+# Job asynchrone de suggestion automatique de tags.
+# Appelle le LLM (via LlmCallService) pour suggérer 3-5 mots-clés,
+# puis crée les tags et taggings associés au document.
 class TagDocumentJob < ApplicationJob
   queue_as :ai
 

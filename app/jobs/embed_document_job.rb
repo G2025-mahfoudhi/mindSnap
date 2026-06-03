@@ -1,3 +1,8 @@
+# Job asynchrone de génération d'embeddings pour un document.
+# 1. Découpe le contenu en chunks via ChunkingService
+# 2. Génère un vecteur par chunk via EmbeddingService (OpenRouter)
+# 3. Stocke les chunks + vecteurs dans document_chunks
+# 4. Chaîne les jobs de résumé et de tagging (Phase 3)
 class EmbedDocumentJob < ApplicationJob
   queue_as :ai
 
