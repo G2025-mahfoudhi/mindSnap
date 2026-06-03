@@ -3,6 +3,31 @@
     <span class="badge bg-primary bg-opacity-10 text-primary mb-2"><%= document.document_type %></span>
     <h2 class="h6 fw-semibold"><%= document.title %></h2>
     <p class="text-muted small mb-0"><%= truncate(document.content.to_s, length: 100) %></p>
+
+    <% if document.summary.present? %>
+      <p class="text-muted fst-italic small mt-2 mb-0"><%= truncate(document.summary, length: 150) %></p>
+    <% end %>
+
+    <% if document.document_type == "Lien" && document.scraping_status.present? %>
+      <div class="mt-2">
+        <% case document.scraping_status %>
+        <% when "scraping" %>
+          <span class="badge bg-warning text-dark"><i class="fa-solid fa-spinner fa-spin me-1"></i>Extraction en cours...</span>
+        <% when "scraped" %>
+          <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Contenu extrait</span>
+        <% when "failed" %>
+          <span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i>Échec extraction</span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if document.tags.any? %>
+      <div class="mt-2">
+        <% document.tags.each do |tag| %>
+          <span class="badge bg-light text-dark me-1"><%= tag.name %></span>
+        <% end %>
+      </div>
+    <% end %>
   </div>
   <div class="card-footer bg-transparent border-0 d-flex justify-content-between align-items-center">
     <small class="text-muted"><%= document.date_injection&.strftime("%d/%m/%Y") %></small>
