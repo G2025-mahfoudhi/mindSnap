@@ -42,7 +42,7 @@ class DocumentsController < ApplicationController
       public_id,
       resource_type: resource_type,
       type:          "upload",
-      flags:         "attachment",
+      flags:         "attachment:#{File.basename(blob.filename.to_s, '.*').gsub(' ', '_')}",
       secure:        true
     )
 
