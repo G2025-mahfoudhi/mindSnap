@@ -33,8 +33,20 @@ class DocumentsController < ApplicationController
       raise ActiveRecord::RecordNotFound
     end
 
-    redirect_to blob.url(disposition: "attachment", expires_in: 5.minutes),
-                allow_other_host: true
+    # blob.url génère /auto/upload/ — invalide pour la livraison Cloudinary.
+    # On génère l'URL directement avec le bon resource_type selon le content-type.
+    resource_type = cloudinary_resource_type(blob.content_type)
+    public_id     = "#{Rails.env}/#{blob.key}"
+
+    url = Cloudinary::Utils.cloudinary_url(
+      public_id,
+      resource_type: resource_type,
+      type:          "upload",
+      flags:         "attachment:#{blob.filename}",
+      secure:        true
+    )
+
+    redirect_to url, allow_other_host: true
   end
 
   def edit
@@ -74,5 +86,14 @@ class DocumentsController < ApplicationController
 
   def document_params
     params.require(:document).permit(:title, :content, :document_type, :date_injection, file: [])
+  end
+
+  def cloudinary_resource_type(content_type)
+    case content_type
+    when /\Aimage\//  then "image"
+    when /\Avideo\//  then "video"
+    when "application/pdf" then "image"  # Cloudinary stocke les PDFs comme image
+    else "raw"
+    end
   end
 end
