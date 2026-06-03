@@ -30,7 +30,7 @@
           <% if @document.file.attached? %>
             <div class="d-flex flex-wrap gap-2 mt-2">
               <% @document.file.each do |attachment| %>
-                <%= link_to download_document_path(@document.file.key, blob_signed_id: attachment.blob.signed_id),
+                <%= link_to download_document_path(@document, blob_signed_id: attachment.blob.signed_id),
                             class: "btn btn-outline-primary btn-sm",
                             aria: { label: "Télécharger #{attachment.filename}" } do %>
                   <i class="fa-solid fa-download fa-xs me-1" aria-hidden="true"></i>
@@ -47,7 +47,7 @@
                       aria: { label: "Modifier #{@document.title}" } do %>
             <i class="fa-solid fa-pen" aria-hidden="true"></i>
           <% end %>
-          <%= button_to document_path(@document.file.purge),
+          <%= button_to document_path(@document),
                         method: :delete,
                         data: { turbo_confirm: "Supprimer ce document ?" },
                         class: "btn btn-outline-danger btn-sm",
