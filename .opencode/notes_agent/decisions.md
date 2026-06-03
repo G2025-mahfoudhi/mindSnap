@@ -197,3 +197,22 @@ Question utilisateur
   ├─► STT: voice_controller.js → /transcribe → Whisper → texte
   └─► TTS: voice_controller.js → /tts/speak → Kokoro → audio
 ```
+
+---
+
+## Décision D013 — Correction boucle de ré-embedding
+
+**Date** : 2026-06-03 (fin de session)
+**Contexte** : La recherche sémantique ne trouvait aucun document car les chunks
+étaient détruits à chaque mise à jour.
+**Cause racine** : `after_commit :embed_async, on: [:create, :update]` se déclenchait
+sur TOUTE mise à jour du document. Quand `SummarizeDocumentJob` écrivait le résumé
+dans `documents.summary`, cela déclenchait un nouveau `EmbedDocumentJob.perform_later`
+qui mettait le status à "processing", détruisait les chunks, puis n'était jamais
+exécuté car Solid Queue n'était pas lancé en développement.
+**Décision** : Ajouter un guard `should_reembed?` qui vérifie `saved_change_to_content?`
+ou `embedding_status == "pending"`. Le document n'est ré-embeddé que si le contenu
+a réellement changé.
+**Raison** : Évite les boucles infinies et la destruction accidentelle des embeddings.
+**Impact** : `app/models/document.rb` — ajout de `should_reembed?` et modification
+du `after_commit` avec `if: :should_reembed?`.
