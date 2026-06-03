@@ -45,6 +45,15 @@ class FoldersController < ApplicationController
     redirect_to espaces_path, notice: "Dossier supprimé"
   end
 
+  def chat
+    @folder = current_user.folders.find(params[:id])
+    @conversation = current_user.conversations.create!(
+      name: @folder.name,
+      context: @folder
+    )
+    redirect_to conversation_path(@conversation)
+  end
+
   private
 
   def set_folder

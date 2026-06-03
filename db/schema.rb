@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_03_143658) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_03_145457) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -44,10 +44,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_03_143658) do
   end
 
   create_table "conversations", force: :cascade do |t|
+    t.bigint "context_id"
+    t.string "context_type"
     t.datetime "created_at", null: false
+    t.string "model", default: "nvidia/nemotron-3-super-120b-a12b:free"
     t.string "name"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["context_type", "context_id"], name: "index_conversations_on_context_type_and_context_id"
     t.index ["user_id"], name: "index_conversations_on_user_id"
   end
 

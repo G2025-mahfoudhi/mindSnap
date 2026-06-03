@@ -10,12 +10,15 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :folders, only: [:index, :show, :new, :create, :edit, :update, :destroy]
+  resources :folders, only: [:index, :show, :new, :create, :edit, :update, :destroy] do
+    post :chat, on: :member
+  end
 
   resources :conversations, only: [:new, :create, :index, :show, :destroy] do
     resources :messages, only: [:create]
   end
 
   get "faq", to: "faqs#index"
+  get "search", to: "searches#index"
   get "up" => "rails/health#show", as: :rails_health_check
 end

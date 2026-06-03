@@ -82,7 +82,13 @@ class OpenRouterService
   def build_rag_context
     user = @conversation.user
     rag = RagService.new(user)
-    chunks = rag.search(@user_message.content, limit: 5)
+
+    folder_id = nil
+    if @conversation.context_type == "Folder" && @conversation.context_id.present?
+      folder_id = @conversation.context_id
+    end
+
+    chunks = rag.search(@user_message.content, folder_id: folder_id, limit: 5)
     rag.format_context(chunks)
   end
 end
