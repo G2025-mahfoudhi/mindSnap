@@ -1,58 +1,48 @@
 <% content_for :title, "Mon espace — MindSnap" %>
-<main class="container py-4" aria-label="Mon espace">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0">Mon espace</h1>
-    <div class="dropdown">
-      <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="fa-solid fa-plus me-1" aria-hidden="true"></i> Nouveau
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li>
-          <%= link_to new_folder_path, class: "dropdown-item" do %>
-            <i class="fa-solid fa-folder me-2" style="color: #549695;" aria-hidden="true"></i> Nouveau dossier
-          <% end %>
-        </li>
-        <li>
-          <%= link_to new_document_path, class: "dropdown-item" do %>
-            <i class="fa-solid fa-file-lines me-2 text-primary" aria-hidden="true"></i> Nouveau document
-          <% end %>
-        </li>
-      </ul>
-    </div>
-  </div>
+<div class="d-flex" style="min-height: calc(100vh - 56px);">
 
-  <% if @folders.any? %>
-    <p class="text-muted text-uppercase fw-semibold mb-3" style="font-size: 0.75rem; letter-spacing: 0.06em;">
-      Dossiers
-    </p>
-    <div class="row g-3 mb-4">
-      <% @folders.each do |folder| %>
-        <div class="col-sm-6 col-md-4 col-lg-3">
-          <%= render "espaces/folder_card", folder: folder %>
-        </div>
-      <% end %>
-    </div>
-  <% end %>
+  <%= render "documents/sidebar",
+             folders: @folders,
+             documents_without_folder: @documents_without_folder,
+             current_document: nil %>
 
-  <% if @documents_without_folder.any? %>
-    <p class="text-muted text-uppercase fw-semibold mb-3" style="font-size: 0.75rem; letter-spacing: 0.06em;">
-      Documents
-    </p>
-    <div class="row g-3">
-      <% @documents_without_folder.each do |document| %>
-        <div class="col-sm-6 col-lg-4">
-          <%= render "shared/document_card", document: document %>
-        </div>
-      <% end %>
+  <main class="flex-grow-1 overflow-auto p-4" aria-label="Mon espace">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h3 mb-0">Mon espace</h1>
     </div>
-  <% end %>
 
-  <% if @folders.empty? && @documents_without_folder.empty? %>
-    <div class="text-center py-5">
-      <div class="icon-circle mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.75rem;">
-        <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+    <% if @folders.any? %>
+      <p class="text-muted text-uppercase fw-semibold mb-3" style="font-size: 0.75rem; letter-spacing: 0.06em;">
+        Dossiers
+      </p>
+      <div class="row g-3 mb-4">
+        <% @folders.each do |folder| %>
+          <div class="col-sm-6 col-md-4 col-lg-3">
+            <%= render "espaces/folder_card", folder: folder %>
+          </div>
+        <% end %>
       </div>
-      <p class="text-muted mb-0">Aucun contenu pour le moment.</p>
-    </div>
-  <% end %>
-</main>
+    <% end %>
+
+    <% if @documents_without_folder.any? %>
+      <p class="text-muted text-uppercase fw-semibold mb-3" style="font-size: 0.75rem; letter-spacing: 0.06em;">
+        Documents sans dossier
+      </p>
+      <div class="row g-3">
+        <% @documents_without_folder.each do |document| %>
+          <div class="col-sm-6 col-lg-4">
+            <%= render "shared/document_card", document: document %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if @folders.empty? && @documents_without_folder.empty? %>
+      <div class="text-center py-5">
+        <i class="fa-solid fa-folder-open fa-3x mb-3" style="color: #f0ad4e;" aria-hidden="true"></i>
+        <p class="text-muted mb-0">Aucun contenu pour le moment.</p>
+      </div>
+    <% end %>
+  </main>
+
+</div>
