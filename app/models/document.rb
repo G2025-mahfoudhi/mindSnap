@@ -17,7 +17,8 @@ class Document < ApplicationRecord
   after_commit :scrape_async, on: :create
 
   # Après création/mise à jour : générer les embeddings vectoriels
-  after_commit :embed_async, on: [:create, :update]
+  # Uniquement si le contenu a changé ou si le document n'a jamais été embeddé
+  after_commit :embed_async, on: [:create, :update], if: :should_reembed?
 
   # -- Scopes & Predicates -------------------------------------------------
   def embedded?
@@ -34,8 +35,18 @@ class Document < ApplicationRecord
   end
 
   # Déclenche l'embedding du contenu du document (chunking + vecteurs)
+  # Évite de ré-embedder si le contenu n'a pas changé (ex: mise à jour du résumé)
   def embed_async
     return if content.blank?
     EmbedDocumentJob.perform_later(id)
+  end
+
+  # Évite les boucles : ne ré-embede pas quand un job modifie le document
+  # (ex: SummarizeDocumentJob qui écrit le résumé)
+  def should_reembed?
+    content.present? && (
+      embedding_status == "pending" ||
+      saved_change_to_content?
+    )
   end
 end
