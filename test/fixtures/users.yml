@@ -1,0 +1,7 @@
+test_user1:
+  email: "test1@mindsnap.test"
+  encrypted_password: <%= Devise::Encryptor.digest(User, "password123") %>
+  first_name: "Test"
+  last_name: "User"
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>

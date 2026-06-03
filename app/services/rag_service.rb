@@ -14,7 +14,7 @@ class RagService
     scope = scope.where(documents: { folder_id: folder_id }) if folder_id
 
     scope
-      .nearest_neighbors(:embedding, query_embedding)
+      .nearest_neighbors(:embedding, query_embedding, distance: "cosine")
       .limit(limit)
       .includes(:document)
   end
