@@ -21,7 +21,8 @@ class FoldersController < ApplicationController
     @folder = current_user.folders.new(folder_params)
 
     if @folder.save
-      redirect_to espaces_path, notice: "Dossier créé"
+      destination = @folder.parent_id ? folder_path(@folder.parent_id) : espaces_path
+      redirect_to destination, notice: "Dossier créé"
     else
       render :new, status: :unprocessable_entity
     end

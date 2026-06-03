@@ -21,7 +21,7 @@ class DocumentsController < ApplicationController
   end
 
   def show
-    @folders = current_user.folders.where(parent_id: nil).includes(:documents)
+    @folders = current_user.folders.where(parent_id: nil).includes(:documents, children: :documents)
     @documents_without_folder = current_user.documents.where(folder_id: nil)
   end
 
@@ -38,8 +38,10 @@ class DocumentsController < ApplicationController
   end
 
   def destroy
+    folder = @document.folder
     @document.destroy
-    redirect_to documents_path, notice: "Document supprimé.", status: :see_other
+    destination = folder ? folder_path(folder) : espaces_path
+    redirect_to destination, notice: "Document supprimé.", status: :see_other
   end
 
   private

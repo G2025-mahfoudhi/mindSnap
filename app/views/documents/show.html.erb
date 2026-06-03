@@ -27,16 +27,6 @@
         </div>
 
         <div class="doc-show-actions">
-          <% if @document.file.attached? %>
-            <% @document.file.each do |attachment| %>
-              <%= link_to rails_blob_path(attachment, disposition: "attachment"),
-                          class: "btn btn-outline-primary btn-sm",
-                          aria: { label: "Télécharger #{attachment.filename}" } do %>
-                <i class="fa-solid fa-download fa-xs" aria-hidden="true"></i>
-                <span class="ms-1"><%= attachment.filename.to_s.truncate(20) %></span>
-              <% end %>
-            <% end %>
-          <% end %>
           <%= link_to edit_document_path(@document),
                       class: "btn btn-outline-primary btn-sm",
                       aria: { label: "Modifier #{@document.title}" } do %>
@@ -53,7 +43,18 @@
       </div>
 
       <div class="doc-show-content">
-        <%= simple_format @document.content %>
+        <% if @document.content.present? %>
+          <%= simple_format @document.content %>
+        <% elsif @document.file.attached? %>
+          <% @document.file.each do |attachment| %>
+            <div class="d-flex align-items-center gap-3 py-1">
+              <i class="fa-solid fa-paperclip" style="color: #3d7f7e;" aria-hidden="true"></i>
+              <span class="flex-grow-1 text-truncate"><%= attachment.filename %></span>
+              <%= link_to "Télécharger", rails_blob_path(attachment, disposition: "attachment"),
+                          class: "btn btn-outline-primary btn-sm flex-shrink-0" %>
+            </div>
+          <% end %>
+        <% end %>
       </div>
 
     </div>

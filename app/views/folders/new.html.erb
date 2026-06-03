@@ -1,7 +1,7 @@
 <div class="folder-form-page">
-  <%= link_to folders_path, class: "form-back-link" do %>
+  <%= link_to (@folder.parent_id ? folder_path(@folder.parent_id) : espaces_path), class: "form-back-link" do %>
     <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-    Retour aux dossiers
+    <%= @folder.parent_id ? "Retour au dossier" : "Mon espace" %>
   <% end %>
 
   <div class="form-header">
@@ -24,7 +24,7 @@
 
       <div class="form-actions">
         <%= f.submit "Créer le dossier", class: "btn btn-primary" %>
-        <%= link_to "Annuler", folders_path, class: "btn btn-outline-secondary" %>
+        <%= link_to "Annuler", (@folder.parent_id ? folder_path(@folder.parent_id) : espaces_path), class: "btn btn-outline-secondary" %>
       </div>
     <% end %>
   </div>
