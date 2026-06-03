@@ -1,5 +1,5 @@
 class DocumentsController < ApplicationController
-  before_action :set_document, only: %i[show edit update destroy]
+  before_action :set_document, only: %i[show edit update destroy download]
 
   def index
     @documents = current_user.documents.where(folder_id: nil)
@@ -24,6 +24,18 @@ class DocumentsController < ApplicationController
     @folders = current_user.folders.where(parent_id: nil).includes(:documents, children: :documents)
     @sidebar_folders = current_user.folders.includes(:documents).to_a
     @documents_without_folder = current_user.documents.where(folder_id: nil)
+  end
+
+  def download
+    blob = ActiveStorage::Blob.find_signed!(params[:blob_signed_id])
+
+    # Vérification de sécurité : le blob doit appartenir à ce document
+    unless @document.file.map { |a| a.blob.id }.include?(blob.id)
+      raise ActiveRecord::RecordNotFound
+    end
+
+    redirect_to blob.url(disposition: "attachment", expires_in: 5.minutes),
+                allow_other_host: true
   end
 
   def edit
