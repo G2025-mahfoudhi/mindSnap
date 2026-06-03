@@ -8,9 +8,9 @@
     <nav class="footer__links" aria-label="Liens du footer">
       <%= link_to "Fonctionnalités", "#features" %>
       <%= link_to "FAQ", faq_path %>
-      <%= link_to "À propos", "#" %>
-      <%= link_to "Équipe", "#" %>
-      <%= link_to "Confidentialité", "#" %>
+      <%= link_to "À propos", root_path(anchor: "features") %>
+      <%= link_to "Équipe", root_path(anchor: "how-it-works") %>
+      <%= link_to "Confidentialité", root_path %>
     </nav>
 
     <span class="footer__copy">

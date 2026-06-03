@@ -9,11 +9,9 @@
     <% end %>
   </div>
 
-  <div class="px-3 pt-3 pb-1">
-    <small class="text-uppercase text-white-50" style="font-size: 11px; letter-spacing: 0.06em;">
-      Mes conversations
-    </small>
-  </div>
+  <h2 class="px-3 pt-3 pb-1 mb-0 text-uppercase text-white-50" style="font-size: 11px; letter-spacing: 0.06em;">
+    Mes conversations
+  </h2>
 
   <div class="flex-grow-1 overflow-auto px-2 pb-3" id="chatList">
     <% conversations.each do |conversation| %>
@@ -42,11 +40,12 @@
   </div>
 
   <div class="py-2 px-3 border-top border-white border-opacity-25 d-flex align-items-center justify-content-center gap-2 bg-primary">
-    <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-semibold flex-shrink-0"
-         style="width: 36px; height: 36px; background: rgba(255,255,255,0.2); font-size: 13px;"
-         aria-label="<%= current_user.first_name %> <%= current_user.last_name %>">
+    <span role="img"
+          aria-label="<%= current_user.first_name %> <%= current_user.last_name %>"
+          class="rounded-circle d-flex align-items-center justify-content-center text-white fw-semibold flex-shrink-0"
+          style="width: 36px; height: 36px; background: rgba(255,255,255,0.2); font-size: 13px;">
       <%= current_user.first_name&.first&.upcase || "?" %><%= current_user.last_name&.first&.upcase %>
-    </div>
+    </span>
     <div style="min-width: 0;">
       <div class="text-white small fw-semibold text-truncate">
         <%= current_user.first_name.presence || current_user.email %>

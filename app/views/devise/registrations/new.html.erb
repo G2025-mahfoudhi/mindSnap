@@ -15,7 +15,7 @@
     <p class="auth-card__subtitle">Crée ton compte en 30 secondes.</p>
 
     <%# Formulaire Devise — Simple Form gère le markup Bootstrap %>
-    <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+    <%= simple_form_for(resource, as: resource_name, defaults: { required: false }, url: registration_path(resource_name)) do |f| %>
       <%# Erreurs globales (ex: email déjà pris) %>
       <%= f.error_notification %>
 
@@ -24,30 +24,25 @@
         <div class="row">
           <div class="col-md-6 mb-3">
             <%= f.input :first_name,
-                        required: true,
                         autofocus: true,
                         label: "Prénom",
                         input_html: { autocomplete: "given-name" } %>
           </div>
           <div class="col-md-6 mb-3">
             <%= f.input :last_name,
-                        required: true,
                         label: "Nom",
                         input_html: { autocomplete: "family-name" } %>
           </div>
         </div>
 
         <%= f.input :email,
-                    required: true,
                     input_html: { autocomplete: "email" } %>
 
         <%= f.input :password,
-                    required: true,
                     hint: ("#{@minimum_password_length} caractères minimum" if @minimum_password_length),
                     input_html: { autocomplete: "new-password" } %>
 
         <%= f.input :password_confirmation,
-                    required: true,
                     label: "Confirmation du mot de passe",
                     input_html: { autocomplete: "new-password" } %>
       </div>

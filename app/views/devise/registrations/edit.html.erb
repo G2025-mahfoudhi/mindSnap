@@ -12,7 +12,7 @@
   <p class="auth-card__subtitle">Tes informations personnelles.</p>
 
   <%# Formulaire Devise — Simple Form gère le markup Bootstrap %>
-  <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
+  <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name), defaults: { required: false }, html: { method: :put }) do |f| %>
     <%= f.error_notification %>
 
     <div class="form-inputs">
@@ -71,7 +71,7 @@
     Bouton danger outline pour éviter les clics accidentels.
   ============================================================ %>
   <div class="auth-card__danger-zone">
-    <p class="danger-zone__label">Zone dangereuse</p>
+    <h3 class="danger-zone__label">Zone dangereuse</h3>
     <%= button_to "Supprimer mon compte",
                   registration_path(resource_name),
                   data: { confirm: "Es-tu sûr ? Cette action est irréversible.", turbo_confirm: "Es-tu sûr ? Cette action est irréversible." },

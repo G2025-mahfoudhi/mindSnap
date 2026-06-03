@@ -1,14 +1,21 @@
-<div class="d-flex" style="height: calc(100vh - 70px); margin-top: 70px;">
+<% content_for :title, "#{@conversation.name} — MindSnap" %>
+<main class="d-flex" style="height: calc(100vh - 70px); margin-top: 70px;">
   <%= render partial: "conversations/header", locals: { conversation: @conversation } %>
 
-  <div id="messages" class="mb-4" style="min-height: 200px;">
+  <div id="messages"
+       class="mb-4"
+       style="min-height: 200px;"
+       role="region"
+       aria-label="Historique des messages"
+       aria-live="polite"
+       aria-atomic="false">
     <%= render @messages %>
   </div>
 
   <%= turbo_frame_tag "new_message_form" do %>
     <%= simple_form_for [@conversation, @message] do |f| %>
       <%= f.input :content, label: "Ton message", required: true, input_html: { rows: 3 } %>
-      <%= f.button :submit, "Envoyer", class: "btn btn-success" %>
+      <%= f.button :submit, "Envoyer", class: "btn btn-primary" %>
     <% end %>
   <% end %>
-</div>
+</main>
