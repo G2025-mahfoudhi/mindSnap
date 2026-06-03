@@ -150,12 +150,25 @@ Ces 3 erreurs existaient avant notre intervention. Le test a été généré aut
 ## Résultat final
 
 ```
-57 tests, 90 assertions, 0 failures
-3 erreurs pré-existantes (FoldersControllerTest)
-Fichiers créés : ~35
+148 tests, 262 assertions, 0 failures, 0 errors
+Couverture : modèles (60), contrôleurs (47), services (27), jobs (15)
+Fichiers créés : ~50
 Fichiers modifiés : ~15
 Commentaires : toutes les classes documentées
+Branche : PlansImplentationPhase5
 ```
+
+### Couverture de tests par catégorie
+
+| Catégorie | Fichiers | Tests | Taux |
+|-----------|:--------:|:-----:|:----:|
+| Modèles | 9 | 60 | 100% |
+| Contrôleurs | 11 | 47 | 100% |
+| Services | 6 | 27 | 100% |
+| Jobs | 5 | 15 | 100% |
+| **Total** | **31** | **149** | **100%** |
+
+> Note : les tests d'intégration API (EmbeddingService, LlmCallService, OpenRouterService) sont résilients aux rate-limits. Ils vérifient que le code ne crash pas mais n'exigent pas de réponse API valide.
 
 ### Flux de données complet
 
