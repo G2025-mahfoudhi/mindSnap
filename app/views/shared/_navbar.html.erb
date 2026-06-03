@@ -11,11 +11,31 @@
 
     <div class="collapse navbar-collapse" id="navbarMain">
       <ul class="navbar-nav ms-auto align-items-md-center gap-1">
-        <li class="nav-item">
-          <%= link_to "Fonctionnalités", "#features", class: "nav-link" %>
-        </li>
-        <li class="nav-item">
-          <%= link_to "Comment ça marche", "#how-it-works", class: "nav-link" %>
+        <%# Dropdown Fonctionnalités — icônes FA6 + séparateurs %>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" id="navbarDropdownFeatures" data-bs-toggle="dropdown" aria-expanded="false">
+            Fonctionnalités
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownFeatures">
+            <li><h6 class="dropdown-header"><i class="fa-solid fa-layer-group fa-fw me-1"></i> Gestion</h6></li>
+            <li>
+              <%= link_to documents_path, class: "dropdown-item" do %>
+                <i class="fa-solid fa-file-lines fa-fw me-2"></i> Mes documents
+              <% end %>
+            </li>
+            <li>
+              <%= link_to folders_path, class: "dropdown-item" do %>
+                <i class="fa-solid fa-folder-tree fa-fw me-2"></i> Mes dossiers
+              <% end %>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header"><i class="fa-solid fa-microchip fa-fw me-1"></i> Intelligence</h6></li>
+            <li>
+              <%= link_to conversations_path, class: "dropdown-item" do %>
+                <i class="fa-solid fa-robot fa-fw me-2"></i> Discuter avec l'IA
+              <% end %>
+            </li>
+          </ul>
         </li>
         <li class="nav-item">
           <%= link_to "FAQ", faq_path, class: "nav-link" %>

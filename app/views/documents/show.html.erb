@@ -25,5 +25,23 @@
     </div>
   </div>
 
+  <% if @document.file.attached? %>
+    <div class="card mt-3">
+      <div class="card-body">
+        <h6 class="card-title mb-3">Fichiers joints</h6>
+        <ul class="list-unstyled mb-0">
+          <% @document.file.each do |attachment| %>
+            <li class="d-flex align-items-center gap-2 mb-2">
+              <span>📎</span>
+              <span class="text-muted small flex-grow-1"><%= attachment.filename %></span>
+              <%= link_to "Télécharger", rails_blob_path(attachment, disposition: "attachment"),
+                          class: "btn btn-outline-primary btn-sm" %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
   <%= link_to "← Retour aux documents", documents_path, class: "btn btn-link mt-3 ps-0" %>
 </div>

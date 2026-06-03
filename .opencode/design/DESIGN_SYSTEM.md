@@ -347,6 +347,15 @@ Mobile : `.auth-sidebar` masquée, carte seule centrée.
 - Layout : `application` (navbar connecté + footer)
 - Fond : `$warm-gray` ou `$white` selon section
 
+### 9.4 FAQ
+
+- Layout : `application` (navbar + footer)
+- Accessible sans connexion (publique)
+- Structure : sidebar sticky (260px) + contenu accordéon
+- Accordéon : Bootstrap Collapse natif, une réponse à la fois
+- Recherche : Stimulus `faq-search`, filtrage temps réel
+- ScrollSpy : IntersectionObserver, surligne la catégorie active dans le sidebar
+
 ---
 
 ## 10. Accessibilité (a11y)

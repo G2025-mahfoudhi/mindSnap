@@ -220,4 +220,76 @@
 
 ---
 
+## Décision 018 — Page FAQ : layout sidebar + accordéon
+
+**Date :** 2026-06-02 (session FAQ)
+**Décision :** Page `/faq` publique avec sidebar gauche sticky (navigation par catégorie) + contenu à droite (accordéon Bootstrap Collapse).
+**Raison :**
+- Cohérent avec le design system MindSnap (teal, Nunito/Work Sans, border-radius)
+- Sidebar = navigation rapide entre catégories, contenu = accordéon pour ne pas submerger
+- Accessible sans connexion (page publique)
+**Technique :** Bootstrap Collapse natif (pas de JS custom pour l'accordéon), Stimulus pour la recherche et le ScrollSpy.
+**Fichier contenant le texte :** `app/views/faqs/index.html.erb` (tout le contenu Q&A est inline, pas en base de données).
+
+---
+
+## Décision 019 — FAQ : 20 questions en 5 catégories
+
+**Date :** 2026-06-02 (session FAQ)
+**Décision :** 20 questions réparties en 5 catégories de 4 questions.
+**Catégories et icônes FA6 :**
+- Général (`fa-circle-question`)
+- Compte & Sécurité (`fa-lock`)
+- Documents (`fa-file-lines`)
+- IA & Recherche (`fa-robot`)
+- Offres & Prix (`fa-tag`)
+**Modification du texte :** éditer `app/views/faqs/index.html.erb`, repérer les `<%= render "shared/faq_item" %>` et modifier les paramètres `question:` et `answer:`. Le HTML est autorisé dans `answer:` (balises `<strong>`, `<em>`).
+
+---
+
+## Décision 020 — FAQ : recherche Stimulus + IntersectionObserver
+
+**Date :** 2026-06-02 (session FAQ)
+**Décision :** Un seul contrôleur Stimulus `faq-search` gère à la fois la recherche (filtrage temps réel) et le ScrollSpy (surlignage sidebar au scroll).
+**Raison :** Éviter deux contrôleurs séparés pour une page simple. IntersectionObserver est natif (pas de dépendance). Le scroll smooth au clic gère le décalage de la navbar sticky (72px).
+**Fichier :** `app/javascript/controllers/faq_search_controller.js`
+**À savoir :** le `data-faq-search-words-value` sur chaque `.faq-item` contient le texte de la question en minuscules sans ponctuation — c'est la clé de filtrage. Si tu modifies une question dans la vue, le filtrage continue de fonctionner automatiquement.
+
+---
+
+## 📁 Où modifier le texte de la FAQ
+
+**Un seul fichier à éditer :** `app/views/faqs/index.html.erb`
+
+Chaque question est un bloc comme celui-ci :
+```erb
+<%= render "shared/faq_item",
+      id: "q1",
+      question: "MindSnap, c'est quoi exactement ?",
+      answer: "MindSnap est ton <strong>deuxième cerveau</strong>..." %>
+```
+
+Pour **ajouter une question** : copier un bloc existant, changer `id:` (unique !), `question:` et `answer:`.
+Pour **modifier une réponse** : éditer le `answer:` (HTML autorisé).
+Pour **changer une catégorie** : modifier le `<h2 class="faq-category">` correspondant et l'icône `<i>`.
+
+**Si tu ajoutes une 6ᵉ catégorie**, il faut aussi :
+1. Ajouter un `<section id="category-nouveau">` dans la vue
+2. Ajouter un `<a href="#category-nouveau">` dans le sidebar
+
+---
+
+## Décision 021 — Navbar : dropdown "Fonctionnalités" remplace liens simples
+
+**Date :** 2026-06-02 (session NAVBAR)
+**Décision :** Remplacer les liens simples "Fonctionnalités" et "Comment ça marche" par un dropdown "Fonctionnalités" avec icônes Font Awesome et séparateurs.
+**Contenu du dropdown :**
+- Section "Gestion" → Mes documents (`documents_path`), Mes dossiers (`folders_path`)
+- Section "Intelligence" → Discuter avec l'IA (`conversations_path`)
+**Raison :** "Comment ça marche" faisait doublon avec la homepage. Le dropdown regroupe les features accessibles après connexion, avec des icônes pour la lisibilité.
+**Fichiers modifiés :** `app/views/shared/_navbar.html.erb`, `app/assets/stylesheets/components/_navbar.scss` (dropdown-header teal).
+**Accessibilité :** `role="button"`, `aria-expanded`, `aria-labelledby` sur le dropdown. Navigation clavier gérée par Bootstrap JS.
+
+---
+
 *Ce fichier doit être mis à jour à chaque nouvelle décision de design. Format : date, contexte, décision, raison, alternatives rejetées.*
