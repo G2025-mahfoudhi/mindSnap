@@ -48,6 +48,8 @@ gem "simple_form", github: "heartcombo/simple_form"
 gem "sassc-rails"
 gem "ruby_llm"
 gem "cloudinary"
+gem "neighbor"
+gem "mission_control-jobs"
 
 group :development, :test do
   gem "dotenv-rails"

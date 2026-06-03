@@ -2,8 +2,20 @@
      id="<%= dom_id(message) %>">
   <div class="rounded-3 px-3 py-2 <%= message.role == 'user' ? 'bg-primary text-white' : 'bg-light border' %>"
        style="max-width: 75%;">
-    <div class="small fw-semibold mb-1 <%= message.role == 'user' ? 'text-white-50' : 'text-muted' %>">
-      <%= message.role == 'user' ? 'Vous' : 'MindSnap AI' %>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <span class="small fw-semibold <%= message.role == 'user' ? 'text-white-50' : 'text-muted' %>">
+        <%= message.role == 'user' ? 'Vous' : 'MindSnap AI' %>
+      </span>
+      <% if message.role == "assistant" %>
+        <button type="button"
+                data-action="click->voice#speak"
+                data-voice-text-param="<%= message.content %>"
+                class="btn btn-sm btn-link p-0 <%= message.role == 'user' ? 'text-white' : '' %>"
+                aria-label="Lire la réponse à voix haute"
+                style="font-size: 0.75rem;">
+          <i class="fa-solid fa-volume-high"></i>
+        </button>
+      <% end %>
     </div>
     <%= simple_format message.content, {}, wrapper_tag: "div" %>
   </div>

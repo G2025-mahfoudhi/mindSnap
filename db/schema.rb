@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_02_132910) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_03_141715) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "vector"
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
@@ -50,12 +51,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_132910) do
     t.index ["user_id"], name: "index_conversations_on_user_id"
   end
 
+  create_table "document_chunks", force: :cascade do |t|
+    t.integer "chunk_index", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "document_id", null: false
+    t.vector "embedding", limit: 1024
+    t.integer "token_count"
+    t.datetime "updated_at", null: false
+    t.index ["document_id"], name: "index_document_chunks_on_document_id"
+    t.index ["embedding"], name: "idx_document_chunks_embedding", opclass: :vector_cosine_ops, using: :hnsw
+  end
+
   create_table "documents", force: :cascade do |t|
     t.text "content"
     t.datetime "created_at", null: false
     t.datetime "date_injection"
     t.string "document_type"
+    t.string "embedding_status", default: "pending"
     t.bigint "folder_id"
+    t.string "source_url"
+    t.text "summary"
     t.string "title"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
@@ -242,6 +258,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_132910) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "conversations", "users"
+  add_foreign_key "document_chunks", "documents", on_delete: :cascade
   add_foreign_key "documents", "folders"
   add_foreign_key "documents", "users"
   add_foreign_key "folders", "folders", column: "parent_id"
