@@ -42,6 +42,11 @@
         </li>
         <% if user_signed_in? %>
           <li class="nav-item">
+            <%= link_to search_path, class: "nav-link" do %>
+              <i class="fa-solid fa-magnifying-glass me-1"></i> Recherche
+            <% end %>
+          </li>
+          <li class="nav-item">
             <%= link_to "Mon espace", espaces_path, class: "nav-link" %>
           </li>
           <li class="nav-item dropdown">

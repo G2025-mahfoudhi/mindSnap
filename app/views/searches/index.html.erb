@@ -1,0 +1,48 @@
+<% content_for :title, "Recherche — MindSnap" %>
+
+<main class="container py-5" style="max-width: 800px;">
+  <h1 class="mb-4">Recherche intelligente</h1>
+
+  <%= form_tag search_path, method: :get, class: "mb-5" do %>
+    <div class="input-group input-group-lg">
+      <%= text_field_tag :q, @query,
+            class: "form-control",
+            placeholder: "Recherche par sens, pas par mots-clés...",
+            autofocus: true,
+            autocomplete: "off" %>
+      <button class="btn btn-primary" type="submit" aria-label="Rechercher">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+    </div>
+    <p class="text-muted small mt-2">
+      La recherche sémantique comprend le sens de ta question, pas juste les mots.
+    </p>
+  <% end %>
+
+  <% if @query.present? %>
+    <% if @documents&.any? %>
+      <p class="text-muted mb-4">
+        <%= @documents.count %> document(s) trouvé(s) pour « <%= @query %> »
+      </p>
+      <div class="row g-4">
+        <% @documents.each do |document| %>
+          <div class="col-12">
+            <%= render "shared/document_card", document: document %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-5">
+        <i class="fa-solid fa-file-circle-question fa-3x text-muted mb-3 d-block"></i>
+        <p class="mb-1">Aucun document trouvé pour « <%= @query %> ».</p>
+        <p class="text-muted small">Essaie avec d'autres mots ou crée un nouveau document.</p>
+        <%= link_to "Créer un document", new_document_path, class: "btn btn-primary mt-3" %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="text-center py-5 text-muted">
+      <i class="fa-solid fa-search fa-3x mb-3 d-block"></i>
+      <p>Entre un mot-clé ou une phrase pour rechercher dans tous tes documents.</p>
+    </div>
+  <% end %>
+</main>

@@ -3,7 +3,7 @@
 > **Date** : 2026-06-03
 > **Stack** : Rails 8.1.3 / Ruby 3.3.5 / PostgreSQL + pgvector / Hotwire / Bootstrap 5.3
 > **LLM** : OpenRouter via `OpenRouterService` (Faraday) — `deepseek/deepseek-v4-flash`
-> **Embeddings** : OpenRouter (`qwen/qwen3-embedding-8b` — 4096 dimensions)
+> **Embeddings** : OpenRouter (`qwen/qwen3-embedding-8b` — 4096 natif, tronqué à **1024** dimensions via MRL. Limite HNSW = 2000 dims)
 > **TTS** : OpenRouter (`hexgrad/kokoro-82m`, voix `ff_siwis`)
 > **STT** : OpenRouter (`openai/whisper-large-v3-turbo`)
 > **Jobs** : Solid Queue (plugin Puma)
@@ -431,7 +431,26 @@ def build_system_prompt_with_context(context)
 end
 ```
 
-> **⚠️ Important** : Lire d'abord le `OpenRouterService` existant pour comprendre sa structure avant de le modifier. Le service actuel a déjà un `API_URL`, un `system_prompt`, une logique de fallback — on enrichit, on ne casse rien.
+> **⚠️ Important** : Lire d'abord le `OpenRouterService` existant pour comprendre sa structure avant de le modifier. Le constructeur actuel est `initialize(conversation, user_message)` — il n'a pas `@user`. Pour accéder à l'utilisateur, utiliser `@conversation.user`. Le service a déjà un `API_URL`, un `system_prompt`, une logique de fallback — on enrichit, on ne casse rien.
+
+```ruby
+# app/services/open_router_service.rb — MODIFIER la méthode #call
+
+def call
+  # 1. Recherche RAG (utiliser @conversation.user pour accéder à l'utilisateur)
+  user = @conversation.user
+  rag = RagService.new(user)
+  folder_id = @conversation.context_id if @conversation.context_type == "Folder"
+  chunks = rag.search(@user_message.content, folder_id: folder_id, limit: 5)
+  context = rag.format_context(chunks)
+
+  # 2. Construire le prompt système enrichi
+  system_prompt = build_system_prompt_with_context(context)
+
+  # 3. Appel OpenRouter (remplacer le system_prompt existant par le nouveau)
+  # ... le reste du code existant de OpenRouterService#call, avec system_prompt enrichi ...
+end
+```
 
 ### 2.3 Test manuel RAG
 

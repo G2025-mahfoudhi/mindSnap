@@ -1,3 +1,9 @@
+# Service de chat IA via OpenRouter (Faraday HTTP).
+# Gère l'historique de conversation, le fallback multi-modèles,
+# et enrichit le prompt système avec le contexte RAG (Phase 2).
+#
+# Flux : call → build_rag_context (pgvector search) → system_prompt enrichi
+#        → modèle principal → fallback si rate-limit → réponse
 class OpenRouterService
   API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
@@ -15,6 +21,8 @@ class OpenRouterService
   end
 
   def call
+    @rag_context = build_rag_context
+
     models_to_try.each do |model|
       response = post(model)
       parsed   = JSON.parse(response.body)
@@ -61,25 +69,36 @@ class OpenRouterService
 
   def system_prompt
     <<~PROMPT.strip
-      Tu es un assistant intelligent intégré à MindSnap, une application de gestion de connaissances personnelles.
-      MindSnap permet de stocker et d'organiser les documents, idéé, note, d'extaire un contenu à partir d'url et d'analyser les contenus.
-      Tu as accès à ma base de donnée documentaire vectorielle (PostgreSQL + pgvector) qui contient les documents et notes de l'utilisateur et à mon espace dans espaces#index.
-      Ton rôle est de répondre aux questions de l'utilisateur en t'appuyant prioritairement sur les documents retrouvés par recherche vectorielle sémantique.
-      Si on te demande le chemin d'accès, écris le à partir de espaces.
+      Tu es MindSnap, un assistant de gestion de connaissances personnelles.
+      Tu aides l'utilisateur à retrouver, comprendre et connecter ses documents.
 
-      Comportement attendu :
-      - Réponds naturellement à tous les messages, y compris les salutations, questions vagues ou hors-sujet.
-      - Sois chaleureux et concis.
-      - À la fin de chaque réponse, ramène toujours la conversation vers les documents de l'utilisateur.
+      ## Contexte documentaire
+      #{@rag_context.presence || "Aucun document pertinent trouvé dans la base de l'utilisateur."}
 
-      Par exemple : propose d'explorer un document, de répondre à une question sur ses notes, ou de l'aider à organiser ses connaissances.
-      - Ne force pas le lien si la question est déjà liée aux documents.
-      - Réponds toujours en te basant sur les documents pertinents fournis en contexte.
-      - Si un document répond directement à la question, cite son contenu de façon précise.
-      - Si aucun document pertinent n'est disponible, dis-le clairement avant de répondre avec tes connaissances générales.
-      - Ne confonds jamais tes connaissances générales avec le contenu des documents de l'utilisateur.
-      - Reste concis, structuré, et utile.
-      - Utilise la même langue que l'utilisateur.
+      ## Règles
+      1. Si des documents pertinents sont fournis ci-dessus → base ta réponse dessus. Cite le titre du document comme source : *(source: Titre du doc)*.
+      2. Si aucun document pertinent → dis "Je n'ai rien trouvé dans tes documents à ce sujet, mais voici ce que je sais :" puis réponds avec tes connaissances générales.
+      3. Ne mélange jamais tes connaissances générales avec le contenu des documents.
+      4. Sois concis, structuré, réponds dans la langue de la question.
+      5. Si la question ne concerne pas les documents, réponds normalement.
+      6. Réponds naturellement à tous les messages, y compris les salutations.
     PROMPT
+  end
+
+  # Construit le contexte documentaire via RAG (Phase 2).
+  # Cherche dans les chunks vectoriels les plus proches de la question,
+  # puis formate le résultat pour l'injection dans le prompt système.
+  # Si la conversation est scopée à un dossier, limite la recherche à ce dossier.
+  def build_rag_context
+    user = @conversation.user
+    rag = RagService.new(user)
+
+    folder_id = nil
+    if @conversation.context_type == "Folder" && @conversation.context_id.present?
+      folder_id = @conversation.context_id
+    end
+
+    chunks = rag.search(@user_message.content, folder_id: folder_id, limit: 5)
+    rag.format_context(chunks)
   end
 end
