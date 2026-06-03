@@ -24,6 +24,13 @@
     </div>
 
     <div class="show-actions">
+      <%= button_to chat_folder_path(@folder),
+            method: :post,
+            class: "btn btn-primary btn-sm",
+            data: { turbo: false },
+            aria: { label: "Discuter avec ce dossier" } do %>
+        <i class="fa-solid fa-robot me-1"></i> Discuter
+      <% end %>
       <%= link_to "Sous-dossier", new_folder_path(parent_id: @folder.id), class: "btn btn-primary btn-sm" %>
       <%= link_to "Modifier", edit_folder_path(@folder), class: "btn btn-outline-secondary btn-sm" %>
       <%= link_to "Supprimer", folder_path(@folder),

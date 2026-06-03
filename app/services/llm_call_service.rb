@@ -1,3 +1,6 @@
+# Utilitaire pour des appels LLM ponctuels (one-shot), sans historique.
+# Utilisé par SummarizeDocumentJob et TagDocumentJob qui n'ont pas besoin
+# du contexte de conversation.
 class LlmCallService
   def self.oneshot(prompt, model: ENV.fetch("OPENROUTER_MODEL", "nvidia/nemotron-3-super-120b-a12b:free"))
     uri = URI("#{ENV.fetch('OPENROUTER_BASE_URL', 'https://openrouter.ai/api/v1')}/chat/completions")

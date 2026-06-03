@@ -1,3 +1,8 @@
+# Appelle l'API OpenRouter pour générer un embedding vectoriel via qwen3-embedding-8b.
+# Le modèle produit des vecteurs 4096-dim que l'on tronque à 1024 dimensions
+# via Matryoshka Representation Learning (MRL). Les 1024 premières dimensions
+# contiennent l'essentiel de l'information sémantique.
+# Limite HNSW pgvector = 2000 dimensions → 1024 est compatible.
 class EmbeddingService
   EMBEDDING_DIMENSIONS = 1024
   EMBEDDING_MODEL = "qwen/qwen3-embedding-8b"
@@ -27,6 +32,7 @@ class EmbeddingService
     full_embedding = body.dig("data", 0, "embedding")
     return nil unless full_embedding
 
+    # Troncature MRL : on garde les 1024 premières dimensions
     full_embedding.first(EMBEDDING_DIMENSIONS)
   end
 end

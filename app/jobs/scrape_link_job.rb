@@ -1,3 +1,6 @@
+# Job asynchrone de scraping pour les documents de type "Lien".
+# Appelle ScrapingService pour extraire le contenu de l'URL source,
+# puis relance l'embedding du document avec le nouveau contenu.
 class ScrapeLinkJob < ApplicationJob
   queue_as :ai
 
