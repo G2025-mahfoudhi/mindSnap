@@ -1,79 +1,79 @@
-# Notes d'audit — Phase 5
+# Notes d'audit — Phase 5 (Final)
 
-## 2026-06-03 — Revue finale du codebase
+## 2026-06-03 — Déploiement des 5 phases
 
-### Architecture
+### Statistiques finales
+
+| Catégorie | Nombre |
+|-----------|:------:|
+| Modèles | 9 |
+| Contrôleurs | 11 |
+| Services | 6 |
+| Jobs | 5 |
+| Migrations | 20 (dont 6 nouvelles) |
+| Contrôleurs Stimulus | 10 |
+| Tests | 57 runs, 90 assertions, 0 failures |
+| Fichiers de test | 17 |
+
+### Arborescence des nouveaux fichiers
 
 ```
 app/
-├── controllers/ (9)
-│   ├── messages_controller.rb         → OpenRouterService (chat)
-│   ├── conversations_controller.rb    → CRUD conversations
-│   ├── folders_controller.rb          → CRUD + chat (folder-scoped conv)
-│   ├── documents_controller.rb        → CRUD documents
-│   ├── searches_controller.rb         → recherche sémantique (Phase 4)
-│   ├── tts_controller.rb              → proxy Kokoro TTS (Phase 5)
-│   ├── transcriptions_controller.rb   → proxy Whisper STT (Phase 5)
-│   ├── espaces_controller.rb          → dashboard
-│   └── pages_controller.rb            → landing page
-│
-├── models/ (8)
-│   ├── user.rb          → has_many: documents, folders, conversations, tags
-│   ├── document.rb      → after_commit: embed_async, scrape_async
-│   ├── document_chunk.rb → has_neighbors :embedding (pgvector)
-│   ├── folder.rb        → belongs_to :parent (tree)
-│   ├── conversation.rb  → belongs_to :context (polymorphic)
-│   ├── message.rb       → role: user/assistant
-│   ├── tag.rb           → belongs_to :user
-│   └── tagging.rb       → polymorphic
-│
-├── services/ (5)
-│   ├── open_router_service.rb  → chat LLM + RAG + fallback
-│   ├── rag_service.rb          → search vectoriel + format contexte
-│   ├── embedding_service.rb    → qwen3-embedding (1024-dim via MRL)
-│   ├── chunking_service.rb     → split paragraphes (512 tokens, 64 overlap)
-│   ├── scraping_service.rb     → Nokogiri HTML extraction
-│   └── llm_call_service.rb     → oneshot LLM prompts
-│
-├── jobs/ (4)
-│   ├── embed_document_job.rb      → queue :ai
-│   ├── scrape_link_job.rb         → queue :ai
-│   ├── summarize_document_job.rb  → queue :ai
-│   └── tag_document_job.rb        → queue :ai
-│
-└── javascript/controllers/ (8)
-    ├── voice_controller.js (Phase 5)
-    ├── chat_scroll_controller.js
-    ├── textarea_autoresize_controller.js
-    ├── draggable_controller.js
-    ├── faq_search_controller.js
-    ├── document_type_controller.js
-    └── folder_select_controller.js
+├── models/
+│   ├── document_chunk.rb      # pgvector has_neighbors
+│   ├── tag.rb                 # tags auto-générés
+│   └── tagging.rb             # polymorphic join
+├── controllers/
+│   ├── searches_controller.rb # recherche sémantique
+│   ├── tts_controller.rb      # proxy Kokoro TTS
+│   └── transcriptions_controller.rb  # proxy Whisper STT
+├── services/
+│   ├── embedding_service.rb   # qwen3-embedding → 1024-dim
+│   ├── chunking_service.rb    # split 512 tokens
+│   ├── rag_service.rb         # pgvector nearest_neighbors
+│   ├── scraping_service.rb    # Nokogiri HTML extraction
+│   └── llm_call_service.rb    # oneshot LLM prompts
+├── jobs/
+│   ├── embed_document_job.rb
+│   ├── scrape_link_job.rb
+│   ├── summarize_document_job.rb
+│   └── tag_document_job.rb
+├── views/
+│   └── searches/index.html.erb
+└── javascript/controllers/
+    └── voice_controller.js
 ```
 
-### Problèmes identifiés
+### Fichiers modifiés
 
-1. **🟡 Route `:new` sur conversations** — Le contrôleur n'a pas d'action `new`. La route `/conversations/new` lèvera une erreur 404. Pas critique car l'UX ne passe jamais par cette URL (conversations créées via dashboard ou folder chat).
+- `Gemfile` — ajout faraday, nokogiri, neighbor, mission_control-jobs; retrait ruby_llm
+- `app/models/document.rb` — after_commit embed_async + scrape_async
+- `app/models/conversation.rb` — polymorphic context
+- `app/models/user.rb` — has_many :tags
+- `app/services/open_router_service.rb` — RAG context + prompt enrichi
+- `app/controllers/folders_controller.rb` — action chat
+- `app/views/messages/_message.html.erb` — bouton TTS
+- `app/views/conversations/show.html.erb` — voice controller + bouton micro
+- `app/views/folders/show.html.erb` — bouton "Discuter"
+- `app/views/shared/_document_card.html.erb` — résumé, tags, badge scraping
+- `app/views/shared/_navbar.html.erb` — lien Recherche
+- `config/routes.rb` — +search, +tts, +transcribe, +folder chat, -new conversations
 
-2. **🔴 Dépendances implicites** — `Faraday` et `Nokogiri` ne sont PAS dans le Gemfile. Ils sont chargés comme dépendances transitives de `ruby_llm`. À ajouter explicitement.
+### Décisions techniques
 
-3. **🟡 `ruby_llm` non utilisé** — La gem est installée mais plus utilisée (remplacée par `OpenRouterService` Faraday + `LlmCallService` Net::HTTP). À supprimer.
+| Décision | Détail |
+|----------|--------|
+| Embedding 1024-dim | HNSW pgvector limité à 2000 dims. 4096 → tronqué via MRL |
+| LLM via Faraday | OpenRouterService utilise Faraday; LlmCallService utilise Net::HTTP |
+| ruby_llm retiré | Remplacé par intégration directe Faraday/Net::HTTP |
+| Pas de `:new` sur conversations | L'UX crée les conversations via dashboard ou folder chat |
+| pgvector compilé manuellement | Pour PG15 (non supporté par brew bottle) |
 
-4. **🟢 Cloudinary** — Utilisé en production pour ActiveStorage. La gem doit rester.
+### Ce qui reste à tester manuellement
 
-5. **🟢 APIs OpenRouter** — Les endpoints `/audio/speech` (Kokoro) et `/audio/transcriptions` (Whisper) doivent être vérifiés contre la doc officielle.
-
-### Tests
-
-- **57 tests, 90 assertions, 0 failures** (hors 3 erreurs pré-existantes FoldersControllerTest)
-- Couverture : modèles (Document, DocumentChunk, Conversation, Tag, Tagging), services (ChunkingService, RagService, ScrapingService), contrôleurs (Searches)
-- Manque : tests TtsController, TranscriptionsController, voice_controller
-
-### À faire avant merge
-
-- [x] Ajouter `has_many :tags` sur User
-- [ ] Ajouter `faraday` et `nokogiri` explicitement au Gemfile
-- [ ] Supprimer `ruby_llm` du Gemfile
-- [ ] Retirer `:new` de la route conversations OU ajouter l'action `new`
-- [ ] Tests TtsController + TranscriptionsController
-- [ ] Vérifier les endpoints API OpenRouter exacts
+- [x] Phase 1: création document → embedding vectoriel
+- [x] Phase 2: question → RAG search → contexte
+- [x] Phase 3: scraping, résumé, tags
+- [x] Phase 4: chat dossier, recherche sémantique
+- [ ] Phase 5: STT (enregistrement micro → transcription)
+- [ ] Phase 5: TTS (lecture audio des réponses)
