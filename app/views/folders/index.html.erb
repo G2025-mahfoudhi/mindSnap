@@ -1,0 +1,35 @@
+<div class="folders-page">
+  <div class="folders-header">
+    <div class="folders-header-left">
+      <span class="folders-header-icon">📁</span>
+      <h1 class="folders-title">Mes dossiers</h1>
+    </div>
+    <%= link_to "Nouveau dossier", new_folder_path, class: "btn btn-primary" %>
+  </div>
+
+  <hr class="folders-divider">
+
+  <% if @folders.any? %>
+    <div class="folders-grid">
+      <% @folders.each do |folder| %>
+        <%= link_to folder_path(folder), class: "folder-card" do %>
+          <span class="folder-card-icon">📂</span>
+          <div class="folder-card-name"><%= folder.name %></div>
+          <% if folder.description.present? %>
+            <div class="folder-card-desc"><%= folder.description %></div>
+          <% else %>
+            <div class="folder-card-desc">Aucune description</div>
+          <% end %>
+          <span class="folder-card-arrow">↗</span>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <span class="empty-state-icon">📁</span>
+      <p>Aucun dossier pour le moment</p>
+      <%= link_to "Créer mon premier dossier", new_folder_path, class: "btn btn-primary" %>
+    </div>
+  <% end %>
+</div>
+

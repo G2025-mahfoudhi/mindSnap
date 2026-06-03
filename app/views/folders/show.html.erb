@@ -1,0 +1,85 @@
+<div class="folder-show-page">
+  <%= link_to folders_path, class: "back-link" do %>
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Tous les dossiers
+  <% end %>
+
+  <div class="show-header">
+    <div class="show-header-left">
+      <span class="show-header-icon">📂</span>
+      <div>
+        <h1 class="show-title"><%= @folder.name %></h1>
+        <% if @folder.description.present? %>
+          <p class="show-desc"><%= @folder.description %></p>
+        <% else %>
+          <p class="show-desc" style="font-style:italic;">Aucune description</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="show-actions">
+      <%= link_to "Sous-dossier", new_folder_path(parent_id: @folder.id), class: "btn btn-primary btn-sm" %>
+      <%= link_to "Modifier", edit_folder_path(@folder), class: "btn btn-outline-secondary btn-sm" %>
+      <%= link_to "Supprimer", folder_path(@folder),
+            data: { turbo_method: :delete, turbo_confirm: "Supprimer ce dossier ?" },
+            class: "btn btn-outline-danger btn-sm" %>
+    </div>
+  </div>
+
+  <hr class="show-divider">
+
+  <%# ——— SOUS-DOSSIERS ——— %>
+  <div class="section-block">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span>📂</span> Sous-dossiers
+      </h2>
+      <span class="section-count"><%= @children.count %></span>
+    </div>
+
+    <% if @children.any? %>
+      <div class="item-grid">
+        <% @children.each do |child| %>
+          <%= link_to folder_path(child), class: "subfolder-card" do %>
+            <span class="subfolder-card-icon">📁</span>
+            <div class="subfolder-card-name"><%= child.name %></div>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="empty-block">Aucun sous-dossier</div>
+    <% end %>
+  </div>
+
+  <%# ——— DOCUMENTS ——— %>
+  <div class="section-block">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span>📄</span> Documents
+      </h2>
+      <div class="d-flex align-items-center gap-2">
+        <span class="section-count"><%= @documents.count %></span>
+        <%= link_to "Nouveau document", new_document_path(folder_id: @folder.id), class: "btn btn-primary btn-sm" %>
+      </div>
+    </div>
+
+    <% if @documents.any? %>
+      <div class="doc-list">
+        <% @documents.each do |doc| %>
+          <%= link_to document_path(doc), class: "doc-item" do %>
+            <span class="doc-item-icon">📄</span>
+            <span class="doc-item-title"><%= doc.title %></span>
+            <% if doc.document_type.present? %>
+              <span class="doc-item-type"><%= doc.document_type %></span>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="empty-block">
+        Aucun document dans ce dossier —
+        <%= link_to "en créer un", new_document_path(folder_id: @folder.id) %>
+      </div>
+    <% end %>
+  </div>
+</div>

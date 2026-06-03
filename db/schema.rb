@@ -66,11 +66,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_132910) do
   create_table "folders", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "description"
-    t.bigint "folder_id"
     t.string "name"
+    t.bigint "parent_id"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
-    t.index ["folder_id"], name: "index_folders_on_folder_id"
+    t.index ["parent_id"], name: "index_folders_on_parent_id"
     t.index ["user_id"], name: "index_folders_on_user_id"
   end
 
@@ -244,7 +244,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_132910) do
   add_foreign_key "conversations", "users"
   add_foreign_key "documents", "folders"
   add_foreign_key "documents", "users"
-  add_foreign_key "folders", "folders"
+  add_foreign_key "folders", "folders", column: "parent_id"
   add_foreign_key "folders", "users"
   add_foreign_key "messages", "conversations"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
