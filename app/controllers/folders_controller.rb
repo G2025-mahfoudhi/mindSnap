@@ -9,6 +9,8 @@ class FoldersController < ApplicationController
   def show
     @children = @folder.children
     @documents = @folder.documents
+    @folders = current_user.folders.where(parent_id: nil).includes(:documents)
+    @documents_without_folder = current_user.documents.where(folder_id: nil)
   end
 
   def new
@@ -19,7 +21,7 @@ class FoldersController < ApplicationController
     @folder = current_user.folders.new(folder_params)
 
     if @folder.save
-      redirect_to folders_path, notice: "Folder créé"
+      redirect_to espaces_path, notice: "Dossier créé"
     else
       render :new, status: :unprocessable_entity
     end
@@ -38,7 +40,7 @@ class FoldersController < ApplicationController
 
   def destroy
     @folder.destroy
-    redirect_to folders_path, notice: "Folder supprimé"
+    redirect_to espaces_path, notice: "Dossier supprimé"
   end
 
   private

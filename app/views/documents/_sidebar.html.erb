@@ -1,44 +1,73 @@
-<aside class="border-end bg-light d-flex flex-column" style="width: 260px; min-width: 260px;">
+<aside class="border-end d-flex flex-column" style="width: 260px; min-width: 260px; background: #f7f5f4;">
   <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-    <%= link_to "Mon espace", espaces_path, class: "fw-semibold small text-decoration-none text-dark" %>
-    <%= link_to new_document_path,
-                class: "btn btn-sm btn-primary",
-                aria: { label: "Nouveau document" } do %>
-      <i class="fa-solid fa-plus"></i>
-    <% end %>
+    <%= link_to "Mon espace", espaces_path, class: "fw-semibold small text-decoration-none", style: "color: #3d7f7e;" %>
+    <div class="dropdown">
+      <button class="btn btn-sm btn-primary"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-label="Créer un nouveau contenu">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end" role="menu">
+        <li role="none">
+          <%= link_to new_folder_path, class: "dropdown-item", role: "menuitem" do %>
+            <i class="fa-solid fa-folder me-2" style="color: #f0ad4e;" aria-hidden="true"></i>
+            Nouveau dossier
+          <% end %>
+        </li>
+        <li role="none">
+          <%= link_to new_document_path, class: "dropdown-item", role: "menuitem" do %>
+            <i class="fa-solid fa-file-lines me-2" style="color: #3d7f7e;" aria-hidden="true"></i>
+            Nouveau document
+          <% end %>
+        </li>
+      </ul>
+    </div>
   </div>
 
   <div class="overflow-auto flex-grow-1 py-2">
     <% folders.each do |folder| %>
       <div class="px-3 py-1">
-        <div class="d-flex align-items-center gap-2 text-muted fw-semibold text-uppercase mb-1"
-             style="font-size: 11px; letter-spacing: 0.05em;">
-          <i class="fa-solid fa-folder" style="font-size: 11px;" aria-hidden="true"></i>
+
+        <%# — Nom du dossier cliquable — %>
+        <%= link_to folder_path(folder),
+                    class: "d-flex align-items-center gap-2 fw-semibold text-uppercase text-decoration-none mb-1",
+                    style: "font-size: 11px; letter-spacing: 0.05em; color: #2A4B4B;" do %>
+          <i class="fa-solid fa-folder" style="color: #f0ad4e; font-size: 12px;" aria-hidden="true"></i>
           <%= folder.name %>
-        </div>
+        <% end %>
+
+        <%# — Documents dans ce dossier — %>
         <% folder.documents.each do |doc| %>
           <%= link_to document_path(doc),
-                      class: "d-flex align-items-center gap-2 px-2 py-1 rounded text-decoration-none small #{doc == current_document ? 'fw-semibold text-primary bg-primary bg-opacity-10' : 'text-body'}" do %>
-            <i class="fa-solid fa-file-lines fa-xs text-muted" aria-hidden="true"></i>
+                      class: "d-flex align-items-center gap-2 px-2 py-1 rounded text-decoration-none small #{doc == current_document ? 'fw-semibold sidebar-doc-active' : 'sidebar-doc-item'}" do %>
+            <i class="fa-solid fa-file-lines fa-xs" style="color: #3d7f7e; flex-shrink: 0;" aria-hidden="true"></i>
             <span class="text-truncate"><%= doc.title %></span>
           <% end %>
         <% end %>
+
       </div>
     <% end %>
 
     <% if documents_without_folder.any? %>
-      <div class="px-3 py-1 mt-1">
-        <div class="text-muted fw-semibold text-uppercase mb-1"
-             style="font-size: 11px; letter-spacing: 0.05em;">
-          Sans dossier
+      <div class="px-3 py-1 mt-2">
+
+        <%# — Section sans dossier — %>
+        <div class="fw-semibold text-uppercase mb-1"
+             style="font-size: 11px; letter-spacing: 0.05em; color: #5a6370;">
+          <i class="fa-solid fa-inbox fa-xs me-1" aria-hidden="true"></i> Sans dossier
         </div>
+
         <% documents_without_folder.each do |doc| %>
           <%= link_to document_path(doc),
-                      class: "d-flex align-items-center gap-2 px-2 py-1 rounded text-decoration-none small #{doc == current_document ? 'fw-semibold text-primary bg-primary bg-opacity-10' : 'text-body'}" do %>
-            <i class="fa-solid fa-file-lines fa-xs text-muted" aria-hidden="true"></i>
+                      class: "d-flex align-items-center gap-2 px-2 py-1 rounded text-decoration-none small #{doc == current_document ? 'fw-semibold sidebar-doc-active' : 'sidebar-doc-item'}" do %>
+            <i class="fa-solid fa-file-lines fa-xs" style="color: #3d7f7e; flex-shrink: 0;" aria-hidden="true"></i>
             <span class="text-truncate"><%= doc.title %></span>
           <% end %>
         <% end %>
+
       </div>
     <% end %>
   </div>
