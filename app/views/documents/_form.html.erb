@@ -73,6 +73,6 @@
 
   <div class="d-flex gap-2">
     <%= f.button :submit, class: "btn btn-primary" %>
-    <%= link_to "Annuler", espaces_path, class: "btn btn-outline-secondary" %>
+    <%= link_to "Annuler", (document.folder_id ? folder_path(document.folder_id) : espaces_path), class: "btn btn-outline-secondary" %>
   </div>
 <% end %>
