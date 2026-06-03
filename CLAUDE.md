@@ -58,3 +58,50 @@ Solid Queue (jobs), Solid Cache (Rails.cache), and Solid Cable (Action Cable) ar
 ### Deployment
 
 Kamal is configured (`config/deploy.yml`). Production uses `MIND_SNAP_DATABASE_PASSWORD` env var.
+
+---
+
+## Session du 2026-06-03 — Intégration OpenRouter pour la messagerie
+
+### Ce qui a été implémenté
+
+**`app/services/open_router_service.rb`** (nouveau)
+- Service qui appelle l'API OpenRouter via Faraday (pas de gem supplémentaire).
+- Envoie l'historique de la conversation (18 derniers messages) + un prompt système.
+- Logique de fallback : essaie plusieurs modèles dans l'ordre si le premier est rate-limité.
+- Modèles dans `FALLBACK_MODELS` : `nvidia/nemotron-3-nano-30b-a3b:free`, `nvidia/nemotron-3-super-120b-a12b:free`, `poolside/laguna-xs.2:free`, `google/gemma-4-26b-a4b-it:free`.
+- Modèle actif configurable via `OPENROUTER_MODEL` dans `.env`.
+
+**`app/controllers/messages_controller.rb`** (réécrit)
+- Remplace l'ancienne intégration `RubyLLM` par `OpenRouterService`.
+- Si l'IA échoue, un message d'erreur friendly est sauvegardé dans la conversation plutôt que de rediriger.
+
+**`app/controllers/conversations_controller.rb`** (modifié)
+- `show` charge maintenant `@conversations` (nécessaire pour la sidebar).
+
+**`app/views/messages/_message.html.erb`** (nouveau)
+- Bulle de chat : messages utilisateur à droite (fond bleu), réponses IA à gauche (fond clair).
+- Utilise `simple_format` pour respecter les sauts de ligne.
+
+**`app/views/messages/create.turbo_stream.erb`** (nouveau)
+- Ajoute les deux messages (user + AI) dans `#messages` sans rechargement.
+- Réinitialise le formulaire via `turbo_stream.replace "new_message_form"`.
+
+**`app/views/conversations/show.html.erb`** (réécrit)
+- Layout complet : sidebar gauche + zone chat flex-column (header / messages scrollables / formulaire bas).
+- Utilise le partiel `conversations/_sidebar` existant.
+- Connecte le contrôleur Stimulus `chat-scroll` sur le div `#messages`.
+
+**`app/javascript/controllers/chat_scroll_controller.js`** (nouveau)
+- Scroll automatique vers le bas à l'ouverture et à chaque nouveau message (MutationObserver).
+
+### Variables d'environnement requises (`.env`)
+```
+OPENROUTER_API_KEY=sk-or-v1-...   # clé OpenRouter (openrouter.ai/keys)
+OPENROUTER_MODEL=nvidia/nemotron-3-nano-30b-a3b:free  # modèle par défaut
+```
+
+### Points de vigilance
+- Les modèles gratuits OpenRouter sont souvent rate-limités — c'est pourquoi le fallback existe.
+- `ruby_llm` est toujours dans le Gemfile mais n'est plus utilisé ; il peut être retiré.
+- Le prompt système instruit l'IA de répondre à tout message (y compris les salutations) tout en ramenant la conversation vers les documents de l'utilisateur.

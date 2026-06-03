@@ -1,21 +1,35 @@
 <% content_for :title, "#{@conversation.name} — MindSnap" %>
-<main class="d-flex" style="height: calc(100vh - 70px); margin-top: 70px;">
-  <%= render partial: "conversations/header", locals: { conversation: @conversation } %>
 
-  <div id="messages"
-       class="mb-4"
-       style="min-height: 200px;"
-       role="region"
-       aria-label="Historique des messages"
-       aria-live="polite"
-       aria-atomic="false">
-    <%= render @messages %>
+<div class="d-flex" style="height: calc(100vh - 70px); margin-top: 70px;">
+  <%= render "conversations/sidebar", conversations: @conversations, current_conversation: @conversation %>
+
+  <div class="d-flex flex-column flex-grow-1 overflow-hidden">
+    <%= render partial: "conversations/header", locals: { conversation: @conversation } %>
+
+    <div id="messages"
+         class="flex-grow-1 overflow-auto p-4"
+         data-controller="chat-scroll"
+         role="region"
+         aria-label="Historique des messages"
+         aria-live="polite"
+         aria-atomic="false">
+      <%= render @messages %>
+    </div>
+
+    <div class="border-top p-3 bg-white">
+      <%= turbo_frame_tag "new_message_form" do %>
+        <%= simple_form_for [@conversation, @message] do |f| %>
+          <div class="d-flex gap-2 align-items-end">
+            <%= f.input :content, label: false, placeholder: "Ton message...", required: true,
+                        wrapper_html: { class: "flex-grow-1 mb-0" },
+                        input_html: { rows: 2, class: "rounded-3" } %>
+            <%= f.button :submit, class: "btn btn-primary px-3 mb-0" do %>
+              <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+              <span class="visually-hidden">Envoyer</span>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
   </div>
-
-  <%= turbo_frame_tag "new_message_form" do %>
-    <%= simple_form_for [@conversation, @message] do |f| %>
-      <%= f.input :content, label: "Ton message", required: true, input_html: { rows: 3 } %>
-      <%= f.button :submit, "Envoyer", class: "btn btn-primary" %>
-    <% end %>
-  <% end %>
-</main>
+</div>

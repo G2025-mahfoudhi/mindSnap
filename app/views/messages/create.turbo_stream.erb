@@ -1,0 +1,23 @@
+<%= turbo_stream.append "messages" do %>
+  <%= render @user_message %>
+<% end %>
+
+<%= turbo_stream.append "messages" do %>
+  <%= render @ai_message %>
+<% end %>
+
+<%= turbo_stream.replace "new_message_form" do %>
+  <%= turbo_frame_tag "new_message_form" do %>
+    <%= simple_form_for [@conversation, Message.new] do |f| %>
+      <div class="d-flex gap-2 align-items-end">
+        <%= f.input :content, label: false, placeholder: "Ton message...", required: true,
+                    wrapper_html: { class: "flex-grow-1 mb-0" },
+                    input_html: { rows: 2, class: "rounded-3" } %>
+        <%= f.button :submit, class: "btn btn-primary px-3 mb-0" do %>
+          <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+          <span class="visually-hidden">Envoyer</span>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
