@@ -2,7 +2,7 @@ class DocumentsController < ApplicationController
   before_action :set_document, only: %i[show edit update destroy]
 
   def index
-    @documents = current_user.documents
+    @documents = current_user.documents.where(folder_id: nil)
   end
 
   def new
@@ -21,6 +21,8 @@ class DocumentsController < ApplicationController
   end
 
   def show
+    @folders = current_user.folders.where(parent_id: nil).includes(:documents)
+    @documents_without_folder = current_user.documents.where(folder_id: nil)
   end
 
   def edit
