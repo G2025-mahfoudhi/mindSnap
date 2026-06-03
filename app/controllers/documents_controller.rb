@@ -29,13 +29,16 @@ class DocumentsController < ApplicationController
   def download
     blob = ActiveStorage::Blob.find_signed!(params[:blob_signed_id])
 
-    # Vérification de sécurité : le blob doit appartenir à ce document
     unless @document.file.map { |a| a.blob.id }.include?(blob.id)
       raise ActiveRecord::RecordNotFound
     end
 
-    redirect_to blob.url(disposition: "attachment", expires_in: 5.minutes),
-                allow_other_host: true
+    # On télécharge via Rails (credentials serveur) pour contourner les restrictions
+    # d'accès public sur Cloudinary (Strict Transformations activé sur le compte).
+    send_data blob.download,
+              filename: blob.filename.to_s,
+              type: blob.content_type,
+              disposition: "attachment"
   end
 
   def edit
