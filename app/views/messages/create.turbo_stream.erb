@@ -8,15 +8,26 @@
 
 <%= turbo_stream.replace "new_message_form" do %>
   <%= turbo_frame_tag "new_message_form" do %>
-    <%= simple_form_for [@conversation, Message.new] do |f| %>
+    <%= simple_form_for [@conversation, Message.new],
+                        html: { "aria-label": "Envoyer un message" } do |f| %>
       <div class="d-flex gap-2 align-items-end">
-        <%= f.input :content, label: false, placeholder: "Ton message...", required: true,
-                    wrapper_html: { class: "flex-grow-1 mb-0" },
-                    input_html: { rows: 2, class: "rounded-3" } %>
-        <%= f.button :submit, class: "btn btn-primary px-3 mb-0" do %>
-          <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
-          <span class="visually-hidden">Envoyer</span>
-        <% end %>
+        <%= f.text_area :content,
+                        class: "form-control rounded-3 flex-grow-1",
+                        placeholder: "Ton message...",
+                        rows: 1,
+                        required: true,
+                        style: "resize: none; overflow-y: hidden; max-height: 150px;",
+                        "aria-label": "Ton message",
+                        data: {
+                          controller: "textarea-autoresize",
+                          action: "input->textarea-autoresize#resize"
+                        } %>
+        <button type="submit"
+                class="btn btn-primary px-3 flex-shrink-0"
+                aria-label="Envoyer le message">
+          <i class="fa-solid fa-paper-plane me-md-2" aria-hidden="true"></i>
+          <span class="d-none d-md-inline">Envoyer</span>
+        </button>
       </div>
     <% end %>
   <% end %>
