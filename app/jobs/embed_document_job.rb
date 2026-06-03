@@ -32,6 +32,8 @@ class EmbedDocumentJob < ApplicationJob
     # Chaînage — Phases 3+
     SummarizeDocumentJob.perform_later(document_id) if defined?(SummarizeDocumentJob)
     TagDocumentJob.perform_later(document_id) if defined?(TagDocumentJob)
+  rescue ActiveRecord::RecordNotFound => e
+    Rails.logger.error "EmbedDocumentJob: document #{document_id} introuvable"
   rescue StandardError => e
     document.update!(embedding_status: "failed")
     Rails.logger.error "EmbedDocumentJob échec doc #{document_id}: #{e.message}"
