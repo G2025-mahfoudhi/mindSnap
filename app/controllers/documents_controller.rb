@@ -63,7 +63,7 @@ class DocumentsController < ApplicationController
 
   def destroy
     folder = @document.folder
-    cloudinary_purge_files if ActiveStorage::Blob.service.is_a?(ActiveStorage::Service::CloudinaryService)
+    cloudinary_purge_files if Rails.env.production?
     @document.destroy
     destination = folder ? folder_path(folder) : espaces_path
     redirect_to destination, notice: "Document supprimé.", status: :see_other
