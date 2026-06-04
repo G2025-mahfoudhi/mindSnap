@@ -1,6 +1,4 @@
 Rails.application.config.after_initialize do
-  require 'active_storage/service/cloudinary_service'
-
   ActiveStorage::Service::CloudinaryService.class_eval do
     def delete(key)
       key = find_blob_or_use_key(key)
