@@ -63,6 +63,7 @@ class DocumentsController < ApplicationController
 
   def destroy
     folder = @document.folder
+    cloudinary_purge_files if ActiveStorage::Blob.service.is_a?(ActiveStorage::Service::CloudinaryService)
     @document.destroy
     destination = folder ? folder_path(folder) : espaces_path
     redirect_to destination, notice: "Document supprimé.", status: :see_other
@@ -86,6 +87,15 @@ class DocumentsController < ApplicationController
 
   def document_params
     params.require(:document).permit(:title, :content, :document_type, :date_injection, file: [])
+  end
+
+  def cloudinary_purge_files
+    @document.file.each do |attachment|
+      key = "#{Rails.env}/#{attachment.blob.key}"
+      %w[image raw video].each do |resource_type|
+        Cloudinary::Uploader.destroy(key, resource_type: resource_type, invalidate: true)
+      end
+    end
   end
 
   def cloudinary_resource_type(content_type)
