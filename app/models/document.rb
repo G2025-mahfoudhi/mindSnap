@@ -3,7 +3,7 @@ class Document < ApplicationRecord
   belongs_to :user
   belongs_to :folder, optional: true
 
-  has_many_attached :file
+  has_many_attached :file, dependent: :purge
   has_many :document_chunks, dependent: :destroy
   has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings
@@ -24,8 +24,14 @@ class Document < ApplicationRecord
   def embedded?
     embedding_status == "completed"
   end
+  # before_destroy :purge_documents_from_cloudinary
+
 
   private
+
+  # def purge_documents_from_cloudinary
+  #   documents.purge if documents.attached?
+  # end
 
   # Déclenche le scraping uniquement pour les documents de type "Lien"
   # qui ont une URL source mais pas encore de contenu
