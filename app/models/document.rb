@@ -3,7 +3,7 @@ class Document < ApplicationRecord
   belongs_to :user
   belongs_to :folder, optional: true
 
-  has_many_attached :file, dependent: :purge_later
+  has_many_attached :file, dependent: :purge
   has_many :document_chunks, dependent: :destroy
   has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings
