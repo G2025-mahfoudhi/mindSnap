@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_02_132910) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_03_145457) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "vector"
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
@@ -43,11 +44,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_132910) do
   end
 
   create_table "conversations", force: :cascade do |t|
+    t.bigint "context_id"
+    t.string "context_type"
     t.datetime "created_at", null: false
+    t.string "model", default: "nvidia/nemotron-3-super-120b-a12b:free"
     t.string "name"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["context_type", "context_id"], name: "index_conversations_on_context_type_and_context_id"
     t.index ["user_id"], name: "index_conversations_on_user_id"
+  end
+
+  create_table "document_chunks", force: :cascade do |t|
+    t.integer "chunk_index", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "document_id", null: false
+    t.vector "embedding", limit: 1024
+    t.integer "token_count"
+    t.datetime "updated_at", null: false
+    t.index ["document_id"], name: "index_document_chunks_on_document_id"
+    t.index ["embedding"], name: "idx_document_chunks_embedding", opclass: :vector_cosine_ops, using: :hnsw
   end
 
   create_table "documents", force: :cascade do |t|
@@ -55,7 +72,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_132910) do
     t.datetime "created_at", null: false
     t.datetime "date_injection"
     t.string "document_type"
+    t.string "embedding_status", default: "pending"
     t.bigint "folder_id"
+    t.string "scraping_status"
+    t.string "source_url"
+    t.text "summary"
     t.string "title"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
@@ -225,6 +246,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_132910) do
     t.index ["key"], name: "index_solid_queue_semaphores_on_key", unique: true
   end
 
+  create_table "taggings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "tag_id", null: false
+    t.bigint "taggable_id", null: false
+    t.string "taggable_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tag_id", "taggable_type", "taggable_id"], name: "idx_taggings_unique", unique: true
+    t.index ["tag_id"], name: "index_taggings_on_tag_id"
+    t.index ["taggable_type", "taggable_id"], name: "index_taggings_on_taggable"
+  end
+
+  create_table "tags", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", limit: 50, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["name", "user_id"], name: "index_tags_on_name_and_user_id", unique: true
+    t.index ["user_id"], name: "index_tags_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
@@ -242,6 +283,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_132910) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "conversations", "users"
+  add_foreign_key "document_chunks", "documents", on_delete: :cascade
   add_foreign_key "documents", "folders"
   add_foreign_key "documents", "users"
   add_foreign_key "folders", "folders", column: "parent_id"
@@ -253,4 +295,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_132910) do
   add_foreign_key "solid_queue_ready_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "taggings", "tags", on_delete: :cascade
+  add_foreign_key "tags", "users", on_delete: :cascade
 end

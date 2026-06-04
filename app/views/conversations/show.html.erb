@@ -25,7 +25,13 @@
     <div class="border-top p-3 bg-white">
       <%= turbo_frame_tag "new_message_form" do %>
         <%= simple_form_for [@conversation, @message],
-                            html: { "aria-label": "Envoyer un message" } do |f| %>
+                            html: {
+                              "aria-label": "Envoyer un message",
+                              data: {
+                                controller: "voice",
+                                action: "turbo:submit-end->voice#clearInput"
+                              }
+                            } do |f| %>
           <div class="d-flex gap-2 align-items-end">
             <%= f.text_area :content,
                             class: "form-control rounded-3 flex-grow-1",
@@ -36,8 +42,15 @@
                             "aria-label": "Ton message",
                             data: {
                               controller: "textarea-autoresize",
-                              action: "input->textarea-autoresize#resize"
+                              action: "input->textarea-autoresize#resize",
+                              voice_target: "input"
                             } %>
+            <button type="button"
+                    data-action="voice#startRecording"
+                    class="btn btn-outline-secondary flex-shrink-0"
+                    aria-label="Dicter un message">
+              <i class="fa-solid fa-microphone"></i>
+            </button>
             <button type="submit"
                     class="btn btn-primary px-3 flex-shrink-0"
                     aria-label="Envoyer le message">
