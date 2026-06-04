@@ -24,15 +24,15 @@ class Document < ApplicationRecord
   def embedded?
     embedding_status == "completed"
   end
-  before_destroy :purge_documents_from_cloudinary
+  # before_destroy :purge_documents_from_cloudinary
 
 
   private
 
-  def purge_documents_from_cloudinary
-    documents.purge if documents.attached?
-  end
-  
+  # def purge_documents_from_cloudinary
+  #   documents.purge if documents.attached?
+  # end
+
   # Déclenche le scraping uniquement pour les documents de type "Lien"
   # qui ont une URL source mais pas encore de contenu
   def scrape_async
