@@ -4,7 +4,7 @@
 # Cf. .opencode/design/DECISIONS.md (section FAQ à venir)
 # ============================================================
 class FaqsController < ApplicationController
-  skip_before_action :authenticate_user!, only: [ :index ]
+  skip_before_action :authenticate_user!, only: [:index]
 
   def index
     # Les questions/réponses sont définies directement dans la vue

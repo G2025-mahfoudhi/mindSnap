@@ -20,7 +20,7 @@ class TranscriptionsController < ApplicationController
     http.read_timeout = 60
 
     request = Net::HTTP::Post.new(uri)
-    request["Authorization"] = "Bearer #{ENV['OPENROUTER_API_KEY']}"
+    request["Authorization"] = "Bearer #{ENV.fetch('OPENROUTER_API_KEY')}"
     request["Content-Type"] = "application/json"
     request.body = {
       model: "openai/whisper-large-v3-turbo",
@@ -39,5 +39,11 @@ class TranscriptionsController < ApplicationController
       Rails.logger.error "Transcription failed: #{response.code} — #{response.body.truncate(200)}"
       render json: { error: "Transcription failed" }, status: :unprocessable_entity
     end
+  rescue Net::ReadTimeout, Net::OpenTimeout, Errno::ECONNREFUSED, SocketError => e
+    Rails.logger.error "Transcription network error: #{e.message}"
+    render json: { error: "Service temporairement indisponible" }, status: :service_unavailable
+  rescue JSON::ParserError => e
+    Rails.logger.error "Transcription JSON parse error: #{e.message}"
+    render json: { error: "Réponse invalide du service" }, status: :unprocessable_entity
   end
 end

@@ -67,12 +67,16 @@
       <% end %>
 
       <%# ——— RÉSUMÉ IA ——— %>
-      <div class="doc-show-content">
-        <p class="text-muted fw-semibold mb-2" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">
-          <i class="fa-solid fa-robot me-1" aria-hidden="true"></i> Résumé IA
-        </p>
-        <p class="text-muted fst-italic mb-0">Le résumé généré par l'IA apparaîtra ici.</p>
-      </div>
+      <%= render "documents/summary", document: @document %>
+
+      <%# ——— TAGS IA ——— %>
+      <% if @document.tags.any? %>
+        <div class="d-flex flex-wrap gap-1 mt-3">
+          <% @document.tags.each do |tag| %>
+            <span class="badge bg-primary bg-opacity-10 text-primary"><%= tag.name %></span>
+          <% end %>
+        </div>
+      <% end %>
     </div>
   </main>
 

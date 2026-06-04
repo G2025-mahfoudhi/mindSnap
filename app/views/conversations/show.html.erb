@@ -3,7 +3,8 @@
 <div class="d-flex" style="height: calc(100vh - 56px - 4rem);" role="main" aria-label="<%= @conversation.name %>">
   <%= render "conversations/sidebar", conversations: @conversations, current_conversation: @conversation %>
 
-  <div class="d-flex flex-column flex-grow-1 overflow-hidden">
+  <div class="d-flex flex-column flex-grow-1 overflow-hidden"
+       data-controller="voice">
     <%= render partial: "conversations/header", locals: { conversation: @conversation } %>
 
     <div id="messages"
@@ -25,13 +26,12 @@
     <div class="border-top p-3 bg-white">
       <%= turbo_frame_tag "new_message_form" do %>
         <%= simple_form_for [@conversation, @message],
-                            html: {
-                              "aria-label": "Envoyer un message",
-                              data: {
-                                controller: "voice",
-                                action: "turbo:submit-end->voice#clearInput"
-                              }
-                            } do |f| %>
+                              html: {
+                                "aria-label": "Envoyer un message",
+                                data: {
+                                  action: "turbo:submit-end->voice#clearInput"
+                                }
+                              } do |f| %>
           <div class="d-flex gap-2 align-items-end">
             <%= f.text_area :content,
                             class: "form-control rounded-3 flex-grow-1",

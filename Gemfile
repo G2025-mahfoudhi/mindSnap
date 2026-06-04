@@ -55,7 +55,7 @@ gem "mission_control-jobs"
 group :development, :test do
   gem "dotenv-rails"
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
+  gem "debug", platforms: %i[mri windows], require: "debug/prelude"
 
   # Audits gems for known security defects (use config/bundler-audit.yml to ignore issues)
   gem "bundler-audit", require: false
@@ -77,3 +77,7 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
+
+gem "pdf-reader", "~> 2.15"
+gem "docx", "~> 0.13.0"
+gem "rtesseract", "~> 3.1"

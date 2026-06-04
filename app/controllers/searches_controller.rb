@@ -6,12 +6,19 @@ class SearchesController < ApplicationController
   def index
     @query = params[:q]
 
-    if @query.present?
+    return unless @query.present?
+
+    begin
       rag = RagService.new(current_user)
       @chunks = rag.search(@query, limit: 20)
       @documents = Document
-        .where(id: @chunks.map(&:document_id).uniq)
-        .includes(:tags, :folder)
+                   .where(id: @chunks.map(&:document_id).uniq)
+                   .includes(:tags, :folder)
+    rescue StandardError => e
+      Rails.logger.error "Search error: #{e.class} — #{e.message}"
+      @chunks = []
+      @documents = []
+      flash.now[:alert] = "La recherche est momentanément indisponible."
     end
   end
 end

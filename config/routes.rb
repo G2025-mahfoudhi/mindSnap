@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  mount MissionControl::Jobs::Engine, at: "/jobs" if defined?(MissionControl::Jobs)
+
   devise_for :users
   root to: "pages#home"
 
@@ -7,6 +9,8 @@ Rails.application.routes.draw do
   resources :documents do
     member do
       get :download
+      get :summary_status
+      post :summarize
     end
     resources :conversations, only: [:create, :show] do
       resources :messages, only: [:create]

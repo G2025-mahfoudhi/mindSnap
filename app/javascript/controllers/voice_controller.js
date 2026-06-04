@@ -5,6 +5,11 @@ export default class extends Controller {
 
   connect() {
     this.isRecording = false
+    this.isSpeaking = false
+  }
+
+  csrfToken() {
+    return document.querySelector("meta[name='csrf-token']")?.content || ""
   }
 
   async startRecording() {
@@ -18,6 +23,7 @@ export default class extends Controller {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       this.isRecording = true
+      this.element.classList.add("is-recording")
 
       const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
         ? "audio/webm;codecs=opus"
@@ -32,6 +38,7 @@ export default class extends Controller {
 
       this.mediaRecorder.onstop = async () => {
         this.isRecording = false
+        this.element.classList.remove("is-recording")
         stream.getTracks().forEach((t) => t.stop())
 
         if (chunks.length === 0) return
@@ -54,18 +61,24 @@ export default class extends Controller {
       }, 30000)
     } catch (err) {
       this.isRecording = false
+      this.element.classList.remove("is-recording")
       console.error("Erreur microphone:", err)
       alert("Impossible d'accéder au microphone. Vérifie les permissions.")
     }
   }
 
   async speak({ params: { text } }) {
-    if (!text) return
+    if (!text || this.isSpeaking) return
+
+    this.isSpeaking = true
 
     try {
       const response = await fetch("/tts/speak", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": this.csrfToken()
+        },
         body: JSON.stringify({ text, voice: "ff_siwis" })
       })
 
@@ -75,8 +88,18 @@ export default class extends Controller {
       }
 
       const blob = await response.blob()
-      const audio = new Audio(URL.createObjectURL(blob))
-      await audio.play()
+      const url = URL.createObjectURL(blob)
+      const audio = new Audio(url)
+      const cleanup = () => {
+        this.isSpeaking = false
+        URL.revokeObjectURL(url)
+      }
+      audio.addEventListener("ended", cleanup)
+      audio.addEventListener("error", cleanup)
+      await audio.play().catch((err) => {
+        console.error("Playback failed:", err)
+        cleanup()
+      })
     } catch (err) {
       console.error("Erreur TTS:", err)
     }
@@ -91,7 +114,13 @@ export default class extends Controller {
   blobToBase64(blob) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
-      reader.onloadend = () => resolve(reader.result.split(",")[1])
+      reader.onloadend = () => {
+        if (reader.result && typeof reader.result === "string") {
+          resolve(reader.result.split(",")[1])
+        } else {
+          reject(new Error("Failed to read blob"))
+        }
+      }
       reader.onerror = reject
       reader.readAsDataURL(blob)
     })
@@ -101,7 +130,10 @@ export default class extends Controller {
     try {
       const response = await fetch("/transcribe", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": this.csrfToken()
+        },
         body: JSON.stringify({
           audio_base64: base64,
           format: "webm",

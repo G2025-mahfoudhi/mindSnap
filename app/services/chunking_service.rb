@@ -10,16 +10,16 @@ class ChunkingService
   end
 
   def call
-    paragraphs = @text.split(/\n{2,}/)  # découpe par paragraphes
+    paragraphs = @text.split(/\n{2,}/) # découpe par paragraphes
     chunks = []
     current = ""
 
     paragraphs.each do |para|
-      if token_count(current + " " + para) > CHUNK_SIZE
+      if token_count("#{current} #{para}") > CHUNK_SIZE
         chunks << current.strip unless current.empty?
-        current = overlap_from(current) + "\n\n" + para
+        current = "#{overlap_from(current)}\n\n#{para}"
       else
-        current += "\n\n" + para
+        current += "\n\n#{para}"
       end
     end
     chunks << current.strip unless current.empty?
@@ -38,7 +38,8 @@ class ChunkingService
     overlap = ""
     sentences.reverse_each do |s|
       break if token_count(overlap + s) > CHUNK_OVERLAP
-      overlap = s + " " + overlap
+
+      overlap = "#{s} #{overlap}"
     end
     overlap.strip
   end

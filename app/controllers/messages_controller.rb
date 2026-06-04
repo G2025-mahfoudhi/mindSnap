@@ -1,11 +1,21 @@
 class MessagesController < ApplicationController
   def create
     @conversation = current_user.conversations.find(params[:conversation_id])
-    @user_message = @conversation.messages.create!(role: "user", content: message_params[:content])
+    content = message_params[:content].to_s.strip
+
+    if content.blank?
+      respond_to do |format|
+        format.turbo_stream { head :bad_request }
+        format.html { redirect_to conversation_path(@conversation), alert: "Le message ne peut pas être vide." }
+      end
+      return
+    end
+
+    @user_message = @conversation.messages.create!(role: "user", content: content)
 
     begin
       ai_content = OpenRouterService.new(@conversation, @user_message).call
-    rescue => e
+    rescue StandardError => e
       Rails.logger.error "OpenRouter Error: #{e.class} — #{e.message}"
       ai_content = "Désolé, je n'ai pas pu générer une réponse. Réessaie dans un instant."
     end
