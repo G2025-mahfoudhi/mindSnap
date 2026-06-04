@@ -36,16 +36,10 @@ Rails 8.1.3 app (Ruby 3.3.5) bootstrapped from the [Le Wagon template](https://g
 The app is a knowledge-management tool where users organize documents into folders and chat with an AI about them.
 
 - **User** — authenticated via Devise. Owns folders, documents, and conversations.
-- **Folder** — self-referential tree: a folder belongs to a parent `Folder` (optional) and has many children. The FK in the DB is `folder_id` but the model association uses the alias `parent` / `children` with `foreign_key: 'parent_id'`. Has many documents.
-- **Document** — belongs to a user and a folder. Has `title`, `content`, `type` (Rails STI column), and `date_injection`. The `type` column activates Rails Single Table Inheritance — subclass appropriately rather than setting it as a plain string.
+- **Folder** — self-referential tree: belongs to a parent `Folder` (optional), has many children. FK is `parent_id`. Has many documents.
+- **Document** — belongs to a user and an optional folder. Has `title`, `content`, `document_type`, `date_injection`. Uses `has_many_attached :file` (Active Storage) for file uploads stored on Cloudinary in production. Note: the column is `document_type`, NOT `type` (STI was intentionally avoided — a migration renamed it).
 - **Conversation** — belongs to a user, has many messages.
-- **Message** — belongs to a conversation. `role` column distinguishes speaker (e.g. `"user"` / `"assistant"`).
-
-### Known issues in the current codebase (as of branch `controller-document`)
-
-- `User` model has two syntax errors: `has many` (missing underscore) for conversations and messages — these need fixing before the app boots cleanly.
-- `Folder` model has `belongs_to :parent` declared twice; the first (generic) call should be removed.
-- `DocumentsController` has incomplete/placeholder implementations (`new`, `create`) that reference wrong associations and a non-existent `chat_path`.
+- **Message** — belongs to a conversation. `role` column is `"user"` or `"assistant"`.
 
 ### Authentication
 
@@ -57,7 +51,14 @@ Solid Queue (jobs), Solid Cache (Rails.cache), and Solid Cable (Action Cable) ar
 
 ### Deployment
 
-Kamal is configured (`config/deploy.yml`). Production uses `MIND_SNAP_DATABASE_PASSWORD` env var.
+Heroku (`our-mindsnap`). Kamal est aussi configuré (`config/deploy.yml`).
+Variables d'environnement requises en production :
+```
+CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@mindsnap
+OPENROUTER_API_KEY=sk-or-v1-...
+OPENROUTER_MODEL=nvidia/nemotron-3-nano-30b-a3b:free
+```
+Après chaque deploy : `heroku run rails db:migrate --app our-mindsnap`
 
 ---
 
@@ -105,3 +106,62 @@ OPENROUTER_MODEL=nvidia/nemotron-3-nano-30b-a3b:free  # modèle par défaut
 - Les modèles gratuits OpenRouter sont souvent rate-limités — c'est pourquoi le fallback existe.
 - `ruby_llm` est toujours dans le Gemfile mais n'est plus utilisé ; il peut être retiré.
 - Le prompt système instruit l'IA de répondre à tout message (y compris les salutations) tout en ramenant la conversation vers les documents de l'utilisateur.
+
+---
+
+## Session du 2026-06-03 — UI conversations + téléchargement Cloudinary
+
+### Interface conversations (show & index)
+
+**`app/views/conversations/show.html.erb`** (réécrit)
+- Layout : sidebar + zone chat (`d-flex`, hauteur `calc(100vh - 56px - 4rem)`).
+- État vide affiché quand pas encore de message.
+- Formulaire en bas avec textarea autoresize + bouton "Envoyer" responsive (`d-none d-md-inline`).
+
+**`app/views/conversations/index.html.erb`** (réécrit)
+- Même hauteur que show. Zone centrale avec état vide et bouton "Nouvelle conversation".
+
+**`app/views/messages/_message.html.erb`** (nouveau)
+- Bulles : utilisateur à droite (`bg-primary`), IA à gauche (`bg-light`).
+
+**`app/views/messages/create.turbo_stream.erb`** (nouveau)
+- Append des deux messages + reset formulaire via `turbo_stream.replace`.
+- Utilise `f.text_area` directement (bypasse le wrapper simple_form qui causait un désalignement).
+
+**`app/javascript/controllers/chat_scroll_controller.js`** (nouveau)
+- MutationObserver : scroll automatique vers le bas à chaque nouveau message.
+
+**`app/javascript/controllers/textarea_autoresize_controller.js`** (nouveau)
+- Auto-resize de la textarea. Ajoute les bordures au `scrollHeight` (correction box-sizing).
+
+**`app/javascript/controllers/draggable_controller.js`** (modifié)
+- Ajout d'un listener `resize` : repositionne le bouton flottant quand l'écran change de taille.
+- Si la position sauvegardée sort de l'écran → `resetToDefault()` (retour en `bottom: 6rem; right: 1.5rem`).
+
+**`app/views/layouts/application.html.erb`** (modifié)
+- Body en `d-flex flex-column min-vh-100` avec `padding-bottom: 3rem` pour le footer fixe.
+
+### Téléchargement de fichiers depuis Cloudinary
+
+**`config/storage.yml`**
+- Ajout de `resource_type: auto` pour que Cloudinary accepte tous les types de fichiers.
+
+**`config/routes.rb`**
+- Ajout d'une route `member get :download` sur les documents.
+
+**`app/controllers/documents_controller.rb`**
+- Nouvelle action `download` : génère une URL Cloudinary valide via `Cloudinary::Utils.cloudinary_url` avec le bon `resource_type` selon le `content_type`.
+- Méthode privée `cloudinary_resource_type` : `image/` → `image`, `video/` → `video`, `application/pdf` → `image`, reste → `raw`.
+- Flag `fl_attachment:nom_sans_extension_sans_espaces` : l'extension `.pdf` dans le flag causait un 400 (interprétée comme format par Cloudinary), les espaces cassaient l'URL.
+
+**`app/views/documents/show.html.erb`**
+- Lien téléchargement → `download_document_path(@document, blob_signed_id: attachment.blob.signed_id)`.
+
+### Bugs critiques corrigés
+- `@document.file.purge` dans `document_path(...)` — appelé à chaque chargement de page, supprimait tous les fichiers Cloudinary. Corrigé en `document_path(@document)`.
+- `@document.file.key` dans la route download — `file` est une collection, `.key` n'existe pas. Corrigé en `@document`.
+
+### Production Heroku
+- Migrations jamais lancées → `heroku run rails db:migrate` (500 sur toutes les pages).
+- `CLOUDINARY_URL` avait le mauvais `cloud_name` (`dpm4v9e57` au lieu de `mindsnap`) → uploads échouaient silencieusement.
+- Branche `download` déployée via `git push heroku download:master`.
