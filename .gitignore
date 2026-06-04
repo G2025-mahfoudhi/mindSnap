@@ -39,3 +39,6 @@
 # Ignore Mac and Linux file system files
 *.swp
 .DS_Store
+
+# Documentation et notes locales — chaque dev garde les siennes
+.claude/
