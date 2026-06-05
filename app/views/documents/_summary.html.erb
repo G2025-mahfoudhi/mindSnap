@@ -20,7 +20,7 @@
   </div>
   <div data-summary-poll-target="content">
     <% if document.summary.present? %>
-      <%= simple_format document.summary %>
+      <div class="markdown-content"><%= markdown document.summary %></div>
     <% else %>
       <p class="text-muted fst-italic mb-0">Le résumé généré par l'IA apparaîtra ici.</p>
     <% end %>
