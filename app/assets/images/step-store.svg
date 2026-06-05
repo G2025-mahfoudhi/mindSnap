@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 160" fill="none">
+  <!-- Cloud -->
+  <path d="M60 105 Q45 105 45 90 Q45 78 57 75 Q56 55 75 50 Q85 35 105 40 Q120 30 138 40 Q158 42 160 62 Q175 65 175 80 Q175 105 155 105 Z" fill="#E8F4F3" stroke="#549695" stroke-width="2"/>
+  <!-- Upload arrow -->
+  <line x1="110" y1="95" x2="110" y2="60" stroke="#549695" stroke-width="2.5" stroke-linecap="round"/>
+  <polyline points="97,72 110,59 123,72" stroke="#549695" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Document at bottom -->
+  <rect x="35" y="118" width="150" height="32" rx="4" fill="white" stroke="#549695" stroke-width="1.5"/>
+  <line x1="50" y1="128" x2="170" y2="128" stroke="#549695" stroke-width="1" opacity="0.4"/>
+  <line x1="50" y1="138" x2="150" y2="138" stroke="#549695" stroke-width="1" opacity="0.4"/>
+</svg>

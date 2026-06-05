@@ -1,0 +1,85 @@
+<div class="dashboard">
+  <div class="container">
+
+    <%# Greeting %>
+    <div class="dashboard__greeting">
+      <h1>Bonjour, <span class="dashboard__name"><%= current_user.first_name.presence || current_user.email.split("@").first %></span> 👋</h1>
+      <p class="dashboard__date"><%= l(Date.today, format: :long) %></p>
+    </div>
+
+    <%# Stats %>
+    <div class="row g-4 mb-5">
+      <div class="col-md-4">
+        <div class="dashboard__stat-card">
+          <div class="dashboard__stat-header">
+            <span class="dashboard__stat-label">Documents utilisés</span>
+          </div>
+          <div class="dashboard__stat-body">
+            <span class="dashboard__stat-number"><%= @document_count %></span>
+            <span class="dashboard__stat-max">/ <%= @document_limit %></span>
+            <%= link_to "#", class: "dashboard__pro-btn ms-auto" do %>
+              Pro <i class="fa-solid fa-arrow-right"></i>
+            <% end %>
+          </div>
+          <div class="progress mt-3" style="height: 6px;">
+            <div class="progress-bar <%= @document_count >= @document_limit ? 'bg-danger' : 'bg-success' %>"
+                 role="progressbar"
+                 style="width: <%= [(@document_count * 100 / @document_limit), 100].min %>%">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="dashboard__stat-card">
+          <div class="dashboard__stat-label">Dossiers</div>
+          <div class="dashboard__stat-body">
+            <span class="dashboard__stat-number"><%= current_user.folders.count %></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="dashboard__stat-card">
+          <div class="dashboard__stat-label">Conversations IA</div>
+          <div class="dashboard__stat-body">
+            <span class="dashboard__stat-number"><%= current_user.conversations.count %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# Recent documents %>
+    <div class="dashboard__section">
+      <div class="dashboard__section-header">
+        <h2 class="dashboard__section-title">Documents récents</h2>
+        <%= link_to "Voir tous", documents_path, class: "dashboard__section-link" %>
+      </div>
+
+      <% if @recent_documents.any? %>
+        <div class="row g-3">
+          <% @recent_documents.each do |doc| %>
+            <div class="col-md-6 col-lg-4">
+              <%= link_to document_path(doc), class: "dashboard__doc-card" do %>
+                <div class="dashboard__doc-icon">
+                  <i class="fa-solid <%= doc_icon(doc) %>"></i>
+                </div>
+                <div class="dashboard__doc-info">
+                  <p class="dashboard__doc-title"><%= doc.title %></p>
+                  <p class="dashboard__doc-date"><%= time_ago_in_words(doc.created_at) %> ago</p>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="dashboard__empty">
+          <i class="fa-solid fa-file-circle-plus fa-2x mb-3"></i>
+          <p>Aucun document pour l'instant.</p>
+          <%= link_to "Ajouter un document", new_document_path, class: "btn btn-primary btn-sm" %>
+        </div>
+      <% end %>
+    </div>
+
+  </div>
+</div>
