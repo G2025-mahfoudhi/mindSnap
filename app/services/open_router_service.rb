@@ -79,7 +79,9 @@ class OpenRouterService
 
     doc_list = all_docs.map do |d|
       folder_info = d.folder ? " (dossier: #{d.folder.name})" : ""
-      "- #{d.title} [#{d.document_type}]#{folder_info}"
+      summary_info = d.summary.present? ? "\n  Résumé : #{d.summary.truncate(200)}" : ""
+      content_info = d.content.present? && d.summary.blank? ? "\n  Contenu : #{d.content.truncate(300)}" : ""
+      "- #{d.title} [#{d.document_type}]#{folder_info}#{summary_info}#{content_info}"
     end.join("\n")
 
     <<~PROMPT.strip
