@@ -13,7 +13,7 @@ class ScrapeLinkJobTest < ActiveJob::TestCase
     )
     ScrapeLinkJob.perform_now(doc.id)
     doc.reload
-    assert_includes ["scraped", "failed"], doc.scraping_status
+    assert_includes %w[scraped failed], doc.scraping_status
   end
 
   test "perform skip si pas un Lien" do
@@ -39,5 +39,55 @@ class ScrapeLinkJobTest < ActiveJob::TestCase
 
   test "est dans la queue ai" do
     assert_equal "ai", ScrapeLinkJob.new.queue_name
+  end
+
+  test "n'enqueue pas EmbedDocumentJob explicitement (bug du double job corrigé)" do
+    doc = @user.documents.create!(
+      title: "Double job test",
+      document_type: "Lien",
+      source_url: "https://example.com",
+      embedding_status: "completed"
+    )
+
+    # On désactive le callback after_commit :embed_async pour isoler
+    # le comportement du job et vérifier qu'il n'appelle pas EmbedDocumentJob
+    Document.skip_callback(:commit, :after, :embed_async, raise: false)
+
+    assert_no_enqueued_jobs(only: EmbedDocumentJob) do
+      ScrapeLinkJob.perform_now(doc.id)
+    end
+  ensure
+    Document.set_callback(:commit, :after, :embed_async)
+  end
+
+  test "perform de bout en bout : création Lien → scraping → status scraped/failed" do
+    doc = @user.documents.create!(
+      title: "E2E scrape",
+      document_type: "Lien",
+      source_url: "https://example.com"
+    )
+
+    assert_equal "pending", doc.scraping_status
+
+    ScrapeLinkJob.perform_now(doc.id)
+    doc.reload
+
+    assert_includes %w[scraped failed], doc.scraping_status,
+                    "Le statut devrait être scraped ou failed après le job"
+  end
+
+  test "perform gère un document qui n'existe plus" do
+    doc = @user.documents.create!(
+      title: "À supprimer",
+      document_type: "Lien",
+      source_url: "https://example.com"
+    )
+    doc_id = doc.id
+    doc.destroy!
+
+    # Ne doit pas lever d'exception
+    assert_nothing_raised do
+      ScrapeLinkJob.perform_now(doc_id)
+    end
   end
 end
