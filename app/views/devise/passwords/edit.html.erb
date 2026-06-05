@@ -4,37 +4,44 @@
   Accessible via le lien envoyé par email (contient un token).
 ============================================================ %>
 
-<div class="auth-card mx-auto">
-  <h2 class="auth-card__title">Choisis un nouveau mot de passe</h2>
-  <p class="auth-card__subtitle">Plus que quelques secondes et c'est réglé.</p>
-
-  <%= simple_form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }) do |f| %>
-    <%= f.error_notification %>
-
-    <%# Token de réinitialisation (caché, requis par Devise pour la sécurité) %>
-    <%= f.input :reset_password_token, as: :hidden %>
-    <%= f.full_error :reset_password_token %>
-
-    <div class="form-inputs">
-      <%= f.input :password,
-                  label: "Nouveau mot de passe",
-                  required: false,
-                  autofocus: true,
-                  hint: ("#{@minimum_password_length} caractères minimum" if @minimum_password_length),
-                  input_html: { autocomplete: "new-password" } %>
-
-      <%= f.input :password_confirmation,
-                  label: "Confirmer le nouveau mot de passe",
-                  required: false,
-                  input_html: { autocomplete: "new-password" } %>
+<div class="container py-4" style="max-width: 700px;">
+  <div class="card mx-auto">
+    <div class="card-header text-center">
+      <h2 class="h3 mb-1"><strong>Choisis un nouveau mot de passe</strong></h2>
+      <p class="text-muted small mb-0">Plus que quelques secondes et c'est réglé.</p>
     </div>
+    <div class="card-body">
 
-    <div class="form-actions mt-3">
-      <%= f.button :submit, "Changer mon mot de passe", class: "btn btn-primary w-100" %>
+      <%= simple_form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }) do |f| %>
+        <%= f.error_notification %>
+
+        <%# Token de réinitialisation (caché, requis par Devise pour la sécurité) %>
+        <%= f.input :reset_password_token, as: :hidden %>
+        <%= f.full_error :reset_password_token %>
+
+        <div class="form-inputs">
+          <%= f.input :password,
+                      label: "Nouveau mot de passe",
+                      required: false,
+                      autofocus: true,
+                      hint: ("#{@minimum_password_length} caractères minimum" if @minimum_password_length),
+                      input_html: { autocomplete: "new-password" } %>
+
+          <%= f.input :password_confirmation,
+                      label: "Confirmer le nouveau mot de passe",
+                      required: false,
+                      input_html: { autocomplete: "new-password" } %>
+        </div>
+
+        <div class="form-actions mt-3">
+          <%= f.button :submit, "Changer mon mot de passe", class: "btn btn-primary w-100" %>
+        </div>
+      <% end %>
+
+      <div class="auth-card__footer">
+        <%= render "devise/shared/links" %>
+      </div>
+
     </div>
-  <% end %>
-
-  <div class="auth-card__footer">
-    <%= render "devise/shared/links" %>
   </div>
 </div>
