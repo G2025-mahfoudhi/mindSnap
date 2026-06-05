@@ -93,7 +93,8 @@ class FileExtractionService
 
   def with_tempfile(ext = "")
     tmp = Tempfile.new(["mind_extract", ext], binmode: true)
-    @blob.download { |chunk| tmp.write(chunk) }
+    tmp.write(@blob.download)
+    tmp.flush
     tmp.rewind
     yield(tmp.path)
   ensure
