@@ -14,5 +14,8 @@ export default class extends Controller {
     this.fileFieldTarget.hidden = !FILE_TYPES.includes(type)
     this.urlFieldTarget.hidden = type !== "Lien"
     this.contentFieldTarget.hidden = type !== "Note"
+    if (type !== "Note") {
+      this.dispatch("hide", { bubbles: true })
+    }
   }
 }
