@@ -18,7 +18,14 @@ class ScrapingService
 
     doc = Nokogiri::HTML(response.body)
     doc.css("script, style, nav, footer, header, aside, noscript").remove
-    doc.css("body").text.gsub(/\s+/, " ").strip.truncate(MAX_CONTENT_LENGTH)
+
+    # Remplace les spans de coloration syntaxique par leur texte brut
+    doc.css("pre span, code span").each { |node| node.replace(node.text) }
+
+    text = doc.css("body").text
+    # Supprime les résidus de balises HTML échappées dans le texte
+    text = text.gsub(/<[^>]{1,200}>/, "")
+    text.gsub(/[[:space:]]+/, " ").strip.truncate(MAX_CONTENT_LENGTH)
   rescue StandardError => e
     Rails.logger.error "ScrapingService échec pour #{url}: #{e.message}"
     nil

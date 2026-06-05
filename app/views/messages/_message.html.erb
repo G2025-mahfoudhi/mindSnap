@@ -17,6 +17,8 @@
         </button>
       <% end %>
     </div>
-    <%= simple_format message.content, {}, wrapper_tag: "div" %>
+    <div class="markdown-content">
+      <%= markdown message.content %>
+    </div>
   </div>
 </div>

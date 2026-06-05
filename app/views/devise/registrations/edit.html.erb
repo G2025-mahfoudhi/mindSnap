@@ -63,9 +63,10 @@
                       input_html: { autocomplete: "current-password" } %>
         </div>
 
-        <div class="form-actions mt-3">
-          <%= f.button :submit, "Mettre à jour", class: "btn btn-primary w-100" %>
-        </div>
+      <div class="d-flex gap-2 mt-5">
+        <%= f.button :submit, "Mettre à jour", class: "btn btn-primary", style: "width: 70%;" %>
+        <%= link_to "← Retour", :back, class: "btn btn-outline-secondary flex-grow-1" %>
+      </div>
       <% end %>
 
       <%# ============================================================
@@ -73,6 +74,7 @@
         Séparée visuellement par un divider.
         Bouton danger outline pour éviter les clics accidentels.
       ============================================================ %>
+
       <div class="auth-card__danger-zone">
         <h3 class="danger-zone__label">Zone dangereuse</h3>
         <%= button_to "Supprimer mon compte",
@@ -82,10 +84,6 @@
                       class: "btn btn-outline-danger btn-sm" %>
       </div>
 
-      <%# Lien retour %>
-      <div class="text-center mt-3">
-        <%= link_to "← Retour", :back, class: "btn btn-outline-secondary" %>
-      </div>
 
     </div>
   </div>

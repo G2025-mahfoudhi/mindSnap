@@ -78,6 +78,7 @@ group :test do
   gem "selenium-webdriver"
 end
 
+gem "redcarpet"
 gem "pdf-reader", "~> 2.15"
 gem "docx", "~> 0.13.0"
 gem "rtesseract", "~> 3.1"

@@ -61,8 +61,8 @@
 
       <%# ——— CONTENU ——— %>
       <% if @document.content.present? %>
-        <div class="doc-show-content mb-4">
-          <%= simple_format @document.content %>
+        <div class="doc-show-content markdown-content mb-4">
+          <%= markdown @document.content %>
         </div>
       <% end %>
 
