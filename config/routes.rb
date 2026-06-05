@@ -3,6 +3,7 @@ Rails.application.routes.draw do
 
   devise_for :users
   root to: "pages#home"
+  get "dashboard", to: "dashboard#index"
 
   resources :espaces, only: [:index]
 
@@ -25,6 +26,7 @@ Rails.application.routes.draw do
     resources :messages, only: [:create]
   end
 
+  get "equipe", to: "pages#equipe"
   get "faq", to: "faqs#index"
   get "search", to: "searches#index"
   post "tts/speak", to: "tts#speak"

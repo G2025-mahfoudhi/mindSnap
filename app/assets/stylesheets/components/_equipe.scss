@@ -1,0 +1,62 @@
+.equipe-hero {
+  padding: 4rem 0 2rem;
+  text-align: center;
+
+  &__title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    color: $near-black;
+    margin-bottom: .5rem;
+  }
+
+  &__subtitle {
+    font-size: 1.125rem;
+    color: rgba($near-black, .6);
+  }
+}
+
+.equipe-cards {
+  padding: 2rem 0 5rem;
+}
+
+.team-card {
+  background: $white;
+  border: 1px solid rgba($near-black, .08);
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  transition: box-shadow .2s ease, transform .2s ease;
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba($near-black, .1);
+    transform: translateY(-4px);
+  }
+
+  &__avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: $teal;
+    color: $white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+  }
+
+  &__name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: $near-black;
+    margin-bottom: .25rem;
+  }
+
+  &__role {
+    font-size: .9rem;
+    color: $teal;
+    font-weight: 500;
+    margin: 0;
+  }
+}

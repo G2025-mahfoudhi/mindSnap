@@ -3,8 +3,8 @@
   <div class="container">
     <div class="row align-items-center">
       <div class="col-lg-6">
-        <p class="hero__tagline">MindSnap</p>
-        <h1 class="hero__title" id="hero-title">Ton deuxième cerveau</h1>
+        <h1 class="hero__title" id="hero-title">MindSnap</h1>
+        <p class="hero__tagline">Ton deuxième cerveau</p>
         <p class="hero__subtitle">
           Capture tes idées, tes cours, tes documents. Retrouve-les instantanément grâce à l'IA.
         </p>
@@ -26,7 +26,7 @@
 <section class="features" id="features" aria-labelledby="features-title">
   <div class="container">
     <header class="features__header">
-      <h2 class="features__title" id="features-title">Tout ce dont tu as besoin</h2>
+      <h2 class="features__title" id="features-title">Comment ça marche</h2>
       <p class="features__subtitle">Un espace unique pour capturer, organiser et retrouver l'ensemble de tes connaissances.</p>
     </header>
 
@@ -98,12 +98,12 @@
 <section class="how-it-works" id="how-it-works" aria-labelledby="how-title">
   <div class="container">
     <header class="how-it-works__header">
-      <h2 class="how-it-works__title" id="how-title">Comment ça marche</h2>
-      <p class="how-it-works__subtitle">Trois étapes simples pour transformer ta manière de travailler.</p>
+      <h2 class="how-it-works__title" id="how-title">Tout ce dont tu as besoin</h2>
+      <p class="how-it-works__subtitle">Quatre étapes simples pour transformer ta manière de travailler.</p>
     </header>
 
     <div class="row steps-row">
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="step">
           <span class="step__number" aria-hidden="true">1</span>
           <div class="step__illustration">
@@ -114,9 +114,20 @@
         </div>
       </div>
 
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="step">
           <span class="step__number" aria-hidden="true">2</span>
+          <div class="step__illustration">
+            <%= image_tag "step-store.svg", alt: "", class: "img-fluid" %>
+          </div>
+          <h3 class="step__title">Stocke</h3>
+          <p class="step__text">Tes documents sont sauvegardés dans le cloud, accessibles partout et en toute sécurité.</p>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="step">
+          <span class="step__number" aria-hidden="true">3</span>
           <div class="step__illustration">
             <%= image_tag "step-organize.svg", alt: "", class: "img-fluid" %>
           </div>
@@ -125,9 +136,9 @@
         </div>
       </div>
 
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="step">
-          <span class="step__number" aria-hidden="true">3</span>
+          <span class="step__number" aria-hidden="true">4</span>
           <div class="step__illustration">
             <%= image_tag "step-find.svg", alt: "", class: "img-fluid" %>
           </div>
