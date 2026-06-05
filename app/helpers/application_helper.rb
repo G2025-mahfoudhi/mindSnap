@@ -7,6 +7,8 @@ module ApplicationHelper
     when "Note"     then "fa-file-lines"
     else                 "fa-file"
     end
+  end
+
   def markdown(text)
     return "" if text.blank?
 

@@ -47,7 +47,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_102816) do
     t.bigint "context_id"
     t.string "context_type"
     t.datetime "created_at", null: false
-    t.string "model", default: "nvidia/nemotron-3-super-120b-a12b:free"
     t.string "name"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
