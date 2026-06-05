@@ -9,6 +9,7 @@ module ApplicationHelper
     end
   end
 
+  
   def markdown(text)
     return "" if text.blank?
 
