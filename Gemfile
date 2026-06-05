@@ -47,6 +47,7 @@ gem "font-awesome-sass", "~> 6.1"
 gem "simple_form", github: "heartcombo/simple_form"
 gem "sassc-rails"
 gem "faraday"
+gem "faraday-follow_redirects"
 gem "nokogiri"
 gem "cloudinary"
 gem "neighbor"
@@ -78,6 +79,7 @@ group :test do
   gem "selenium-webdriver"
 end
 
+gem "redcarpet"
 gem "pdf-reader", "~> 2.15"
 gem "docx", "~> 0.13.0"
 gem "rtesseract", "~> 3.1"

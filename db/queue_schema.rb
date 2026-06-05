@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_03_145457) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_05_102816) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -74,7 +74,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_03_145457) do
     t.string "document_type"
     t.string "embedding_status", default: "pending"
     t.bigint "folder_id"
-    t.string "scraping_status"
+    t.string "scraping_status", default: "pending"
     t.string "source_url"
     t.text "summary"
     t.string "title"

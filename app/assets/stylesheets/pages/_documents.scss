@@ -89,3 +89,62 @@
   p { margin-bottom: 1rem; }
   p:last-child { margin-bottom: 0; }
 }
+
+// ——— MARKDOWN RENDERED CONTENT ———
+.markdown-content {
+  line-height: 1.7;
+
+  p { margin-bottom: .75rem; }
+  p:last-child { margin-bottom: 0; }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    margin-top: 1.25rem;
+    margin-bottom: .5rem;
+    &:first-child { margin-top: 0; }
+  }
+
+  ul, ol {
+    padding-left: 1.4rem;
+    margin-bottom: .75rem;
+    li { margin-bottom: .25rem; }
+  }
+
+  code {
+    font-size: .85em;
+    background: rgba(0, 0, 0, .06);
+    border-radius: 4px;
+    padding: .1em .35em;
+  }
+
+  pre {
+    background: rgba(0, 0, 0, .06);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+    margin-bottom: .75rem;
+    code { background: none; padding: 0; }
+  }
+
+  blockquote {
+    border-left: 3px solid rgba(0, 0, 0, .15);
+    padding-left: 1rem;
+    margin: .75rem 0;
+    color: rgba(0, 0, 0, .6);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: .75rem;
+    th, td {
+      border: 1px solid rgba(0, 0, 0, .12);
+      padding: .4rem .75rem;
+    }
+    th { background: rgba(0, 0, 0, .04); font-weight: 600; }
+  }
+
+  a { color: $teal; text-decoration: none; &:hover { text-decoration: underline; } }
+
+  strong { font-weight: 600; }
+}

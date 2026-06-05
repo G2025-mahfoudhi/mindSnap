@@ -1,9 +1,9 @@
 <%= simple_form_for document, defaults: { required: false }, html: { data: { controller: "document-type" } } do |f| %>
   <%= f.error_notification %>
 
-  <div class="mb-3">
-    <%= f.input :title, label: "Titre", placeholder: "Titre du document" %>
-  </div>
+    <div class="mb-3">
+      <%= f.input :title, label: "Titre", placeholder: "Titre du document" %>
+    </div>
 
   <div class="mb-3">
     <%= f.input :document_type,
@@ -61,18 +61,32 @@
 
   <%# Affiché pour Lien %>
   <div class="mb-3" data-document-type-target="urlField" hidden>
-    <%= f.input :content,
+    <%= f.input :source_url,
                 label: "URL",
                 placeholder: "https://...",
                 input_html: { type: "url", autocomplete: "off" } %>
   </div>
 
-  <div class="mb-3" data-document-type-target="contentField" hidden>
-    <%= f.input :content, label: "Contenu", as: :text, input_html: { rows: 8, placeholder: "Contenu du document..." } %>
+  <div class="mb-3" data-document-type-target="contentField" hidden
+       data-controller="voice"
+       data-voice-auto-submit-value="false"
+       data-action="document-type:hide->voice#stopRecording">
+    <%= f.input :content, label: "Contenu", as: :text,
+        input_html: { rows: 8, placeholder: "Contenu du document...",
+                      data: { voice_target: "input" } } %>
+    <button type="button"
+            data-action="voice#toggle"
+            data-voice-target="micButton"
+            class="btn btn-sm btn-outline-secondary mt-2 voice-btn"
+            aria-label="Dicter une note"
+            aria-pressed="false">
+      <i class="fa-solid fa-microphone"></i>
+      <span data-voice-target="timer" class="ms-1 small recording-timer" hidden></span>
+    </button>
   </div>
 
-  <div class="d-flex gap-2">
-    <%= button_to :submit, class: "btn btn-primary" %>
+  <div class="d-flex gap-2 justify-content-center">
+    <%= f.button :submit, "Modifier", class: "btn btn-outline-secondary" %>
     <%= link_to "Annuler", (document.folder_id ? folder_path(document.folder_id) : espaces_path), class: "btn btn-outline-secondary" %>
   </div>
 <% end %>
