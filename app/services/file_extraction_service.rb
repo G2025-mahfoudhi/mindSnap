@@ -93,13 +93,41 @@ class FileExtractionService
 
   def with_tempfile(ext = "")
     tmp = Tempfile.new(["mind_extract", ext], binmode: true)
-    tmp.write(@blob.download)
+    tmp.write(download_blob)
     tmp.flush
     tmp.rewind
     yield(tmp.path)
   ensure
     tmp&.close
     tmp&.unlink
+  end
+
+  def download_blob
+    # Active Storage Cloudinary retourne parfois 0 bytes via .download
+    # On télécharge directement via l'URL Cloudinary avec le bon resource_type
+    resource_type = cloudinary_resource_type
+    url = Cloudinary::Utils.cloudinary_url(
+      @blob.key,
+      resource_type: resource_type,
+      type: "upload",
+      secure: true
+    )
+    response = Faraday.get(url)
+    return response.body if response.success? && response.body.present?
+
+    # Fallback sur Active Storage
+    @blob.download
+  rescue StandardError
+    @blob.download
+  end
+
+  def cloudinary_resource_type
+    case @content_type
+    when /\Aimage\// then "image"
+    when /\Avideo\// then "video"
+    when "application/pdf" then "image"
+    else "raw"
+    end
   end
 
   def guess_extension
