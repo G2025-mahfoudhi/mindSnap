@@ -11,10 +11,19 @@ class Document < ApplicationRecord
   # -- Validations ---------------------------------------------------------
   validates :title, presence: true
   validates :document_type, presence: true
+  validates :source_url, format: { with: URI::DEFAULT_PARSER.make_regexp(%w[http https]),
+                                   message: "doit être une URL valide" },
+                         allow_blank: true
 
   # -- Callbacks -----------------------------------------------------------
+  # Migre les anciens documents "Lien" où l'URL était stockée dans content
+  before_save :migrate_legacy_url, if: :should_migrate_url?
+
   # Après création : si c'est un Lien avec URL, scraper le contenu
   after_commit :scrape_async, on: :create
+
+  # Après migration legacy : déclencher le scraping pour les documents existants
+  after_commit :scrape_after_migration, on: :update, if: :should_scrape_after_migration?
 
   # Après création : extraire le texte des fichiers joints (PDF, DOCX, images)
   after_commit :extract_text_async, on: :create, if: :should_extract_text?
@@ -27,13 +36,31 @@ class Document < ApplicationRecord
   def embedded?
     embedding_status == "completed"
   end
-  # before_destroy :purge_documents_from_cloudinary
 
   private
 
-  # def purge_documents_from_cloudinary
-  #   documents.purge if documents.attached?
-  # end
+  # Migration des anciens documents "Lien" : l'URL était stockée dans content
+  # au lieu de source_url. On la déplace au prochain save.
+  def should_migrate_url?
+    document_type == "Lien" &&
+      source_url.blank? &&
+      content.present? &&
+      content.match?(%r{\Ahttps?://})
+  end
+
+  def migrate_legacy_url
+    self.source_url = content
+    self.content = nil
+    self.scraping_status = "pending"
+  end
+
+  def should_scrape_after_migration?
+    saved_change_to_source_url? && source_url.present? && content.blank?
+  end
+
+  def scrape_after_migration
+    ScrapeLinkJob.perform_later(id)
+  end
 
   # Déclenche le scraping uniquement pour les documents de type "Lien"
   # qui ont une URL source mais pas encore de contenu

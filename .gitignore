@@ -40,3 +40,6 @@
 *.swp
 .DS_Store
 .cloudi_tele
+
+# Documentation et notes locales — chaque dev garde les siennes
+.claude/

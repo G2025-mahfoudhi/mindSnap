@@ -15,7 +15,6 @@ class ScrapeLinkJob < ApplicationJob
         content: content,
         scraping_status: "scraped"
       )
-      EmbedDocumentJob.perform_later(document_id)
     else
       document.update!(scraping_status: "failed")
     end

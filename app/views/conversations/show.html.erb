@@ -4,7 +4,8 @@
   <%= render "conversations/sidebar", conversations: @conversations, current_conversation: @conversation %>
 
   <div class="d-flex flex-column flex-grow-1 overflow-hidden"
-       data-controller="voice">
+       data-controller="voice"
+       data-voice-auto-submit-value="true">
     <%= render partial: "conversations/header", locals: { conversation: @conversation } %>
 
     <div id="messages"
@@ -46,10 +47,13 @@
                               voice_target: "input"
                             } %>
             <button type="button"
-                    data-action="voice#startRecording"
-                    class="btn btn-outline-secondary flex-shrink-0"
-                    aria-label="Dicter un message">
+                    data-action="voice#toggle"
+                    data-voice-target="micButton"
+                    class="btn btn-outline-secondary flex-shrink-0 voice-btn"
+                    aria-label="Dicter un message"
+                    aria-pressed="false">
               <i class="fa-solid fa-microphone"></i>
+              <span data-voice-target="timer" class="ms-1 small recording-timer" hidden></span>
             </button>
             <button type="submit"
                     class="btn btn-primary px-3 flex-shrink-0"
