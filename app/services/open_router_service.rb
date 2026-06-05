@@ -9,9 +9,8 @@ class OpenRouterService
 
   # Fallback ordonné : si le premier est rate-limité, on essaie le suivant
   FALLBACK_MODELS = [
+    "deepseek/deepseek-v4-flash",
     "nvidia/nemotron-3-nano-30b-a3b:free",
-    "nvidia/nemotron-3-super-120b-a12b:free",
-    "poolside/laguna-xs.2:free",
     "google/gemma-4-26b-a4b-it:free"
   ].freeze
 
@@ -25,8 +24,10 @@ class OpenRouterService
 
     models_to_try.each do |model|
       response = post(model)
-      parsed   = JSON.parse(response.body)
-      content  = parsed.dig("choices", 0, "message", "content").presence
+      next unless response&.body
+
+      parsed  = JSON.parse(response.body)
+      content = parsed.dig("choices", 0, "message", "content").presence
 
       return content if content
 
@@ -40,17 +41,22 @@ class OpenRouterService
 
   def models_to_try
     configured = ENV["OPENROUTER_MODEL"].presence
-    configured ? [ configured, *FALLBACK_MODELS ].uniq : FALLBACK_MODELS
+    configured ? [configured, *FALLBACK_MODELS].uniq : FALLBACK_MODELS
   end
 
   def post(model)
     Faraday.post(API_URL) do |req|
+      req.options.timeout = 30
+      req.options.open_timeout = 10
       req.headers["Authorization"] = "Bearer #{ENV.fetch('OPENROUTER_API_KEY')}"
       req.headers["Content-Type"]  = "application/json"
       req.headers["HTTP-Referer"]  = "https://mindsnap.app"
       req.headers["X-Title"]       = "MindSnap"
       req.body = JSON.generate({ model: model, messages: messages_for_api })
     end
+  rescue Faraday::Error => e
+    Rails.logger.error "OpenRouterService Faraday error for #{model}: #{e.message}"
+    nil
   end
 
   def messages_for_api
@@ -94,9 +100,7 @@ class OpenRouterService
     rag = RagService.new(user)
 
     folder_id = nil
-    if @conversation.context_type == "Folder" && @conversation.context_id.present?
-      folder_id = @conversation.context_id
-    end
+    folder_id = @conversation.context_id if @conversation.context_type == "Folder" && @conversation.context_id.present?
 
     chunks = rag.search(@user_message.content, folder_id: folder_id, limit: 5)
     rag.format_context(chunks)

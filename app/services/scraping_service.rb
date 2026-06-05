@@ -8,7 +8,12 @@ class ScrapingService
     uri = URI(url)
     return nil unless uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
 
-    response = Net::HTTP.get_response(uri)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.open_timeout = 5
+    http.read_timeout = 10
+    http.use_ssl = true if uri.scheme == "https"
+
+    response = http.request_get(uri.request_uri)
     return nil unless response.is_a?(Net::HTTPSuccess)
 
     doc = Nokogiri::HTML(response.body)

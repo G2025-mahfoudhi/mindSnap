@@ -1,6 +1,6 @@
 class FoldersController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_folder, only: [:show, :edit, :update, :destroy]
+  before_action :set_folder, only: %i[show edit update destroy]
 
   def index
     @folders = current_user.folders.where(parent_id: nil)
