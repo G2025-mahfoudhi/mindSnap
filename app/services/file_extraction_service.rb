@@ -103,31 +103,18 @@ class FileExtractionService
   end
 
   def download_blob
-    # Active Storage Cloudinary retourne parfois 0 bytes via .download
-    # On télécharge directement via l'URL Cloudinary avec le bon resource_type
-    resource_type = cloudinary_resource_type
-    url = Cloudinary::Utils.cloudinary_url(
-      @blob.key,
-      resource_type: resource_type,
-      type: "upload",
-      secure: true
-    )
-    response = Faraday.get(url)
-    return response.body if response.success? && response.body.present?
+    folder = Rails.env
+    full_key = "#{folder}/#{@blob.key}"
 
-    # Fallback sur Active Storage
+    %w[image raw].each do |resource_type|
+      url = Cloudinary::Utils.cloudinary_url(full_key, resource_type: resource_type, type: "upload", secure: true)
+      response = Faraday.get(url)
+      return response.body if response.success? && response.body.present?
+    end
+
     @blob.download
   rescue StandardError
     @blob.download
-  end
-
-  def cloudinary_resource_type
-    case @content_type
-    when /\Aimage\// then "image"
-    when /\Avideo\// then "video"
-    when "application/pdf" then "image"
-    else "raw"
-    end
   end
 
   def guess_extension
