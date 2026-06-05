@@ -93,3 +93,48 @@
     </div>
   </div>
 </section>
+
+<%# --- How it works --- %>
+<section class="how-it-works" id="how-it-works" aria-labelledby="how-title">
+  <div class="container">
+    <header class="how-it-works__header">
+      <h2 class="how-it-works__title" id="how-title">Tout ce dont tu as besoin</h2>
+      <p class="how-it-works__subtitle">Trois étapes simples pour transformer ta manière de travailler.</p>
+    </header>
+
+    <div class="row steps-row">
+      <div class="col-md-4">
+        <div class="step">
+          <span class="step__number" aria-hidden="true">1</span>
+          <div class="step__illustration">
+            <%= image_tag "step-capture.svg", alt: "", class: "img-fluid" %>
+          </div>
+          <h3 class="step__title">Capture</h3>
+          <p class="step__text">Prends en photo ou importe ton document. L'OCR analyse le texte automatiquement.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="step">
+          <span class="step__number" aria-hidden="true">2</span>
+          <div class="step__illustration">
+            <%= image_tag "step-organize.svg", alt: "", class: "img-fluid" %>
+          </div>
+          <h3 class="step__title">Organise</h3>
+          <p class="step__text">Range dans le bon dossier automatiquement. Ou laisse l'IA te proposer le meilleur classement.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="step">
+          <span class="step__number" aria-hidden="true">3</span>
+          <div class="step__illustration">
+            <%= image_tag "step-find.svg", alt: "", class: "img-fluid" %>
+          </div>
+          <h3 class="step__title">Retrouve</h3>
+          <p class="step__text">L'IA indexe tout. Une recherche et tu retrouves n'importe quel document en une seconde.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
