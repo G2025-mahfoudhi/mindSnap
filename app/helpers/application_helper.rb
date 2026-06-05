@@ -1,4 +1,13 @@
 module ApplicationHelper
+  def document_inline_url(attachment)
+    if attachment.blob.service_name == "cloudinary"
+      key = "#{Rails.env}/#{attachment.blob.key}"
+      Cloudinary::Utils.cloudinary_url(key, resource_type: "image", type: "upload", secure: true)
+    else
+      url_for(attachment)
+    end
+  end
+
   def doc_icon(document)
     case document.document_type
     when "PDF"      then "fa-file-pdf"
@@ -9,7 +18,6 @@ module ApplicationHelper
     end
   end
 
-  
   def markdown(text)
     return "" if text.blank?
 
