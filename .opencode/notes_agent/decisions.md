@@ -216,3 +216,66 @@ a réellement changé.
 **Raison** : Évite les boucles infinies et la destruction accidentelle des embeddings.
 **Impact** : `app/models/document.rb` — ajout de `should_reembed?` et modification
 du `after_commit` avec `if: :should_reembed?`.
+
+---
+
+## Session du 2026-06-04 — Corrections massives
+
+### Résultat final
+
+```
+170 tests, 307 assertions, 0 failures, 0 errors
+Fichiers créés : ~8
+Fichiers modifiés : ~32
+Modèle actif : deepseek/deepseek-v4-flash (~0.10 $/M tokens)
+Crédits OpenRouter : ~4.9995 $
+```
+
+### Décision D014 — Modèle payant deepseek-v4-flash
+**Date** : 2026-06-04
+**Contexte** : Les modèles `:free` sont limités à 50 requêtes/jour. Le quota était épuisé, aucun résumé/chat ne fonctionnait.
+**Décision** : Passer à `deepseek/deepseek-v4-flash` (~0.10 $/M tokens). Fallback : deepseek + 2 gratuits.
+**Impact** : `.env` (`OPENROUTER_MODEL`), `LlmCallService::FALLBACK_MODELS`, `OpenRouterService::FALLBACK_MODELS`.
+
+### Décision D015 — Solid Queue en développement
+**Date** : 2026-06-04
+**Contexte** : Les jobs n'étaient jamais exécutés en dev (`queue_adapter` = `:async` par défaut).
+**Décision** : `config.active_job.queue_adapter = :solid_queue` + `SOLID_QUEUE_IN_PUMA=1` dans `.env` + rôle `queue:` dans `database.yml`.
+**Raison** : Éviter les jobs perdus en mémoire (mode `:async`). Solid Queue dans Puma = pas de worker séparé.
+**Impact** : `.env`, `config/database.yml`, `config/environments/development.rb`, `config/routes.rb` (MissionControl).
+
+### Décision D016 — Extraction de texte (FileExtractionService)
+**Date** : 2026-06-04
+**Contexte** : Les fichiers uploadés (PDF, DOCX, images) n'avaient jamais leur texte extrait → `content` restait `nil` → pas d'embedding, pas de résumé, pas de RAG.
+**Décision** : Créer `FileExtractionService` (routeur MIME → `pdf-reader`, `docx`, `rtesseract`, texte brut) + `ExtractTextJob` + callback `after_commit :extract_text_async`.
+**Gems** : `pdf-reader` 2.15.1, `docx` 0.13.0, `rtesseract` 3.1.4.
+**Bug critique** : `Tempfile.new` doit utiliser `binmode: true` sinon `Encoding::UndefinedConversionError` sur bytes UTF-8.
+
+### Décision D017 — Frontend voice : scope Stimulus ancêtre commun
+**Date** : 2026-06-04
+**Contexte** : Le TTS des messages ne fonctionnait pas car `data-controller="voice"` était sur le `<form>` (hors scope DOM des messages).
+**Décision** : Déplacer `data-controller="voice"` sur le `div` parent commun qui englobe messages ET formulaire.
+**Impact** : `app/views/conversations/show.html.erb`, `app/views/messages/create.turbo_stream.erb`.
+
+### Erreurs corrigées le 2026-06-04
+
+| Erreur | Cause | Correction |
+|--------|-------|------------|
+| Résumé jamais affiché | Placeholder en dur dans `show.html.erb` | Partial `_summary.html.erb` + polling |
+| Jobs jamais exécutés en dev | `queue_adapter` = `:async` par défaut | Solid Queue configuré + `SOLID_QUEUE_IN_PUMA` |
+| 429 rate limit sur tous les modèles | 50 reqs/jour max pour modèles `:free` | Passage à `deepseek/deepseek-v4-flash` (payant) |
+| `content` jamais extrait des fichiers | Pas de gem, pas de service d'extraction | `FileExtractionService` + `ExtractTextJob` |
+| `Encoding::UndefinedConversionError` | `Tempfile.new` sans `binmode: true` | Ajout `binmode: true` |
+| TTS messages cassé | Scope Stimulus `voice` sur mauvais ancêtre DOM | Déplacé sur conteneur commun |
+| Micro disparaît après 1er message | `turbo_stream.replace` sans attributs voix | Attributs restaurés dans le formulaire remplacé |
+| CSRF token manquant dans `fetch()` | Pas de header `X-CSRF-Token` | Ajout `csrfToken()` dans `voice_controller.js` |
+| Double-clic TTS = double audio | Pas de guard `isSpeaking` | Flag `isSpeaking` + cleanup sur `ended`/`error` |
+| Fuite mémoire `createObjectURL` | Pas de `revokeObjectURL` sur erreur/interruption | `revokeObjectURL` sur `ended`, `error`, catch |
+| `ENV.fetch('OPENROUTER_API_KEY', nil)` | Clé silencieusement `nil` → auth invalide | `ENV.fetch('OPENROUTER_API_KEY')` fail-fast |
+| `EmbedDocumentJob` perte de chunks | `destroy_all` avant recréation | Transaction atomique (build puis swap) |
+| `ScrapeLinkJob` NoMethodError | `document` nil dans rescue si `RecordNotFound` | Rescue `RecordNotFound` séparé |
+| `ApplicationJob` sans retry | `retry_on`/`discard_on` commentés | Activés |
+| `ScrapingService` sans timeout | `Net::HTTP.get_response` sans timeout | `open_timeout: 5`, `read_timeout: 10` |
+| `OpenRouterService` sans rescue Faraday | Crash 500 si réseau down | Rescue `Faraday::Error` → nil |
+| `EmbeddingService` sans headers/failback | Net::HTTP, pas de `HTTP-Referer`/`X-Title` | Refacto Faraday + headers + fallback |
+| Pas de feedback polling timeout | 60s de polling silencieux | Message d'erreur après `maxAttempts` |

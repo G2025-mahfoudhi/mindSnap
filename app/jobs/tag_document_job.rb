@@ -14,11 +14,11 @@ class TagDocumentJob < ApplicationJob
     return if response.blank?
 
     tag_names = response
-      .split(",")
-      .map(&:strip)
-      .map(&:downcase)
-      .select(&:present?)
-      .first(MAX_TAGS)
+                .split(",")
+                .map(&:strip)
+                .map(&:downcase)
+                .select(&:present?)
+                .first(MAX_TAGS)
 
     tag_names.each do |name|
       tag = document.user.tags.find_or_create_by!(name: name)

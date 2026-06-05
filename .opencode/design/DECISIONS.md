@@ -293,3 +293,26 @@ Pour **changer une catégorie** : modifier le `<h2 class="faq-category">` corres
 ---
 
 *Ce fichier doit être mis à jour à chaque nouvelle décision de design. Format : date, contexte, décision, raison, alternatives rejetées.*
+
+---
+
+## Décision 022 — Résumé IA : affichage conditionnel + partial + polling
+
+**Date :** 2026-06-04
+**Contexte :** Le résumé IA était un placeholder en dur dans `show.html.erb`, jamais affiché même quand généré.
+**Décision :** Remplacer par `render "documents/summary"` avec condition `document.summary.present?`. Ajouter un partial `_summary.html.erb` réutilisable avec `id="doc-summary"`. Polling Stimulus toutes les 3s vers `/summary_status` (max 60s).
+**Fichiers :** `app/views/documents/_summary.html.erb` (NOUVEAU), `app/javascript/controllers/summary_poll_controller.js` (NOUVEAU).
+
+## Décision 023 — Bouton "Régénérer" visible si fichier attaché
+
+**Date :** 2026-06-04
+**Contexte :** Le bouton "Régénérer" était masqué quand `content` vide. Or les fichiers uploadés n'ont pas de contenu tant que l'extraction n'a pas eu lieu.
+**Décision :** Condition `document.content.present? || document.file.attached?`. L'action `summarize` lance `ExtractTextJob` si contenu vide + fichier attaché.
+**Raison :** L'utilisateur doit pouvoir initier le pipeline (extraction → embedding → résumé) depuis la page show.
+
+## Décision 024 — Tags IA affichés sous le résumé
+
+**Date :** 2026-06-04
+**Contexte :** `TagDocumentJob` générait les tags mais ils n'étaient jamais affichés dans `show.html.erb`.
+**Décision :** Ajouter une section badges sous le résumé IA (`<% @document.tags.each %>`).
+**Fichier :** `app/views/documents/show.html.erb`.

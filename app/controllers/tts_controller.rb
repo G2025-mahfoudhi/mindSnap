@@ -19,7 +19,7 @@ class TtsController < ApplicationController
     http.read_timeout = 30
 
     request = Net::HTTP::Post.new(uri)
-    request["Authorization"] = "Bearer #{ENV['OPENROUTER_API_KEY']}"
+    request["Authorization"] = "Bearer #{ENV.fetch('OPENROUTER_API_KEY')}"
     request["Content-Type"] = "application/json"
     request.body = {
       model: "hexgrad/kokoro-82m",
@@ -32,11 +32,14 @@ class TtsController < ApplicationController
 
     if response.code.to_i == 200
       send_data response.body,
-        type: "audio/mpeg",
-        disposition: "inline"
+                type: "audio/mpeg",
+                disposition: "inline"
     else
       Rails.logger.error "TTS failed: #{response.code} — #{response.body.truncate(200)}"
       head :unprocessable_entity
     end
+  rescue Net::ReadTimeout, Net::OpenTimeout, Errno::ECONNREFUSED, SocketError => e
+    Rails.logger.error "TTS network error: #{e.message}"
+    head :service_unavailable
   end
 end

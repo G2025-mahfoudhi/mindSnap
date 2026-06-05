@@ -13,8 +13,8 @@ class RagService
     return [] unless query_embedding
 
     scope = DocumentChunk
-      .joins(:document)
-      .where(documents: { user_id: @user.id })
+            .joins(:document)
+            .where(documents: { user_id: @user.id })
 
     scope = scope.where(documents: { folder_id: folder_id }) if folder_id
 

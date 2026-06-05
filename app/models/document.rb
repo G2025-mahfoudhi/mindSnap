@@ -16,16 +16,18 @@ class Document < ApplicationRecord
   # Après création : si c'est un Lien avec URL, scraper le contenu
   after_commit :scrape_async, on: :create
 
+  # Après création : extraire le texte des fichiers joints (PDF, DOCX, images)
+  after_commit :extract_text_async, on: :create, if: :should_extract_text?
+
   # Après création/mise à jour : générer les embeddings vectoriels
   # Uniquement si le contenu a changé ou si le document n'a jamais été embeddé
-  after_commit :embed_async, on: [:create, :update], if: :should_reembed?
+  after_commit :embed_async, on: %i[create update], if: :should_reembed?
 
   # -- Scopes & Predicates -------------------------------------------------
   def embedded?
     embedding_status == "completed"
   end
   # before_destroy :purge_documents_from_cloudinary
-
 
   private
 
@@ -37,13 +39,24 @@ class Document < ApplicationRecord
   # qui ont une URL source mais pas encore de contenu
   def scrape_async
     return unless document_type == "Lien" && source_url.present? && content.blank?
+
     ScrapeLinkJob.perform_later(id)
+  end
+
+  # Déclenche l'extraction de texte pour les fichiers joints
+  def should_extract_text?
+    file.attached? && content.blank?
+  end
+
+  def extract_text_async
+    ExtractTextJob.perform_later(id)
   end
 
   # Déclenche l'embedding du contenu du document (chunking + vecteurs)
   # Évite de ré-embedder si le contenu n'a pas changé (ex: mise à jour du résumé)
   def embed_async
     return if content.blank?
+
     EmbedDocumentJob.perform_later(id)
   end
 

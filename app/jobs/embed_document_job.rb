@@ -1,8 +1,3 @@
-# Job asynchrone de génération d'embeddings pour un document.
-# 1. Découpe le contenu en chunks via ChunkingService
-# 2. Génère un vecteur par chunk via EmbeddingService (OpenRouter)
-# 3. Stocke les chunks + vecteurs dans document_chunks
-# 4. Chaîne les jobs de résumé et de tagging (Phase 3)
 class EmbedDocumentJob < ApplicationJob
   queue_as :ai
 
@@ -12,30 +7,39 @@ class EmbedDocumentJob < ApplicationJob
 
     document.update!(embedding_status: "processing")
 
-    document.document_chunks.destroy_all
-
     chunks = ChunkingService.new(document.content).call
+    new_chunks = []
+
     chunks.each_with_index do |content, idx|
       embedding = EmbeddingService.embed(content)
-      next unless embedding
+      unless embedding
+        Rails.logger.warn "EmbedDocumentJob: chunk #{idx} ignoré pour doc #{document_id}"
+        next
+      end
 
-      document.document_chunks.create!(
+      new_chunks << {
         chunk_index: idx,
         content: content,
         token_count: content.length / 4,
         embedding: embedding
-      )
+      }
+    end
+
+    DocumentChunk.transaction do
+      document.document_chunks.destroy_all
+      new_chunks.each do |attrs|
+        document.document_chunks.create!(attrs)
+      end
     end
 
     document.update!(embedding_status: "completed")
 
-    # Chaînage — Phases 3+
-    SummarizeDocumentJob.perform_later(document_id) if defined?(SummarizeDocumentJob)
-    TagDocumentJob.perform_later(document_id) if defined?(TagDocumentJob)
-  rescue ActiveRecord::RecordNotFound => e
-    Rails.logger.error "EmbedDocumentJob: document #{document_id} introuvable"
+    SummarizeDocumentJob.perform_later(document_id)
+    TagDocumentJob.perform_later(document_id)
+  rescue ActiveRecord::RecordNotFound
+    Rails.logger.warn "EmbedDocumentJob: document #{document_id} introuvable"
   rescue StandardError => e
-    document.update!(embedding_status: "failed")
+    Document.where(id: document_id).update_all(embedding_status: "failed")
     Rails.logger.error "EmbedDocumentJob échec doc #{document_id}: #{e.message}"
   end
 end

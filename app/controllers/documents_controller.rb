@@ -1,5 +1,5 @@
 class DocumentsController < ApplicationController
-  before_action :set_document, only: %i[show edit update destroy download]
+  before_action :set_document, only: %i[show edit update destroy download summarize summary_status]
 
   def index
     @documents = current_user.documents.where(folder_id: nil)
@@ -29,9 +29,7 @@ class DocumentsController < ApplicationController
   def download
     blob = ActiveStorage::Blob.find_signed!(params[:blob_signed_id])
 
-    unless @document.file.map { |a| a.blob.id }.include?(blob.id)
-      raise ActiveRecord::RecordNotFound
-    end
+    raise ActiveRecord::RecordNotFound unless @document.file.map { |a| a.blob.id }.include?(blob.id)
 
     if blob.service_name == "cloudinary"
       resource_type = cloudinary_resource_type(blob.content_type)
@@ -39,14 +37,33 @@ class DocumentsController < ApplicationController
       url = Cloudinary::Utils.cloudinary_url(
         public_id,
         resource_type: resource_type,
-        type:          "upload",
-        flags:         "attachment:#{File.basename(blob.filename.to_s, '.*').gsub(/[^a-zA-Z0-9_-]/, '_')}",
-        secure:        true
+        type: "upload",
+        flags: "attachment:#{File.basename(blob.filename.to_s, '.*').gsub(/[^a-zA-Z0-9_-]/, '_')}",
+        secure: true
       )
       redirect_to url, allow_other_host: true
     else
       redirect_to rails_blob_url(blob, disposition: "attachment")
     end
+  end
+
+  def summarize
+    if @document.content.blank?
+      if @document.file.attached?
+        # Lancer l'extraction de texte qui chaînera → EmbedDocumentJob → SummarizeDocumentJob
+        ExtractTextJob.perform_later(@document.id)
+        return redirect_to @document, notice: "Extraction du texte en cours, le résumé suivra automatiquement…"
+      else
+        return redirect_to @document, alert: "Le document n'a pas de contenu à résumer."
+      end
+    end
+
+    SummarizeDocumentJob.perform_later(@document.id)
+    redirect_to @document, notice: "Résumé en cours de génération…"
+  end
+
+  def summary_status
+    render json: { summary: @document.summary }
   end
 
   def edit
@@ -100,9 +117,9 @@ class DocumentsController < ApplicationController
 
   def cloudinary_resource_type(content_type)
     case content_type
-    when /\Aimage\//  then "image"
-    when /\Avideo\//  then "video"
-    when "application/pdf" then "image"  # Cloudinary stocke les PDFs comme image
+    when %r{\Aimage/}  then "image"
+    when %r{\Avideo/}  then "video"
+    when "application/pdf" then "image" # Cloudinary stocke les PDFs comme image
     else "raw"
     end
   end

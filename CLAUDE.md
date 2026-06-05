@@ -165,3 +165,68 @@ OPENROUTER_MODEL=nvidia/nemotron-3-nano-30b-a3b:free  # modèle par défaut
 - Migrations jamais lancées → `heroku run rails db:migrate` (500 sur toutes les pages).
 - `CLOUDINARY_URL` avait le mauvais `cloud_name` (`dpm4v9e57` au lieu de `mindsnap`) → uploads échouaient silencieusement.
 - Branche `download` déployée via `git push heroku download:master`.
+
+---
+
+## Session du 2026-06-04 — Corrections massives & extraction fichiers
+
+### Modèle OpenRouter
+- **Principal** : `deepseek/deepseek-v4-flash` (~0.10 $/M tokens)
+- Compte : 5 $ de crédits, ~4.9995 $ restants
+- Les modèles `:free` limités à 50 reqs/jour → **tous les fallback sont passés en payant**
+- 3 modèles fallback : `deepseek/deepseek-v4-flash`, `nvidia/nemotron-3-nano-30b-a3b:free`, `google/gemma-4-26b-a4b-it:free`
+
+### Infrastructure
+- **Solid Queue** configuré en dev : `config.active_job.queue_adapter = :solid_queue` dans `development.rb`
+- `SOLID_QUEUE_IN_PUMA=1` dans `.env` → worker in-process Puma (pas de Procfile.dev requis)
+- Rôle `queue:` ajouté dans `config/database.yml` (dev)
+- MissionControl::Jobs monté sur `/jobs` (`config/routes.rb:2`)
+
+### Services API — Robustesse
+- **`app/services/llm_call_service.rb`** : refacto Faraday, headers HTTP-Referer/X-Title, fallback 3 modèles, timeout 30s, nil-check body
+- **`app/services/embedding_service.rb`** : refacto Faraday, fallback 2 modèles (`qwen3-embedding-8b` + `e5-mistral`), rescue réseau
+- **`app/services/open_router_service.rb`** : rescue Faraday::Error, nil-check, timeout 30s
+- **`app/services/file_extraction_service.rb`** (NOUVEAU) : routeur MIME → `pdf-reader`, `docx`, `rtesseract`, texte brut
+- **`app/services/scraping_service.rb`** : timeout HTTP (open 5s, read 10s)
+
+### Extraction de texte (NOUVEAU)
+- **Gems** : `pdf-reader` 2.15.1, `docx` 0.13.0, `rtesseract` 3.1.4
+- **`app/jobs/extract_text_job.rb`** (NOUVEAU) : extrait le texte de tous les fichiers joints, met à jour `content`
+- Callback dans `Document` : `after_commit :extract_text_async, on: :create, if: :should_extract_text?`
+- **BUG CRITIQUE** : `Tempfile.new` doit utiliser `binmode: true` pour éviter `Encoding::UndefinedConversionError` sur les bytes UTF-8
+- Pipeline complet : upload → ExtractTextJob → content → EmbedDocumentJob → SummarizeDocumentJob + TagDocumentJob
+
+### Jobs — Fiabilité
+- **`app/jobs/application_job.rb`** : `retry_on` (Deadlock, timeout) + `discard_on` (DeserializationError)
+- **`app/jobs/embed_document_job.rb`** : transaction atomique (build puis swap, pas de `destroy_all` avant)
+- **`app/jobs/scrape_link_job.rb`** : rescue `RecordNotFound` séparé, `update_all` dans rescue
+- **`app/jobs/summarize_document_job.rb`** : stocke message d'erreur si API échoue (pour polling)
+
+### Résumé IA — Affichage & interaction
+- **`app/views/documents/_summary.html.erb`** (NOUVEAU) : partial avec `id="doc-summary"`, bouton "Régénérer", polling Stimulus
+- **`app/views/documents/show.html.erb`** : render le partial + section tags IA
+- **`app/javascript/controllers/summary_poll_controller.js`** (NOUVEAU) : poll `/summary_status` toutes les 3s, timeout 60s avec feedback
+- Route `post :summarize` → lance `ExtractTextJob` si contenu vide + fichier attaché
+- Route `get :summary_status` → JSON `{ summary: "..." }`
+
+### STT / TTS — Corrections
+- **`app/controllers/tts_controller.rb`** : `ENV.fetch('OPENROUTER_API_KEY')` fail-fast, rescue réseau → 503
+- **`app/controllers/transcriptions_controller.rb`** : idem
+- **`app/javascript/controllers/voice_controller.js`** :
+  - CSRF token dans `fetch()`, feedback visuel micro (`is-recording`), garde anti-double-clic TTS
+  - `revokeObjectURL` sur `ended` + `error`, `blobToBase64` sécurisé
+- **`app/views/conversations/show.html.erb`** : `data-controller="voice"` sur ancêtre commun (hors formulaire)
+- **`app/views/messages/create.turbo_stream.erb`** : formulaire remplacé inclut `voice_target`, micro, action clearInput
+
+### Tests
+- 170 tests, 0 échec
+- Tests mockés pour `LlmCallService`, `SummarizeDocumentJob`, `FileExtractionService`, `ExtractTextJob`
+
+### .env actuel
+```
+CLOUDINARY_URL=cloudinary://...
+OPENROUTER_API_KEY=sk-or-v1-...
+OPENROUTER_MODEL=deepseek/deepseek-v4-flash
+OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+SOLID_QUEUE_IN_PUMA=1
+```

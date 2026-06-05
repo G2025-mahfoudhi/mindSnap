@@ -1,38 +1,49 @@
-# Appelle l'API OpenRouter pour générer un embedding vectoriel via qwen3-embedding-8b.
-# Le modèle produit des vecteurs 4096-dim que l'on tronque à 1024 dimensions
-# via Matryoshka Representation Learning (MRL). Les 1024 premières dimensions
-# contiennent l'essentiel de l'information sémantique.
-# Limite HNSW pgvector = 2000 dimensions → 1024 est compatible.
 class EmbeddingService
+  API_URL = "https://openrouter.ai/api/v1/embeddings"
   EMBEDDING_DIMENSIONS = 1024
-  EMBEDDING_MODEL = "qwen/qwen3-embedding-8b"
+
+  EMBEDDING_MODELS = [
+    "qwen/qwen3-embedding-8b",
+    "intfloat/e5-mistral-7b-instruct"
+  ].freeze
 
   def self.embed(text)
-    uri = URI("#{ENV.fetch('OPENROUTER_BASE_URL', 'https://openrouter.ai/api/v1')}/embeddings")
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-    http.read_timeout = 30
+    EMBEDDING_MODELS.each do |model|
+      response = post(model, text)
+      next unless response
 
-    request = Net::HTTP::Post.new(uri)
-    request["Authorization"] = "Bearer #{ENV['OPENROUTER_API_KEY']}"
-    request["Content-Type"] = "application/json"
-    request.body = {
-      model: EMBEDDING_MODEL,
-      input: text
-    }.to_json
+      body = JSON.parse(response.body)
 
-    response = http.request(request)
-    body = JSON.parse(response.body)
+      if body["error"]
+        Rails.logger.warn "EmbeddingService: #{model} error — #{body['error']['message']}"
+        next
+      end
 
-    if body["error"]
-      Rails.logger.error "EmbeddingService error: #{body["error"]["message"]}"
-      return nil
+      full_embedding = body.dig("data", 0, "embedding")
+      next unless full_embedding
+
+      return full_embedding.first(EMBEDDING_DIMENSIONS)
     end
 
-    full_embedding = body.dig("data", 0, "embedding")
-    return nil unless full_embedding
+    Rails.logger.error "EmbeddingService: tous les modèles ont échoué"
+    nil
+  end
 
-    # Troncature MRL : on garde les 1024 premières dimensions
-    full_embedding.first(EMBEDDING_DIMENSIONS)
+  def self.post(model, text)
+    Faraday.post(API_URL) do |req|
+      req.options.timeout = 30
+      req.options.open_timeout = 10
+      req.headers["Authorization"] = "Bearer #{ENV.fetch('OPENROUTER_API_KEY')}"
+      req.headers["Content-Type"]  = "application/json"
+      req.headers["HTTP-Referer"]  = "https://mindsnap.app"
+      req.headers["X-Title"]       = "MindSnap"
+      req.body = JSON.generate({ model: model, input: text })
+    end
+  rescue Faraday::Error => e
+    Rails.logger.error "EmbeddingService network error for #{model}: #{e.message}"
+    nil
+  rescue JSON::ParserError => e
+    Rails.logger.error "EmbeddingService JSON parse error for #{model}: #{e.message}"
+    nil
   end
 end

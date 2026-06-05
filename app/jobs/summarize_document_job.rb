@@ -9,7 +9,11 @@ class SummarizeDocumentJob < ApplicationJob
     return if document.content.blank?
 
     summary = LlmCallService.oneshot(build_prompt(document.content))
-    document.update!(summary: summary&.strip) if summary.present?
+    if summary.present?
+      document.update!(summary: summary.strip)
+    else
+      document.update!(summary: "Résumé temporairement indisponible. Veuillez réessayer.")
+    end
   rescue StandardError => e
     Rails.logger.error "SummarizeDocumentJob échec doc #{document_id}: #{e.message}"
   end

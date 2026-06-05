@@ -94,4 +94,62 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
       }
     end
   end
+
+  test "summarize enqueue le job et redirige" do
+    sign_in @user
+    doc = @user.documents.create!(title: "À résumer", content: "Du contenu.", document_type: "Note")
+
+    assert_enqueued_with(job: SummarizeDocumentJob, args: [doc.id]) do
+      post summarize_document_path(doc)
+    end
+
+    assert_redirected_to document_path(doc)
+    assert_equal "Résumé en cours de génération…", flash[:notice]
+  end
+
+  test "summarize redirige avec alerte si contenu vide" do
+    sign_in @user
+    doc = @user.documents.create!(title: "Sans contenu", document_type: "Note")
+
+    assert_no_enqueued_jobs do
+      post summarize_document_path(doc)
+    end
+
+    assert_redirected_to document_path(doc)
+    assert_equal "Le document n'a pas de contenu à résumer.", flash[:alert]
+  end
+
+  test "ne peut pas summarize le document d'un autre user" do
+    sign_in @user
+    other = User.create!(email: "other2@test.com", password: "password123")
+    doc = other.documents.create!(title: "Secret", content: "secret", document_type: "Note")
+
+    post summarize_document_path(doc)
+    assert_response :not_found
+  end
+
+  test "summary_status retourne le résumé en JSON" do
+    sign_in @user
+    doc = @user.documents.create!(
+      title: "JSON test",
+      content: "Du contenu.",
+      document_type: "Note",
+      summary: "Un résumé."
+    )
+
+    get summary_status_document_path(doc)
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal "Un résumé.", json["summary"]
+  end
+
+  test "summary_status retourne null si pas de résumé" do
+    sign_in @user
+    doc = @user.documents.create!(title: "Sans résumé", document_type: "Note")
+
+    get summary_status_document_path(doc)
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_nil json["summary"]
+  end
 end

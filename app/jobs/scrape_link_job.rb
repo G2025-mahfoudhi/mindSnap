@@ -1,6 +1,3 @@
-# Job asynchrone de scraping pour les documents de type "Lien".
-# Appelle ScrapingService pour extraire le contenu de l'URL source,
-# puis relance l'embedding du document avec le nouveau contenu.
 class ScrapeLinkJob < ApplicationJob
   queue_as :ai
 
@@ -22,8 +19,10 @@ class ScrapeLinkJob < ApplicationJob
     else
       document.update!(scraping_status: "failed")
     end
+  rescue ActiveRecord::RecordNotFound
+    Rails.logger.warn "ScrapeLinkJob: document #{document_id} introuvable"
   rescue StandardError => e
-    document.update!(scraping_status: "failed")
+    Document.where(id: document_id).update_all(scraping_status: "failed")
     Rails.logger.error "ScrapeLinkJob échec doc #{document_id}: #{e.message}"
   end
 end
