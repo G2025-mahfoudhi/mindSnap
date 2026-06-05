@@ -7,6 +7,8 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
     @user = users(:test_user1)
   end
 
+  # -- Tests existants -------------------------------------------------------
+
   test "redirige vers login si pas connecté" do
     get documents_path
     assert_redirected_to new_user_session_path
@@ -151,5 +153,72 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     json = JSON.parse(response.body)
     assert_nil json["summary"]
+  end
+
+  # -- Nouveaux tests : create avec source_url -------------------------------
+
+  test "create document Lien avec source_url" do
+    sign_in @user
+    assert_difference("Document.count", 1) do
+      post documents_path, params: {
+        document: {
+          title: "Mon lien",
+          source_url: "https://blog.example.com/article",
+          document_type: "Lien"
+        }
+      }
+    end
+    assert_redirected_to document_path(Document.last)
+    assert_equal "https://blog.example.com/article", Document.last.source_url
+  end
+
+  test "create document Lien avec source_url et content vide" do
+    sign_in @user
+    post documents_path, params: {
+      document: {
+        title: "Lien sans contenu",
+        source_url: "https://scrape-me.example.com",
+        document_type: "Lien",
+        content: ""
+      }
+    }
+    assert_redirected_to document_path(Document.last)
+    doc = Document.last
+    assert_equal "https://scrape-me.example.com", doc.source_url
+    assert_equal "Lien", doc.document_type
+  end
+
+  test "create document avec source_url invalide échoue" do
+    sign_in @user
+    assert_no_difference("Document.count") do
+      post documents_path, params: {
+        document: {
+          title: "Mauvaise URL",
+          source_url: "pas-une-url-valide",
+          document_type: "Lien"
+        }
+      }
+    end
+    assert_response :unprocessable_entity
+  end
+
+  # -- Test d'édition pour documents legacy ----------------------------------
+
+  test "get edit pré-remplit source_url pour les documents Lien legacy" do
+    sign_in @user
+    # Le before_save :migrate_legacy_url déplace déjà content → source_url
+    # au premier save. On restaure l'état legacy pour tester l'action edit.
+    doc = @user.documents.create!(
+      title: "Legacy",
+      document_type: "Lien",
+      content: "https://ancien-site.com/page"
+    )
+    doc.update_columns(source_url: nil, content: "https://ancien-site.com/page")
+
+    get edit_document_path(doc)
+    assert_response :success
+    # L'action edit copie content → @document.source_url pour l'affichage
+    assert_match(/ancien-site\.com/, response.body,
+                 "Le formulaire devrait afficher l'URL legacy")
   end
 end
