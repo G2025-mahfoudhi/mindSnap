@@ -28,7 +28,7 @@
             <div class="dropdown d-inline-block mb-2">
               <div class="avatar-upload-wrapper" data-bs-toggle="dropdown" data-bs-auto-close="outside" style="cursor: pointer;">
                 <% if has_avatar %>
-                  <img src="<%= url_for(resource.avatar) %>"
+                  <img src="<%= avatar_url(resource.avatar) %>"
                        class="avatar-upload-img"
                        alt="Photo de profil"
                        data-avatar-preview-target="preview">
@@ -79,7 +79,7 @@
                 <div class="modal-content border-0" style="background: rgba(0,0,0,0.85);">
                   <div class="modal-body text-center p-4 position-relative">
                     <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
-                    <%= image_tag resource.avatar, class: "rounded-circle", style: "width: 280px; height: 280px; object-fit: cover;" %>
+                    <img src="<%= avatar_url(resource.avatar) %>" class="rounded-circle" style="width: 280px; height: 280px; object-fit: cover;" alt="Photo de profil">
                   </div>
                 </div>
               </div>
