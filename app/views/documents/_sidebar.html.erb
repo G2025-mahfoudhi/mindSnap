@@ -56,6 +56,7 @@
                   data-sidebar-tree-target="chevron"
                   data-action="click->sidebar-tree#toggle"
                   aria-expanded="true"
+                  aria-controls="sidebar-no-folder-children"
                   aria-label="Plier/déplier la section Sans dossier">
             <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
           </button>
@@ -68,7 +69,8 @@
         </div>
 
         <%# — Documents sans dossier (pliables) — %>
-        <div class="folder-node__children"
+        <div id="sidebar-no-folder-children"
+             class="folder-node__children"
              data-sidebar-tree-target="children">
           <% documents_without_folder.each do |doc| %>
             <%= link_to document_path(doc),

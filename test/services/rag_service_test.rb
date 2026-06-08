@@ -105,18 +105,35 @@ class RagServiceTest < ActiveSupport::TestCase # rubocop:disable Metrics/ClassLe
       content: "Un article sur la franc-maçonnerie moderne.",
       document_type: "Note"
     )
-    # Embedding orthogonal : cosine eleve, sera filtre par le seuil cosine
+    # Embedding realiste : proche mais pas identique (meme domaine lexical
+    # franc, mais pas "france"). C'est le cas typique d'un vrai doc de
+    # l'utilisateur qui partage un stem avec la query mais parle d'autre chose.
     DocumentChunk.create!(
       document: doc_stem,
       chunk_index: 0,
       content: "Franc-maçonnerie et sociétés secretes.",
-      embedding: test_vector("autre seed different xyz")
+      embedding: test_vector("franc maconnerie societe secrete loge")
     )
 
     rag = RagService.new(@user)
     results = rag.search_documents("france", limit: 10)
     refute_includes results.map { |r| r[:document].title }, "Franc-maçonnerie",
-                    "Le doc 'Franc-maçonnerie' (faux positif stemming) doit etre filtre"
+                    "Le doc 'Franc-maçonnerie' (faux positif stemming) doit etre filtre par la confirmation ILIKE"
+  end
+
+  test "search_documents sanitize les wildcards de la query" do
+    # Une query avec % ne doit pas matcher "100" + n'importe quoi, mais bien
+    # le caractere % littralement dans le titre/content.
+    doc_100 = Document.create!(user: @user, title: "Doc 100", content: "valeur", document_type: "Note")
+    DocumentChunk.create!(document: doc_100, chunk_index: 0, content: "valeur",
+                          embedding: test_vector("doc 100 valeur xyz"))
+
+    # La query "100%" sanitisee devient "100\%" (wildcard % echappe).
+    # "Doc 100" ne contient pas le caractere % → ne doit PAS matcher.
+    rag = RagService.new(@user)
+    results = rag.search_documents("100%", limit: 10)
+    refute_includes results.map { |r| r[:document].title }, "Doc 100",
+                    "Un % dans la query ne doit pas jouer le role de wildcard ILIKE"
   end
 
   test "search_documents garde un doc qui matche 'france' en clair" do
