@@ -73,7 +73,7 @@ class DocumentsController < ApplicationController
   end
 
   def summary_status
-    render json: { summary: @document.summary }
+    render json: { summary: @document.summary, content_present: @document.content.present? }
   end
 
   def edit
