@@ -5,6 +5,13 @@ export default class extends Controller {
     this.resize()
   }
 
+  submitOnEnter(event) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault()
+      this.element.closest("form").requestSubmit()
+    }
+  }
+
   resize() {
     const el = this.element
     const style = getComputedStyle(el)
