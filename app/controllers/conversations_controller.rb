@@ -5,7 +5,7 @@ class ConversationsController < ApplicationController
 
   def create
     @conversation = current_user.conversations.build(
-      name: params.dig(:conversation, :name).presence || "Conversation du #{Time.current.strftime('%d/%m à %H:%M')}"
+      name: params.dig(:conversation, :name).presence || "Nouvelle conversation"
     )
     if @conversation.save
       redirect_to conversation_path(@conversation)
