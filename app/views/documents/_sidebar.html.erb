@@ -1,4 +1,9 @@
-<aside class="border-end d-flex flex-column" style="width: 260px; min-width: 260px; background: #f7f5f4; overflow: hidden; padding-bottom: var(--footer-height);">
+<aside class="border-end d-flex flex-column"
+        style="width: 260px; min-width: 260px; background: #f7f5f4; overflow: hidden; padding-bottom: var(--footer-height);"
+        data-controller="sidebar-tree"
+        data-sidebar-tree-open-class="is-open"
+        data-sidebar-tree-storage-key-value="mindsnap_sidebar_v1">
+
   <div class="p-3 border-bottom d-flex justify-content-between align-items-center" style="flex-shrink: 0;">
     <%= link_to "Mon espace", espaces_path, class: "fw-semibold small text-decoration-none", style: "color: #3d7f7e;" %>
     <div class="dropdown">
@@ -30,13 +35,11 @@
   <div class="overflow-auto flex-grow-1 py-2">
     <% root_folders = folders.select { |f| f.parent_id.nil? } %>
     <% root_folders.each do |folder| %>
-      <div class="px-3 py-1">
-        <%= render "documents/folder_node",
-                   folder: folder,
-                   all_folders: folders,
-                   depth: 0,
-                   current_document: current_document %>
-      </div>
+      <%= render "documents/folder_node",
+                 folder: folder,
+                 all_folders: folders,
+                 depth: 0,
+                 current_document: current_document %>
     <% end %>
 
     <% if documents_without_folder.any? %>
@@ -59,4 +62,22 @@
       </div>
     <% end %>
   </div>
+
+  <%# — Footer : actions plier/déplier — %>
+  <% if folders.any? %>
+    <div class="border-top p-2 d-flex gap-2" style="flex-shrink: 0;">
+      <button type="button"
+              class="btn btn-sm btn-link p-1 text-decoration-none flex-grow-1"
+              data-action="click->sidebar-tree#expandAll"
+              style="font-size: 0.75rem; color: #5a6370;">
+        <i class="fa-solid fa-angles-down fa-xs me-1" aria-hidden="true"></i> Tout déplier
+      </button>
+      <button type="button"
+              class="btn btn-sm btn-link p-1 text-decoration-none flex-grow-1"
+              data-action="click->sidebar-tree#collapseAll"
+              style="font-size: 0.75rem; color: #5a6370;">
+        <i class="fa-solid fa-angles-up fa-xs me-1" aria-hidden="true"></i> Tout plier
+      </button>
+    </div>
+  <% end %>
 </aside>
