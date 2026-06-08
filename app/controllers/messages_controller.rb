@@ -23,7 +23,10 @@ class MessagesController < ApplicationController
     @ai_message = @conversation.messages.create!(role: "assistant", content: ai_content)
 
     respond_to do |format|
-      format.turbo_stream
+      format.turbo_stream do
+        template = params[:source] == "doc_chat" ? "messages/create_doc_chat" : "messages/create"
+        render template
+      end
       format.html { redirect_to conversation_path(@conversation) }
     end
   end

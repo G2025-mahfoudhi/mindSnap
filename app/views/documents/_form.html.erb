@@ -9,7 +9,7 @@
     <%= f.input :document_type,
                 label: "Type",
                 as: :select,
-                collection: ["Note", "Article", "Lien", "Fichier"],
+                collection: ["Note", "Lien", "Fichier"],
                 prompt: "Choisir un type",
                 input_html: {
                   data: {
@@ -47,7 +47,7 @@
     </div>
   </div>
 
-  <%# Affiché pour Article et Fichier %>
+  <%# Affiché pour Fichier %>
   <div class="mb-3" data-document-type-target="fileField" hidden>
     <%= f.input :file, label: "Fichiers", as: :file, input_html: { multiple: true } %>
     <% if document.file.attached? %>
@@ -86,7 +86,7 @@
   </div>
 
   <div class="d-flex gap-2 justify-content-center">
-    <%= f.button :submit, "Modifier", class: "btn btn-outline-secondary" %>
+    <%= f.button :submit, "Valider", class: "btn btn-outline-secondary" %>
     <%= link_to "Annuler", (document.folder_id ? folder_path(document.folder_id) : espaces_path), class: "btn btn-outline-secondary" %>
   </div>
 <% end %>

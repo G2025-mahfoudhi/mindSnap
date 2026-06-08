@@ -1,8 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static values = { storageKey: { type: String, default: "draggable-position" } }
-
   connect() {
     this.dragging = false
     this.startX = 0
@@ -24,8 +22,8 @@ export default class extends Controller {
     this.element.addEventListener("mousedown",  this.onMouseDown)
     this.element.addEventListener("touchstart", this.onTouchStart, { passive: true })
     window.addEventListener("resize", this.onResize)
+    window.addEventListener("orientationchange", this.onResize)
 
-    this.restorePosition()
   }
 
   disconnect() {
@@ -36,9 +34,15 @@ export default class extends Controller {
     document.removeEventListener("touchmove", this.onTouchMove)
     document.removeEventListener("touchend",  this.onTouchEnd)
     window.removeEventListener("resize", this.onResize)
+    window.removeEventListener("orientationchange", this.onResize)
   }
 
   onResize() {
+    // Defer so the browser has applied new viewport dimensions (critical on iOS orientation change)
+    requestAnimationFrame(() => this._applyResize())
+  }
+
+  _applyResize() {
     // En mode CSS (position non customisée), Bootstrap gère via right/bottom — rien à faire.
     // En mode drag (left/top inline), on recadre dans les nouvelles limites de l'écran.
     if (!this.isDragged()) return
@@ -56,7 +60,6 @@ export default class extends Controller {
       const clampedTop  = Math.min(Math.max(0, top),  maxY)
       this.element.style.left = `${clampedLeft}px`
       this.element.style.top  = `${clampedTop}px`
-      this.savePosition(clampedLeft, clampedTop)
     }
   }
 
@@ -71,7 +74,6 @@ export default class extends Controller {
     this.element.style.top    = ""
     this.element.style.right  = "1.5rem"
     this.element.style.bottom = "6rem"
-    localStorage.removeItem(this.storageKeyValue)
   }
 
   onMouseDown(e) {
@@ -150,39 +152,10 @@ export default class extends Controller {
     this.dragging = false
     this.element.style.cursor = "grab"
 
-    this.savePosition(
-      parseFloat(this.element.style.left),
-      parseFloat(this.element.style.top)
-    )
-
     if (this.moved) {
       const stop = (e) => { e.preventDefault(); e.stopPropagation() }
       this.element.addEventListener("click", stop, { once: true, capture: true })
     }
-  }
-
-  savePosition(left, top) {
-    localStorage.setItem(this.storageKeyValue, JSON.stringify({ left, top }))
-  }
-
-  restorePosition() {
-    const saved = localStorage.getItem(this.storageKeyValue)
-    if (!saved) return
-
-    const { left, top } = JSON.parse(saved)
-    const maxX = window.innerWidth  - this.element.offsetWidth
-    const maxY = window.innerHeight - this.element.offsetHeight - this.footerHeight
-
-    // Si la position sauvegardée ne tient plus dans l'écran actuel, on revient au défaut.
-    if (left > maxX || top > maxY || left < 0 || top < 0) {
-      this.resetToDefault()
-      return
-    }
-
-    this.element.style.right  = "auto"
-    this.element.style.bottom = "auto"
-    this.element.style.left   = `${Math.min(Math.max(0, left), maxX)}px`
-    this.element.style.top    = `${Math.min(Math.max(0, top),  maxY)}px`
   }
 
   get footerHeight() {

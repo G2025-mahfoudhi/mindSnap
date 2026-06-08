@@ -2,6 +2,61 @@
   width: 40px;
   border-radius: 50%;
 }
+
+.avatar-upload-wrapper {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.avatar-upload-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatar-upload-initials {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background-color: #549695;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+
+  span {
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: white;
+    line-height: 1;
+  }
+}
+
+.avatar-camera-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #e4e6eb;
+  border: 2px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+
+  i {
+    font-size: 0.65rem;
+    color: #333;
+  }
+}
 .avatar-large {
   width: 56px;
   border-radius: 50%;

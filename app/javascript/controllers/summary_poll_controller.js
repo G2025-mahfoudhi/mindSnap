@@ -56,17 +56,23 @@ export default class extends Controller {
   }
 
   updateContent(text) {
-    const paragraphs = text.split(/\n{2,}/).filter(p => p.trim())
-    const html = paragraphs
-      .map(p => `<p>${this.escapeHtml(p.trim())}</p>`)
-      .join("")
-
-    this.contentTarget.innerHTML = html
+    this.contentTarget.innerHTML = this.renderMarkdown(text)
   }
 
-  escapeHtml(str) {
-    const div = document.createElement("div")
-    div.textContent = str
-    return div.innerHTML.replace(/\n/g, "<br>")
+  renderMarkdown(text) {
+    return text
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+      .replace(/`(.+?)`/g, "<code>$1</code>")
+      .replace(/^#{3}\s+(.+)$/gm, "<h3>$1</h3>")
+      .replace(/^#{2}\s+(.+)$/gm, "<h2>$1</h2>")
+      .replace(/^#{1}\s+(.+)$/gm, "<h1>$1</h1>")
+      .replace(/^[-*]\s+(.+)$/gm, "<li>$1</li>")
+      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+      .replace(/\n{2,}/g, "</p><p>")
+      .replace(/\n/g, "<br>")
+      .replace(/^(?!<)(.+)/, "<p>$1")
+      .replace(/([^>])$/, "$1</p>")
   }
 }

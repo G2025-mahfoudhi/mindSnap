@@ -14,6 +14,10 @@ bin/dev                          # start Rails + asset watchers
 # Database
 bin/rails db:migrate             # run pending migrations
 bin/rails db:seed                # seed the database
+# Note: db/queue_schema.rb est regen automatiquement par Solid Queue au
+# démarrage du serveur. Si git montre un diff sur ce fichier après un
+# bin/rails db:migrate, c'est normal — commit tel quel (c'est un dump
+# complet des tables solid_queue_*, pas une migration manuelle).
 
 # Tests
 bin/rails test                              # run all tests

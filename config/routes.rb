@@ -14,6 +14,7 @@ Rails.application.routes.draw do
     member do
       get :download
       get :summary_status
+      get :chat
       post :summarize
     end
     resources :conversations, only: [:create, :show] do
