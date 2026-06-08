@@ -1,4 +1,4 @@
-  # Service de Retrieval Augmented Generation (RAG).
+# Service de Retrieval Augmented Generation (RAG).
 #
 # Deux modes de recherche :
 # - search()         : retourne des DocumentChunk[] triés par cosine distance,
