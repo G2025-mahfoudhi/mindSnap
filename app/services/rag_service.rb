@@ -143,8 +143,11 @@ class RagService
 
     scope = Document.where(id: text_ids)
     scope = scope.where(folder_id: folder_id) if folder_id
+    # sanitize_sql_like echappe les wildcards (% et _) saisis par l'utilisateur
+    # pour eviter les faux-positifs (ex: "100%" qui matcherait "100" + n'importe quoi).
+    safe = Document.sanitize_sql_like(query)
     scope
-      .where("title ILIKE :q OR content ILIKE :q", q: "%#{query}%")
+      .where("title ILIKE :q OR content ILIKE :q", q: "%#{safe}%")
       .pluck(:id)
   end
 
