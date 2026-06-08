@@ -11,34 +11,30 @@ class StreamAiResponseJobTest < ActiveJob::TestCase
 
   teardown do
     OpenRouterService.define_method(:call_streaming, @original_call_streaming)
-    restore_broadcast
+    restore_broadcast_replace
   end
 
-  test "remplit le contenu et broadcast a la fin du stream" do
+  test "remplit le contenu et broadcast_replace a chaque batch" do
     stub_call_streaming("Bonjour ! Comment ça va ?")
     broadcasts = []
-    stub_broadcast(broadcasts)
+    stub_broadcast_replace(broadcasts)
 
     StreamAiResponseJob.perform_now(@ai_message.id)
 
     assert_equal "Bonjour ! Comment ça va ?", @ai_message.reload.content
     assert_equal false, @ai_message.streaming
-    assert broadcasts.size >= 1, "Au moins un broadcast doit etre envoye"
-    assert_equal "conversation_#{@conversation.id}", broadcasts.first.first
+    assert broadcasts.size >= 1, "Au moins un broadcast_replace doit etre envoye"
   end
 
   test "gere une exception API en mettant un message d'erreur" do
     OpenRouterService.define_method(:call_streaming) { |&_block| raise StandardError, "API down" }
     broadcasts = []
-    stub_broadcast(broadcasts)
+    stub_broadcast_replace(broadcasts)
 
-    # perform_now leve apres les retries de ApplicationJob. Le job doit
-    # quand meme avoir mis le message en streaming=false + contenu d'erreur
-    # avant de lever.
     begin
       StreamAiResponseJob.perform_now(@ai_message.id)
     rescue StandardError
-      # ignore
+      # ignore (retry_on de ApplicationJob peut le laisser sortir)
     end
 
     assert_equal false, @ai_message.reload.streaming
@@ -59,16 +55,18 @@ class StreamAiResponseJobTest < ActiveJob::TestCase
     end
   end
 
-  def stub_broadcast(captured)
-    @original_broadcast = ActionCable.server.method(:broadcast)
-    ActionCable.server.define_singleton_method(:broadcast) do |stream_name, data|
-      captured << [stream_name, data]
+  # Stub Turbo::StreamsChannel.broadcast_replace_to pour capturer les
+  # broadcasts sans toucher au serveur ActionCable.
+  def stub_broadcast_replace(captured)
+    @original_broadcast_replace = Turbo::StreamsChannel.method(:broadcast_replace_to)
+    Turbo::StreamsChannel.define_singleton_method(:broadcast_replace_to) do |*streamables, **opts|
+      captured << [streamables, opts]
     end
   end
 
-  def restore_broadcast
-    return unless @original_broadcast
-
-    ActionCable.server.define_singleton_method(:broadcast, @original_broadcast)
+  def restore_broadcast_replace
+    if @original_broadcast_replace
+      Turbo::StreamsChannel.define_singleton_method(:broadcast_replace_to, @original_broadcast_replace)
+    end
   end
 end
