@@ -1,4 +1,4 @@
-class OmniauthCallbacksController < ApplicationController
+class Users::OmniauthCallbacksController < ApplicationController
   skip_before_action :authenticate_user!
 
   def google_oauth2

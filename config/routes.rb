@@ -1,9 +1,9 @@
 Rails.application.routes.draw do
   mount MissionControl::Jobs::Engine, at: "/jobs" if defined?(MissionControl::Jobs)
 
-  devise_for :user,
+  devise_for :users,
       controllers:{
-         omniauth_callbacks:'omniauth_callbacks'
+         omniauth_callbacks:'users/omniauth_callbacks'
       }
   root to: "pages#home"
   get "dashboard", to: "dashboard#index"
