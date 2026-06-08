@@ -15,10 +15,77 @@
     <div class="card-body">
 
       <%# Formulaire Devise — Simple Form gère le markup Bootstrap %>
-      <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name), defaults: { required: false }, html: { method: :put }) do |f| %>
+      <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name), defaults: { required: false }, html: { method: :put, multipart: true }) do |f| %>
         <%= f.error_notification %>
 
         <div class="form-inputs">
+          <%# Photo de profil %>
+          <% has_avatar = resource.persisted? && resource.avatar.attached? && resource.avatar.blob.persisted? %>
+
+          <div class="mb-4 text-center" data-controller="avatar-preview">
+
+            <%# Avatar + dropdown Facebook-style %>
+            <div class="dropdown d-inline-block mb-2">
+              <div class="avatar-upload-wrapper" data-bs-toggle="dropdown" data-bs-auto-close="outside" style="cursor: pointer;">
+                <% if has_avatar %>
+                  <img src="<%= url_for(resource.avatar) %>"
+                       class="avatar-upload-img"
+                       alt="Photo de profil"
+                       data-avatar-preview-target="preview">
+                <% else %>
+                  <div class="avatar-upload-initials" data-avatar-preview-target="placeholder">
+                    <span><%= resource.first_name&.first&.upcase %><%= resource.last_name&.first&.upcase %></span>
+                  </div>
+                  <img src="" class="avatar-upload-img d-none" alt="Aperçu" data-avatar-preview-target="preview">
+                <% end %>
+                <div class="avatar-camera-badge">
+                  <i class="fa-solid fa-camera"></i>
+                </div>
+              </div>
+
+              <ul class="dropdown-menu shadow-sm" style="min-width: 220px;">
+                <% if has_avatar %>
+                  <li>
+                    <button type="button" class="dropdown-item py-2" data-bs-toggle="modal" data-bs-target="#avatarModal">
+                      <i class="fa-regular fa-image me-2 text-muted"></i>Voir la photo de profil
+                    </button>
+                  </li>
+                  <li><hr class="dropdown-divider my-1"></li>
+                <% end %>
+                <li>
+                  <button type="button" class="dropdown-item py-2" data-action="click->avatar-preview#triggerInput">
+                    <i class="fa-solid fa-camera me-2 text-muted"></i>Modifier la photo de profil
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            <%# Input caché %>
+            <%= f.input :avatar,
+                        label: false,
+                        as: :file,
+                        wrapper: false,
+                        input_html: {
+                          accept: "image/*",
+                          class: "d-none",
+                          data: { "avatar-preview-target": "input", action: "change->avatar-preview#preview" }
+                        } %>
+          </div>
+
+          <%# Modal — voir la photo en grand %>
+          <% if has_avatar %>
+            <div class="modal fade" id="avatarModal" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0" style="background: rgba(0,0,0,0.85);">
+                  <div class="modal-body text-center p-4 position-relative">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
+                    <%= image_tag resource.avatar, class: "rounded-circle", style: "width: 280px; height: 280px; object-fit: cover;" %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+
           <%# Prénom + Nom sur la même ligne %>
           <div class="row">
             <div class="col-md-6 mb-3">
