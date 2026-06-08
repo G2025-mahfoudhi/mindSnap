@@ -1,30 +1,58 @@
 <%# folder, all_folders, depth, current_document %>
-<% doc_pad  = "#{0.5 + depth * 1.0}rem" %>
-<% child_pad = "#{0.5 + (depth + 1) * 1.0}rem" %>
+<% has_children = folder.documents.any? || all_folders.any? { |f| f.parent_id == folder.id } %>
 
-<%# — Nom du dossier — %>
-<%= link_to folder_path(folder),
-            class: "d-flex align-items-center gap-2 py-1 rounded text-decoration-none small #{depth == 0 ? 'fw-semibold text-uppercase' : 'sidebar-doc-item'}",
-            style: "padding-left: #{doc_pad}; padding-right: 0.5rem; #{ depth == 0 ? 'font-size: 11px; letter-spacing: 0.05em; color: #2A4B4B;' : '' }" do %>
-  <i class="fa-solid fa-folder fa-xs" style="color: #f0ad4e; flex-shrink: 0;" aria-hidden="true"></i>
-  <span class="text-truncate"><%= folder.name %></span>
-<% end %>
+<div class="folder-node is-open"
+     data-folder-id="<%= folder.id %>"
+     data-sidebar-tree-target="node">
 
-<%# — Documents du dossier — %>
-<% folder.documents.each do |doc| %>
-  <%= link_to document_path(doc),
-              class: "d-flex align-items-center gap-2 py-1 rounded text-decoration-none small #{doc == current_document ? 'fw-semibold sidebar-doc-active' : 'sidebar-doc-item'}",
-              style: "padding-left: #{child_pad}; padding-right: 0.5rem;" do %>
-    <i class="fa-solid fa-file-lines fa-xs" style="color: #3d7f7e; flex-shrink: 0;" aria-hidden="true"></i>
-    <span class="text-truncate"><%= doc.title %></span>
+  <%# — Header : chevron + nom du dossier — %>
+  <div class="folder-node__header d-flex align-items-center"
+       style="padding-left: <%= 0.5 + depth * 1.0 %>rem; padding-right: 0.5rem;">
+
+    <% if has_children %>
+      <button type="button"
+              class="folder-node__chevron js-toggle"
+              data-sidebar-tree-target="chevron"
+              data-action="click->sidebar-tree#toggle"
+              aria-expanded="true"
+              aria-label="Plier/déplier le dossier <%= folder.name %>">
+        <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+      </button>
+    <% else %>
+      <span class="folder-node__chevron folder-node__chevron--placeholder" aria-hidden="true"></span>
+    <% end %>
+
+    <%= link_to folder_path(folder),
+                class: "d-flex align-items-center gap-2 py-1 rounded text-decoration-none small flex-grow-1 #{depth == 0 ? 'fw-semibold text-uppercase' : 'sidebar-doc-item'}",
+                style: "#{ depth == 0 ? 'font-size: 11px; letter-spacing: 0.05em; color: #2A4B4B;' : '' }" do %>
+      <i class="fa-solid fa-folder fa-xs" style="color: #f0ad4e; flex-shrink: 0;" aria-hidden="true"></i>
+      <span class="text-truncate"><%= folder.name %></span>
+    <% end %>
+  </div>
+
+  <%# — Contenu pliable : documents + sous-dossiers — %>
+  <% if has_children %>
+    <div class="folder-node__children"
+         data-sidebar-tree-target="children">
+
+      <%# Documents du dossier %>
+      <% folder.documents.each do |doc| %>
+        <%= link_to document_path(doc),
+                    class: "d-flex align-items-center gap-2 py-1 rounded text-decoration-none small #{doc == current_document ? 'fw-semibold sidebar-doc-active' : 'sidebar-doc-item'}",
+                    style: "padding-left: #{0.5 + (depth + 1) * 1.0}rem; padding-right: 0.5rem;" do %>
+          <i class="fa-solid fa-file-lines fa-xs" style="color: #3d7f7e; flex-shrink: 0;" aria-hidden="true"></i>
+          <span class="text-truncate"><%= doc.title %></span>
+        <% end %>
+      <% end %>
+
+      <%# Sous-dossiers (récursif) %>
+      <% all_folders.select { |f| f.parent_id == folder.id }.each do |child| %>
+        <%= render "documents/folder_node",
+                   folder: child,
+                   all_folders: all_folders,
+                   depth: depth + 1,
+                   current_document: current_document %>
+      <% end %>
+    </div>
   <% end %>
-<% end %>
-
-<%# — Sous-dossiers (récursif) — %>
-<% all_folders.select { |f| f.parent_id == folder.id }.each do |child| %>
-  <%= render "documents/folder_node",
-             folder: child,
-             all_folders: all_folders,
-             depth: depth + 1,
-             current_document: current_document %>
-<% end %>
+</div>
