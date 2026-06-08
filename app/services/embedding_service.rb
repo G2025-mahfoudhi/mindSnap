@@ -12,7 +12,12 @@ class EmbeddingService
       response = post(model, text)
       next unless response
 
-      body = JSON.parse(response.body)
+      begin
+        body = JSON.parse(response.body)
+      rescue JSON::ParserError
+        Rails.logger.error "EmbeddingService: réponse non-JSON de #{model}"
+        next
+      end
 
       if body["error"]
         Rails.logger.warn "EmbeddingService: #{model} error — #{body['error']['message']}"
@@ -41,9 +46,6 @@ class EmbeddingService
     end
   rescue Faraday::Error => e
     Rails.logger.error "EmbeddingService network error for #{model}: #{e.message}"
-    nil
-  rescue JSON::ParserError => e
-    Rails.logger.error "EmbeddingService JSON parse error for #{model}: #{e.message}"
     nil
   end
 end

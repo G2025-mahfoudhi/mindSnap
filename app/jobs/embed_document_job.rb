@@ -34,7 +34,6 @@ class EmbedDocumentJob < ApplicationJob
 
     document.update!(embedding_status: "completed")
 
-    SummarizeDocumentJob.perform_later(document_id)
     TagDocumentJob.perform_later(document_id)
   rescue ActiveRecord::RecordNotFound
     Rails.logger.warn "EmbedDocumentJob: document #{document_id} introuvable"
