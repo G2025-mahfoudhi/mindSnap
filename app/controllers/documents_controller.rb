@@ -1,5 +1,5 @@
 class DocumentsController < ApplicationController
-  before_action :set_document, only: %i[show edit update destroy download summarize summary_status]
+  before_action :set_document, only: %i[show edit update destroy download summarize summary_status chat]
 
   def index
     @documents = current_user.documents.where(folder_id: nil)
@@ -24,6 +24,16 @@ class DocumentsController < ApplicationController
     @folders = current_user.folders.where(parent_id: nil).includes(:documents, children: :documents)
     @sidebar_folders = current_user.folders.includes(:documents).to_a
     @documents_without_folder = current_user.documents.where(folder_id: nil)
+  end
+
+  def chat
+    @conversation = current_user.conversations.find_or_create_by!(
+      context_type: "Document", context_id: @document.id
+    ) { |c| c.name = "Discussion — #{@document.title}" }
+    @messages = @conversation.messages.order(:created_at)
+    @message = Message.new
+    render partial: "documents/chat_panel",
+           locals: { conversation: @conversation, messages: @messages, message: @message }
   end
 
   def download
