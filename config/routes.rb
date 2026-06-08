@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   mount MissionControl::Jobs::Engine, at: "/jobs" if defined?(MissionControl::Jobs)
 
   devise_for :users
+  resource :avatar, only: [:destroy]
   root to: "pages#home"
   get "dashboard", to: "dashboard#index"
 
