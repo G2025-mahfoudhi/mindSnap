@@ -3,14 +3,12 @@
 <% content_for :main_style, "height: calc(100vh - 56px); overflow: hidden;" %>
 <div class="d-flex" style="height: calc(100vh - 56px);">
 
-  <div style="position: sticky; top: 0; height: 100%; width: 260px; min-width: 260px; overflow-y: auto; flex-shrink: 0;">
-    <%= render "documents/sidebar",
-               folders: @sidebar_folders,
-               documents_without_folder: @documents_without_folder,
-               current_document: @document %>
-  </div>
+  <%= render "documents/sidebar",
+             folders: @sidebar_folders,
+             documents_without_folder: @documents_without_folder,
+             current_document: @document %>
 
-  <main class="flex-grow-1 overflow-auto p-4">
+  <main class="flex-grow-1 overflow-auto p-4" style="padding-bottom: var(--footer-height, 5rem) !important;">
     <div style="max-width: 760px; margin: 0 auto;">
 
       <%# ——— HEADER ——— %>
@@ -76,7 +74,8 @@
       <%# ——— CONTENU ——— %>
       <% if @document.file.attached? || @document.content.present? %>
         <div class="mb-4 pt-4">
-          <button class="btn btn-outline-secondary btn-sm"
+          <button id="doc-toggle-btn"
+                  class="btn btn-outline-secondary btn-sm"
                   type="button"
                   data-bs-toggle="collapse"
                   data-bs-target="#doc-content"
@@ -109,12 +108,20 @@
               </div>
             <% end %>
           </div>
-          <script>
-            document.getElementById('doc-content').addEventListener('show.bs.collapse', function() {
-              this.querySelectorAll('iframe[data-src]').forEach(function(iframe) {
-                if (iframe.src === 'about:blank') iframe.src = iframe.dataset.src;
+          <script nonce="<%= request.content_security_policy_nonce %>">
+            (function() {
+              var el = document.getElementById('doc-content');
+              var btn = document.getElementById('doc-toggle-btn');
+              el.addEventListener('show.bs.collapse', function() {
+                this.querySelectorAll('iframe[data-src]').forEach(function(iframe) {
+                  if (iframe.src === 'about:blank') iframe.src = iframe.dataset.src;
+                });
+                btn.textContent = 'Fermer le document';
               });
-            });
+              el.addEventListener('hide.bs.collapse', function() {
+                btn.textContent = 'Voir le document';
+              });
+            })();
           </script>
         </div>
       <% end %>
