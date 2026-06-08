@@ -2,9 +2,12 @@
 # Gère l'historique de conversation, le fallback multi-modèles,
 # et enrichit le prompt système avec le contexte RAG (Phase 2).
 #
-# Flux : call → build_rag_context (pgvector search) → system_prompt enrichi
-#        → modèle principal → fallback si rate-limit → réponse
-class OpenRouterService
+# Deux modes :
+# - call             : synchrone, renvoie la reponse complete (utilise par
+#                      le controller doc-chat pour des reponses courtes)
+# - call_streaming   : SSE token-par-token, yield chaque chunk via un bloc
+#                      (utilise par StreamAiResponseJob pour le streaming)
+class OpenRouterService # rubocop:disable Metrics/ClassLength
   API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
   # Fallback ordonné : si le premier est rate-limité, on essaie le suivant
@@ -37,6 +40,31 @@ class OpenRouterService
     raise "Tous les modèles ont échoué"
   end
 
+  # Streaming SSE token-par-token.
+  # Yield chaque token (String) au bloc appelant. Renvoie le contenu complet.
+  # Utilise stream: true sur l'API OpenRouter, parse les chunks SSE.
+  def call_streaming(&block) # rubocop:disable Metrics/MethodLength
+    @rag_context = build_rag_context
+    accumulated  = +""
+
+    models_to_try.each do |model|
+      stream_chunks(model).each do |token|
+        accumulated << token
+        block.call(token)
+      end
+      return accumulated if accumulated.present?
+
+      Rails.logger.warn "OpenRouter streaming: #{model} a renvoyé un stream vide"
+    rescue Faraday::Error, OpenRouterStreamError => e
+      Rails.logger.error "OpenRouter streaming error for #{model}: #{e.class} — #{e.message}"
+    end
+
+    raise "Tous les modèles streaming ont échoué"
+  end
+
+  # Erreur custom pour le streaming (parse SSE).
+  class OpenRouterStreamError < StandardError; end
+
   private
 
   def models_to_try
@@ -56,6 +84,51 @@ class OpenRouterService
     end
   rescue Faraday::Error => e
     Rails.logger.error "OpenRouterService Faraday error for #{model}: #{e.message}"
+    nil
+  end
+
+  # Construit l'appel Faraday streaming, parse les chunks SSE et yield chaque token.
+  def stream_chunks(model) # rubocop:disable Metrics/MethodLength
+    Enumerator.new do |yielder|
+      response = streaming_faraday_call(model)
+      raise OpenRouterStreamError, "OpenRouter streaming: réponse vide" unless response&.body
+
+      response.body.each_line do |line|
+        case (result = parse_sse_line(line))
+        when :done then break
+        when nil   then next
+        else            yielder << result
+        end
+      end
+    end
+  end
+
+  def streaming_faraday_call(model)
+    Faraday.post(API_URL) do |req|
+      req.options.timeout = 60
+      req.options.open_timeout = 10
+      req.headers["Authorization"] = "Bearer #{ENV.fetch('OPENROUTER_API_KEY')}"
+      req.headers["Content-Type"]  = "application/json"
+      req.headers["Accept"]        = "text/event-stream"
+      req.headers["HTTP-Referer"]  = "https://mindsnap.app"
+      req.headers["X-Title"]       = "MindSnap"
+      req.body = JSON.generate({ model: model, messages: messages_for_api, stream: true })
+    end
+  end
+
+  # Parse une ligne SSE. Renvoie le token (String), :done, ou nil.
+  def parse_sse_line(line)
+    line = line.chomp
+    return nil if line.empty? || line.start_with?(":")
+    return nil unless line.start_with?("data:")
+
+    data = line.sub(/^data:\s*/, "").strip
+    return :done if data == "[DONE]"
+
+    payload = JSON.parse(data)
+    delta   = payload.dig("choices", 0, "delta", "content")
+    delta.is_a?(String) && delta.present? ? delta : nil
+  rescue JSON::ParserError
     nil
   end
 
