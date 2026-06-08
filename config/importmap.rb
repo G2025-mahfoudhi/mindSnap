@@ -4,8 +4,10 @@ pin "application"
 pin "@hotwired/turbo-rails", to: "turbo.min.js"
 pin "@hotwired/stimulus", to: "stimulus.min.js"
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
-pin "@rails/actioncable", to: "actioncable.esm.js"
 pin_all_from "app/javascript/controllers", under: "controllers"
-pin_all_from "app/javascript/channels", under: "channels"
-pin "bootstrap", to: "bootstrap.min.js", preload: true
+# Bootstrap 5 ESM bundle (contient Popper.js) charge depuis jsDelivr.
+# La version gem bootstrap-5.3.8 distribue bootstrap.min.js en UMD, pas
+# compatible avec un import ESM via importmap, ce qui faisait que les
+# data-bs-* (offcanvas, dropdown, etc.) ne s'initialisaient pas.
+pin "bootstrap", to: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js", preload: true
 pin "@popperjs/core", to: "popper.js", preload: true
