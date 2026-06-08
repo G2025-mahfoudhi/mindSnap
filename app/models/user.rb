@@ -20,10 +20,11 @@ class User < ApplicationRecord
          :omniauthable, omniauth_providers:[:google_oauth2]
 
   def self.from_omniauth(auth)
-    # Find or create a user based on the provider and uid
-    where(provider:auth.provider, uid:auth.uid).first_or_initialize do |user|
-      user.email = auth.info.email
-      user.password = Devise.friendly_token[0, 20] # Generate a random password
+    where(provider: auth.provider, uid: auth.uid).first_or_initialize do |user|
+      user.email      = auth.info.email
+      user.first_name = auth.info.first_name
+      user.last_name  = auth.info.last_name
+      user.password   = Devise.friendly_token[0, 20]
     end
   end
 end
