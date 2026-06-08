@@ -15,15 +15,25 @@ class StreamAiResponseJobTest < ActiveJob::TestCase
   end
 
   test "remplit le contenu et broadcast_replace a chaque batch" do
-    stub_call_streaming("Bonjour ! Comment ça va ?")
+    stub_call_streaming("Bonjour ! Comment ca va ?")
     broadcasts = []
     stub_broadcast_replace(broadcasts)
 
     StreamAiResponseJob.perform_now(@ai_message.id)
 
-    assert_equal "Bonjour ! Comment ça va ?", @ai_message.reload.content
+    assert_equal "Bonjour ! Comment ca va ?", @ai_message.reload.content
     assert_equal false, @ai_message.streaming
     assert broadcasts.size >= 1, "Au moins un broadcast_replace doit etre envoye"
+
+    final_broadcast = broadcasts.find do |(_, opts)|
+      opts.dig(:locals, :message).content.to_s.include?("Bonjour")
+    end
+    assert_not_nil final_broadcast, "Le broadcast final doit contenir le texte genere"
+
+    refute broadcasts.any? { |(_, opts)|
+      opts.dig(:target).to_s == @ai_message.to_gid_param &&
+      opts.dig(:locals, :message).content.blank?
+    }, "Aucun broadcast replace ne devrait avoir un contenu vide"
   end
 
   test "gere une exception API en mettant un message d'erreur" do
@@ -31,11 +41,18 @@ class StreamAiResponseJobTest < ActiveJob::TestCase
     broadcasts = []
     stub_broadcast_replace(broadcasts)
 
-    begin
-      StreamAiResponseJob.perform_now(@ai_message.id)
-    rescue StandardError
-      # ignore (retry_on de ApplicationJob peut le laisser sortir)
-    end
+    StreamAiResponseJob.perform_now(@ai_message.id)
+
+    assert_equal false, @ai_message.reload.streaming
+    assert_match(/erreur/i, @ai_message.content.to_s)
+  end
+
+  test "quitte proprement si aucun message user precedent" do
+    @user_message.destroy!
+    broadcasts = []
+    stub_broadcast_replace(broadcasts)
+
+    StreamAiResponseJob.perform_now(@ai_message.id)
 
     assert_equal false, @ai_message.reload.streaming
     assert_match(/erreur/i, @ai_message.content.to_s)
@@ -55,18 +72,16 @@ class StreamAiResponseJobTest < ActiveJob::TestCase
     end
   end
 
-  # Stub Turbo::StreamsChannel.broadcast_replace_to pour capturer les
-  # broadcasts sans toucher au serveur ActionCable.
   def stub_broadcast_replace(captured)
-    @original_broadcast_replace = Turbo::StreamsChannel.method(:broadcast_replace_to)
+    @original_broadcast_replace_to = Turbo::StreamsChannel.method(:broadcast_replace_to)
     Turbo::StreamsChannel.define_singleton_method(:broadcast_replace_to) do |*streamables, **opts|
       captured << [streamables, opts]
     end
   end
 
   def restore_broadcast_replace
-    if @original_broadcast_replace
-      Turbo::StreamsChannel.define_singleton_method(:broadcast_replace_to, @original_broadcast_replace)
+    if @original_broadcast_replace_to
+      Turbo::StreamsChannel.define_singleton_method(:broadcast_replace_to, @original_broadcast_replace_to)
     end
   end
 end

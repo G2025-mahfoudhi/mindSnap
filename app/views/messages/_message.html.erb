@@ -21,9 +21,9 @@
       <%# Indicateur de streaming (3 petits points qui clignotent). %>
       <% if message.streaming %>
         <span class="small text-muted" aria-label="Génération en cours">
-          <i class="fa-solid fa-circle" style="font-size: 0.4rem; animation: pulse 1s infinite;"></i>
-          <i class="fa-solid fa-circle mx-1" style="font-size: 0.4rem; animation: pulse 1s 0.2s infinite;"></i>
-          <i class="fa-solid fa-circle" style="font-size: 0.4rem; animation: pulse 1s 0.4s infinite;"></i>
+          <i class="fa-solid fa-circle" style="font-size: 0.4rem; animation: stream-pulse 1s infinite;"></i>
+          <i class="fa-solid fa-circle mx-1" style="font-size: 0.4rem; animation: stream-pulse 1s 0.2s infinite;"></i>
+          <i class="fa-solid fa-circle" style="font-size: 0.4rem; animation: stream-pulse 1s 0.4s infinite;"></i>
         </span>
       <% end %>
     </div>
@@ -32,10 +32,3 @@
     </div>
   </div>
 </div>
-
-<style>
-  @keyframes pulse {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 1; }
-  }
-</style>

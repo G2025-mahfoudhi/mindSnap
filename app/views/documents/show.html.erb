@@ -2,8 +2,6 @@
 <% content_for :body_class, "overflow-hidden" %>
 <% content_for :main_style, "height: calc(100vh - 56px); overflow: hidden;" %>
 
-<%# Turbo Stream ActionCable : on streame la conversation doc-chat dans la page
-    show pour que les messages apparaissent en temps reel dans l'offcanvas. %>
 <%= turbo_stream_from @doc_chat_conversation %>
 
 <div class="offcanvas offcanvas-end"
@@ -13,11 +11,19 @@
      data-controller="doc-chat"
      data-doc-chat-url-value="<%= chat_document_path(@document) %>"
      style="width: 420px;">
-  <div class="offcanvas-header border-bottom">
-    <h6 class="offcanvas-title fw-semibold mb-0" id="doc-chat-panel-label">
+  <div class="offcanvas-header border-bottom py-3">
+    <h6 class="offcanvas-title fw-semibold mb-0 me-3" id="doc-chat-panel-label">
       <i class="fa-solid fa-comments me-2 text-primary" aria-hidden="true"></i>Discuter avec l'IA
     </h6>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+    <%= button_to reset_chat_document_path(@document),
+                  method: :delete,
+                  class: "btn btn-outline-danger btn-sm d-flex align-items-center",
+                  form: { data: { turbo_confirm: "Supprimer tout l'historique de cette discussion ?" } },
+                  aria: { label: "Réinitialiser la discussion" } do %>
+      <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+      <span class="d-none d-sm-inline ms-1">Réinitialiser</span>
+    <% end %>
+    <button type="button" class="btn-close ms-auto" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
   </div>
   <div class="offcanvas-body p-0 d-flex flex-column" style="min-height: 0;">
     <%= turbo_frame_tag "doc-chat-frame",

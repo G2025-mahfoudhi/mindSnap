@@ -40,7 +40,7 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
     raise "Tous les modèles ont échoué"
   end
 
-  # Streaming SSE token-par-token.
+  # Streaming SSE token-par-token avec Net::HTTP (vrai streaming chunked).
   # Yield chaque token (String) au bloc appelant. Renvoie le contenu complet.
   # Utilise stream: true sur l'API OpenRouter, parse les chunks SSE.
   def call_streaming(&block) # rubocop:disable Metrics/MethodLength
@@ -48,15 +48,19 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
     accumulated  = +""
 
     models_to_try.each do |model|
-      stream_chunks(model).each do |token|
-        accumulated << token
-        block.call(token)
-      end
-      return accumulated if accumulated.present?
+      begin
+        tokens_yielded = false
+        stream_chunks(model) do |token|
+          accumulated << token
+          block.call(token)
+          tokens_yielded = true
+        end
+        return accumulated if tokens_yielded
 
-      Rails.logger.warn "OpenRouter streaming: #{model} a renvoyé un stream vide"
-    rescue Faraday::Error, OpenRouterStreamError => e
-      Rails.logger.error "OpenRouter streaming error for #{model}: #{e.class} — #{e.message}"
+        Rails.logger.warn "OpenRouter streaming: #{model} a renvoyé un stream vide"
+      rescue Faraday::Error, OpenRouterStreamError => e
+        Rails.logger.error "OpenRouter streaming error for #{model}: #{e.class} — #{e.message}"
+      end
     end
 
     raise "Tous les modèles streaming ont échoué"
@@ -87,33 +91,42 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
     nil
   end
 
-  # Construit l'appel Faraday streaming, parse les chunks SSE et yield chaque token.
-  def stream_chunks(model) # rubocop:disable Metrics/MethodLength
-    Enumerator.new do |yielder|
-      response = streaming_faraday_call(model)
-      raise OpenRouterStreamError, "OpenRouter streaming: réponse vide" unless response&.body
+  # Appel SSE streaming avec Net::HTTP (vrai streaming chunked, pas Faraday
+  # qui charge tout le body en mémoire). Parse les chunks SSE et yield chaque
+  # token au bloc appelant.
+  def stream_chunks(model, &block) # rubocop:disable Metrics/MethodLength
+    uri = URI(API_URL)
 
-      response.body.each_line do |line|
-        case (result = parse_sse_line(line))
-        when :done then break
-        when nil   then next
-        else            yielder << result
+    Net::HTTP.start(uri.host, uri.port, use_ssl: true,
+                    open_timeout: 10, read_timeout: 60) do |http|
+      request = Net::HTTP::Post.new(uri)
+      request["Authorization"] = "Bearer #{ENV.fetch('OPENROUTER_API_KEY')}"
+      request["Content-Type"]  = "application/json"
+      request["Accept"]        = "text/event-stream"
+      request["HTTP-Referer"]  = "https://mindsnap.app"
+      request["X-Title"]       = "MindSnap"
+      request.body = JSON.generate({ model: model, messages: messages_for_api, stream: true })
+
+      http.request(request) do |response|
+        unless response.code.to_i == 200
+          raise OpenRouterStreamError,
+                "HTTP #{response.code} — #{response.body.to_s.truncate(500)}"
+        end
+
+        response.read_body do |chunk|
+          chunk.each_line do |line|
+            case (result = parse_sse_line(line))
+            when :done then return
+            when nil   then next
+            else            block.call(result)
+            end
+          end
         end
       end
     end
-  end
-
-  def streaming_faraday_call(model)
-    Faraday.post(API_URL) do |req|
-      req.options.timeout = 60
-      req.options.open_timeout = 10
-      req.headers["Authorization"] = "Bearer #{ENV.fetch('OPENROUTER_API_KEY')}"
-      req.headers["Content-Type"]  = "application/json"
-      req.headers["Accept"]        = "text/event-stream"
-      req.headers["HTTP-Referer"]  = "https://mindsnap.app"
-      req.headers["X-Title"]       = "MindSnap"
-      req.body = JSON.generate({ model: model, messages: messages_for_api, stream: true })
-    end
+  rescue Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNREFUSED,
+         Errno::ECONNRESET, SocketError => e
+    raise OpenRouterStreamError, "Network error: #{e.message}"
   end
 
   # Parse une ligne SSE. Renvoie le token (String), :done, ou nil.

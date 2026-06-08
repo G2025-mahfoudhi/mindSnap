@@ -1,5 +1,5 @@
 class DocumentsController < ApplicationController # rubocop:disable Metrics/ClassLength
-  before_action :set_document, only: %i[show edit update destroy download summarize summary_status chat]
+  before_action :set_document, only: %i[show edit update destroy download summarize summary_status chat reset_chat]
 
   def index
     @documents = current_user.documents.where(folder_id: nil)
@@ -38,6 +38,28 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
     @message = Message.new
     render partial: "documents/chat_panel",
            locals: { conversation: @conversation, messages: @messages, message: @message }
+  end
+
+  def reset_chat
+    conversation = current_user.conversations.find_by(
+      context_type: "Document", context_id: @document.id
+    )
+    conversation&.messages&.destroy_all
+    conversation ||= current_user.conversations.create!(
+      context_type: "Document", context_id: @document.id,
+      name: "Discussion — #{@document.title}"
+    )
+
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          "doc-chat-frame",
+          partial: "documents/chat_panel",
+          locals: { conversation: conversation, messages: [], message: Message.new }
+        )
+      end
+      format.html { redirect_to @document, notice: "Discussion réinitialisée." }
+    end
   end
 
   def download

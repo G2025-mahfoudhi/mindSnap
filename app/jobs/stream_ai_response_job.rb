@@ -9,32 +9,44 @@ class StreamAiResponseJob < ApplicationJob
   queue_as :default
 
   FLUSH_INTERVAL_MS = 50
-  FLUSH_MIN_TOKENS  = 4
 
   def perform(message_id)
     @message = Message.find(message_id)
     @message.update!(streaming: true)
+    @message.reload
     broadcast_replace
+
+    parent_msg = parent_user_message
+    unless parent_msg
+      Rails.logger.error "StreamAiResponseJob: aucun message user precedent pour AI message #{@message.id}"
+      @message.update!(streaming: false,
+                       content: @message.content.presence || "Desole, une erreur est survenue.")
+      @message.reload
+      broadcast_replace
+      return
+    end
 
     @buffer     = +""
     @last_flush = Time.current
 
-    OpenRouterService.new(@message.conversation, parent_user_message).call_streaming do |token|
+    OpenRouterService.new(@message.conversation, parent_msg).call_streaming do |token|
       accumulate_and_flush(token)
     end
 
     flush_buffer(@buffer) unless @buffer.empty?
+    @message.reload
 
     @message.update!(streaming: false)
+    @message.reload
     broadcast_replace
   rescue StandardError => e
     Rails.logger.error "StreamAiResponseJob error: #{e.class} — #{e.message}"
     @message&.update!(
       streaming: false,
-      content: @message.content.presence || "Désolé, une erreur est survenue. Réessaie."
+      content: @message.content.presence || "Desole, une erreur est survenue. Reessaie."
     )
+    @message&.reload
     broadcast_replace if @message
-    raise
   end
 
   private
@@ -64,13 +76,11 @@ class StreamAiResponseJob < ApplicationJob
 
     new_content = @message.content.to_s + buffer.dup
     @message.update_columns(content: new_content, updated_at: Time.current)
-    buffer.clear
+    @message.reload
     broadcast_replace
+    buffer.clear
   end
 
-  # Broadcast via le channel officiel Turbo (Turbo::StreamsChannel). Les clients
-  # abonnes via <%= turbo_stream_from @conversation %> dans la vue recoivent
-  # automatiquement le replace du bon element.
   def broadcast_replace
     Turbo::StreamsChannel.broadcast_replace_to(
       @message.conversation,
@@ -78,5 +88,8 @@ class StreamAiResponseJob < ApplicationJob
       partial: "messages/message",
       locals: { message: @message }
     )
+    Rails.logger.warn "[StreamAi] Replace OK msg=#{@message.id} content=#{@message.content.to_s.truncate(40)}"
+  rescue StandardError => e
+    Rails.logger.error "[StreamAi] Replace FAILED msg=#{@message.id}: #{e.message}"
   end
 end
