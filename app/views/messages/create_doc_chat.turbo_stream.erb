@@ -1,0 +1,29 @@
+<%= turbo_stream.append "doc-chat-messages" do %>
+  <%= render @user_message %>
+<% end %>
+
+<%= turbo_stream.append "doc-chat-messages" do %>
+  <%= render @ai_message %>
+<% end %>
+
+<%= turbo_stream.replace "doc-chat-form" do %>
+  <%= turbo_frame_tag "doc-chat-form" do %>
+    <%= simple_form_for [@conversation, Message.new],
+                        url: conversation_messages_path(@conversation, source: "doc_chat"),
+                        html: { "aria-label": "Envoyer un message" } do |f| %>
+      <div class="d-flex gap-2 align-items-end">
+        <%= f.text_area :content,
+                        class: "form-control rounded-3 flex-grow-1",
+                        placeholder: "Ton message...",
+                        rows: 2,
+                        required: true,
+                        style: "resize: none;",
+                        data: {
+                          controller: "textarea-autoresize",
+                          action: "input->textarea-autoresize#resize"
+                        } %>
+        <%= f.submit "Envoyer", class: "btn btn-primary px-3 flex-shrink-0" %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,6 +1,34 @@
 <% content_for :title, "#{@document.title} — MindSnap" %>
 <% content_for :body_class, "overflow-hidden" %>
 <% content_for :main_style, "height: calc(100vh - 56px); overflow: hidden;" %>
+
+<div class="offcanvas offcanvas-end"
+     id="doc-chat-panel"
+     tabindex="-1"
+     aria-labelledby="doc-chat-panel-label"
+     data-controller="doc-chat"
+     data-doc-chat-url-value="<%= chat_document_path(@document) %>"
+     style="width: 420px;">
+  <div class="offcanvas-header border-bottom">
+    <h6 class="offcanvas-title fw-semibold mb-0" id="doc-chat-panel-label">
+      <i class="fa-solid fa-comments me-2 text-primary" aria-hidden="true"></i>Discuter avec l'IA
+    </h6>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+  </div>
+  <div class="offcanvas-body p-0 d-flex flex-column" style="min-height: 0;">
+    <%= turbo_frame_tag "doc-chat-frame",
+                        data: { "doc-chat-target": "frame" },
+                        class: "d-flex flex-column flex-grow-1",
+                        style: "min-height: 0;" do %>
+      <div class="d-flex justify-content-center align-items-center flex-grow-1">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
 <div class="d-flex" style="height: calc(100vh - 56px);">
 
   <%= render "documents/sidebar",
@@ -62,6 +90,13 @@
         </div>
 
         <div class="doc-show-actions">
+          <button type="button"
+                  class="btn btn-primary btn-sm"
+                  data-bs-toggle="offcanvas"
+                  data-bs-target="#doc-chat-panel"
+                  aria-controls="doc-chat-panel">
+            <i class="fa-solid fa-comments me-1" aria-hidden="true"></i> Discuter
+          </button>
           <%= link_to edit_document_path(@document),
                       class: "btn btn-outline-primary btn-sm",
                       aria: { label: "Modifier #{@document.title}" } do %>
