@@ -44,3 +44,13 @@
     <%= button_to "Se connecter avec #{OmniAuth::Utils.camelize(provider)}", omniauth_authorize_path(resource_name, provider), data: { turbo: false }, class: "d-block mb-2" %>
   <% end %>
 <% end %>
+<%- if devise_mapping.omniauthable? %>
+  <%- resource_class.omniauth_providers.each do |provider| %>
+    <%= form_for "Login",
+      url: omniauth_authorize_path(resource_name, provider),
+      method: :post,
+      data: {turbo: "false"} do |f| %>
+        <%= f.submit "Login with Google", class: "btn btn-primary" %>
+    <% end %>
+  <% end %>
+<% end %>
