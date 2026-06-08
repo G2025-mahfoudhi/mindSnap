@@ -35,11 +35,11 @@ class RagService
   # Recherche les chunks de documents les plus pertinents.
   # Triés par cosine distance croissante, limités par `limit`.
   # Le caller (RAG chat) ne tient pas compte du score combiné.
-  def search(query, folder_id: nil, limit: 5)
+  def search(query, folder_id: nil, document_id: nil, limit: 5)
     query_embedding = EmbeddingService.embed(query)
     return [] unless query_embedding
 
-    vector_chunks = vector_search(query_embedding, folder_id: folder_id, limit: 50)
+    vector_chunks = vector_search(query_embedding, folder_id: folder_id, document_id: document_id, limit: 50)
     vector_chunks
       .select { |c| cosine_distance(c) < COSINE_DISTANCE_THRESHOLD }
       .sort_by { |c| cosine_distance(c) }
@@ -113,12 +113,13 @@ class RagService
     { document: doc, score: combined }
   end
 
-  def vector_search(query_embedding, folder_id:, limit:)
+  def vector_search(query_embedding, folder_id:, limit:, document_id: nil)
     scope = DocumentChunk
             .joins(:document)
             .where(documents: { user_id: @user.id })
 
-    scope = scope.where(documents: { folder_id: folder_id }) if folder_id
+    scope = scope.where(document_id: document_id) if document_id
+    scope = scope.where(documents: { folder_id: folder_id }) if folder_id && !document_id
 
     scope
       .nearest_neighbors(:embedding, query_embedding, distance: "cosine")
