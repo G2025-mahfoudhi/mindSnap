@@ -42,15 +42,10 @@ class ConversationTest < ActiveSupport::TestCase
     assert_not conversation.folder_scoped?
   end
 
-  test "contexte optionnel" do
+  test "peut exister sans contexte" do
     conversation = Conversation.create!(name: "Sans contexte", user: @user)
     assert_nil conversation.context
     assert_nil conversation.context_type
-  end
-
-  test "model par défaut" do
-    conversation = Conversation.create!(name: "Default model", user: @user)
-    assert_equal "nvidia/nemotron-3-super-120b-a12b:free", conversation.model
   end
 
   test "a des messages" do

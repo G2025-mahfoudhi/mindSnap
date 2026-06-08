@@ -498,6 +498,7 @@ DEPENDENCIES
   docx (~> 0.13.0)
   dotenv-rails
   faraday
+  faraday-follow_redirects
   font-awesome-sass (~> 6.1)
   image_processing (~> 1.2)
   importmap-rails

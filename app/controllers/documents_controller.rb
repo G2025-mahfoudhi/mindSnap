@@ -67,6 +67,11 @@ class DocumentsController < ApplicationController
   end
 
   def edit
+    return unless @document.document_type == "Lien" &&
+                  @document.source_url.blank? &&
+                  @document.content.present?
+
+    @document.source_url = @document.content
   end
 
   def update
@@ -103,7 +108,7 @@ class DocumentsController < ApplicationController
   end
 
   def document_params
-    params.require(:document).permit(:title, :content, :document_type, :date_injection, file: [])
+    params.require(:document).permit(:title, :content, :source_url, :document_type, :date_injection, file: [])
   end
 
   def cloudinary_purge_files
