@@ -93,12 +93,28 @@ class FileExtractionService
 
   def with_tempfile(ext = "")
     tmp = Tempfile.new(["mind_extract", ext], binmode: true)
-    @blob.download { |chunk| tmp.write(chunk) }
+    tmp.write(download_blob)
+    tmp.flush
     tmp.rewind
     yield(tmp.path)
   ensure
     tmp&.close
     tmp&.unlink
+  end
+
+  def download_blob
+    folder = Rails.env
+    full_key = "#{folder}/#{@blob.key}"
+
+    %w[image raw].each do |resource_type|
+      url = Cloudinary::Utils.cloudinary_url(full_key, resource_type: resource_type, type: "upload", secure: true)
+      response = Faraday.get(url)
+      return response.body if response.success? && response.body.present?
+    end
+
+    @blob.download
+  rescue StandardError
+    @blob.download
   end
 
   def guess_extension

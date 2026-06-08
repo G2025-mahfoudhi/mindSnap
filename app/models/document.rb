@@ -32,6 +32,9 @@ class Document < ApplicationRecord
   # Uniquement si le contenu a changé ou si le document n'a jamais été embeddé
   after_commit :embed_async, on: %i[create update], if: :should_reembed?
 
+  # Résumé IA déclenché indépendamment de l'embedding (évite que l'échec d'embedding bloque le résumé)
+  after_commit :summarize_async, on: %i[create update], if: :should_summarize?
+
   # -- Scopes & Predicates -------------------------------------------------
   def embedded?
     embedding_status == "completed"
@@ -94,5 +97,15 @@ class Document < ApplicationRecord
       embedding_status == "pending" ||
       saved_change_to_content?
     )
+  end
+
+  def summarize_async
+    SummarizeDocumentJob.perform_later(id)
+  end
+
+  # Génère le résumé dès que le contenu est disponible ou change, sauf si c'est
+  # le job lui-même qui met à jour le résumé (évite la boucle infinie)
+  def should_summarize?
+    content.present? && saved_change_to_content? && !saved_change_to_summary?
   end
 end
