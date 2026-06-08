@@ -85,3 +85,7 @@ gem "redcarpet"
 gem "pdf-reader", "~> 2.15"
 gem "docx", "~> 0.13.0"
 gem "rtesseract", "~> 3.1"
+
+# Gemfile
+gem 'omniauth-google-oauth2'
+gem "omniauth-rails_csrf_protection"
