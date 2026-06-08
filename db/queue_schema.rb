@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_05_102816) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_08_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -74,12 +74,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_102816) do
     t.string "embedding_status", default: "pending"
     t.bigint "folder_id"
     t.string "scraping_status", default: "pending"
+    t.virtual "search_vector", type: :tsvector, as: "(setweight(to_tsvector('french'::regconfig, (COALESCE(title, ''::character varying))::text), 'A'::\"char\") || setweight(to_tsvector('french'::regconfig, COALESCE(content, ''::text)), 'B'::\"char\"))", stored: true
     t.string "source_url"
     t.text "summary"
     t.string "title"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["folder_id"], name: "index_documents_on_folder_id"
+    t.index ["search_vector"], name: "index_documents_on_search_vector", using: :gin
     t.index ["user_id"], name: "index_documents_on_user_id"
   end
 
