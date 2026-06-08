@@ -74,20 +74,32 @@ class OpenRouterService
   end
 
   def system_prompt
+    user = @conversation.user
+    all_docs = user.documents.includes(:folder).order(:created_at)
+
+    doc_list = all_docs.map do |d|
+      folder_info = d.folder ? " (dossier: #{d.folder.name})" : ""
+      summary_info = d.summary.present? ? "\n  Résumé : #{d.summary.truncate(200)}" : ""
+      content_info = d.content.present? && d.summary.blank? ? "\n  Contenu : #{d.content.truncate(300)}" : ""
+      "- #{d.title} [#{d.document_type}]#{folder_info}#{summary_info}#{content_info}"
+    end.join("\n")
+
     <<~PROMPT.strip
       Tu es MindSnap, un assistant de gestion de connaissances personnelles.
       Tu aides l'utilisateur à retrouver, comprendre et connecter ses documents.
 
-      ## Contexte documentaire
-      #{@rag_context.presence || "Aucun document pertinent trouvé dans la base de l'utilisateur."}
+      ## Inventaire complet (#{all_docs.size} document#{all_docs.size > 1 ? 's' : ''})
+      #{doc_list.presence || "Aucun document dans l'espace."}
+
+      ## Contenu pertinent pour cette question
+      #{@rag_context.presence || "Aucun contenu pertinent trouvé pour cette question."}
 
       ## Règles
-      1. Si des documents pertinents sont fournis ci-dessus → base ta réponse dessus. Cite le titre du document comme source : *(source: Titre du doc)*.
-      2. Si aucun document pertinent → dis "Je n'ai rien trouvé dans tes documents à ce sujet, mais voici ce que je sais :" puis réponds avec tes connaissances générales.
-      3. Ne mélange jamais tes connaissances générales avec le contenu des documents.
+      1. Tu connais TOUS les documents listés dans l'inventaire — utilise-le pour répondre aux questions sur le nombre, la liste ou l'organisation des documents.
+      2. Si du contenu pertinent est fourni → base ta réponse dessus. Cite le titre : *(source: Titre)*.
+      3. Si aucun contenu pertinent → dis "Je n'ai pas le contenu de ce document, mais voici ce que je sais :" puis réponds avec tes connaissances générales.
       4. Sois concis, structuré, réponds dans la langue de la question.
-      5. Si la question ne concerne pas les documents, réponds normalement.
-      6. Réponds naturellement à tous les messages, y compris les salutations.
+      5. Réponds naturellement à tous les messages, y compris les salutations.
     PROMPT
   end
 
@@ -103,6 +115,21 @@ class OpenRouterService
     folder_id = @conversation.context_id if @conversation.context_type == "Folder" && @conversation.context_id.present?
 
     chunks = rag.search(@user_message.content, folder_id: folder_id, limit: 5)
-    rag.format_context(chunks)
+    context = rag.format_context(chunks)
+
+    # Fallback : si aucun chunk (embeddings pas encore générés), injecter le contenu brut des documents
+    context.presence || fallback_context(user, folder_id)
+  end
+
+  def fallback_context(user, folder_id)
+    scope = user.documents.where.not(content: [nil, ""])
+    scope = scope.where(folder_id: folder_id) if folder_id
+
+    docs = scope.limit(10)
+    return nil if docs.empty?
+
+    docs.map do |doc|
+      "[Document: \"#{doc.title}\" — Type: #{doc.document_type}]\n#{doc.content.truncate(1500)}"
+    end.join("\n\n")
   end
 end

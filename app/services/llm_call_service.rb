@@ -14,7 +14,12 @@ class LlmCallService
       response = post(m, prompt)
       next unless response&.body
 
-      body = JSON.parse(response.body)
+      begin
+        body = JSON.parse(response.body)
+      rescue JSON::ParserError
+        Rails.logger.error "LlmCallService: réponse non-JSON de #{m}"
+        next
+      end
       content = body.dig("choices", 0, "message", "content").presence
       return content if content
 

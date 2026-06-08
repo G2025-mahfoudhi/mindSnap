@@ -1,9 +1,9 @@
 <%= simple_form_for document, defaults: { required: false }, html: { data: { controller: "document-type" } } do |f| %>
   <%= f.error_notification %>
 
-  <div class="mb-3">
-    <%= f.input :title, label: "Titre", placeholder: "Titre du document" %>
-  </div>
+    <div class="mb-3">
+      <%= f.input :title, label: "Titre", placeholder: "Titre du document" %>
+    </div>
 
   <div class="mb-3">
     <%= f.input :document_type,
@@ -85,8 +85,8 @@
     </button>
   </div>
 
-  <div class="d-flex gap-2">
-    <%= f.button :submit, "Valider", class: "btn btn-primary px-4" %>
+  <div class="d-flex gap-2 justify-content-center">
+    <%= f.button :submit, "Valider", class: "btn btn-outline-secondary" %>
     <%= link_to "Annuler", (document.folder_id ? folder_path(document.folder_id) : espaces_path), class: "btn btn-outline-secondary" %>
   </div>
 <% end %>

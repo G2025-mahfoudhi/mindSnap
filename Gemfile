@@ -1,5 +1,7 @@
 source "https://rubygems.org"
 
+ruby "3.3.5"
+
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.1.3"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
@@ -79,6 +81,7 @@ group :test do
   gem "selenium-webdriver"
 end
 
+gem "redcarpet"
 gem "pdf-reader", "~> 2.15"
 gem "docx", "~> 0.13.0"
 gem "rtesseract", "~> 3.1"

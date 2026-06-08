@@ -377,6 +377,232 @@ les fichiers d'un autre en devinant ou en modifiant les paramètres.
 
 ---
 
+---
+
+## Session du 2026-06-04 — Corrections téléchargement et suppression
+
+---
+
+### Problème 8 — Turbo intercepte le lien de téléchargement
+
+**Symptôme :** Clic sur "Télécharger" sans effet. Dans les logs Heroku, la même
+URL `/documents/:id/download` était appelée deux fois en 2 secondes — signe que
+Turbo faisait un fetch JS, recevait le 302 vers Cloudinary, ne savait pas
+déclencher un téléchargement natif, et échouait silencieusement.
+
+**Cause :** Le `link_to` était dans un contexte Turbo. Turbo intercepte tous les
+liens par défaut et fait des requêtes fetch. Une redirection vers un domaine
+externe (Cloudinary) via fetch ne déclenche pas de téléchargement fichier.
+
+**Fix — `app/views/documents/show.html.erb` :**
+```erb
+<%# Avant %>
+<%= link_to download_document_path(...), class: "btn ..." do %>
+
+<%# Après %>
+<%= link_to download_document_path(...),
+            class: "btn ...",
+            data: { turbo: false } do %>
+```
+
+`data: { turbo: false }` force le navigateur à gérer la requête nativement,
+ce qui permet de suivre la redirection 302 et de déclencher le téléchargement.
+
+---
+
+### Problème 9 — Caractères spéciaux dans le flag `fl_attachment`
+
+**Symptôme :** Téléchargement échoue pour les fichiers avec des parenthèses
+dans le nom (ex: `Heroku (1).pdf`). L'URL générée contenait `fl_attachment:Heroku_(1)`
+et Cloudinary retournait une erreur.
+
+**Cause :** Seuls les espaces étaient remplacés par `_`. Les parenthèses `()`,
+crochets, etc. restaient et corrompaient le flag Cloudinary.
+
+**Fix — `app/controllers/documents_controller.rb` :**
+```ruby
+# Avant
+flags: "attachment:#{File.basename(blob.filename.to_s, '.*').gsub(' ', '_')}"
+
+# Après
+flags: "attachment:#{File.basename(blob.filename.to_s, '.*').gsub(/[^a-zA-Z0-9_-]/, '_')}"
+# Tout caractère non alphanumérique (sauf _ et -) est remplacé par _
+# "Heroku (1).pdf" → "Heroku__1_" dans le flag ✓
+```
+
+---
+
+### Problème 10 — Téléchargement ne fonctionne pas en local
+
+**Cause :** En local, les fichiers sont sur le disque (service `local`), pas sur
+Cloudinary. L'action `download` générait une URL Cloudinary invalide en local.
+
+**Fix — `app/controllers/documents_controller.rb` :**
+```ruby
+def download
+  blob = ActiveStorage::Blob.find_signed!(params[:blob_signed_id])
+  unless @document.file.map { |a| a.blob.id }.include?(blob.id)
+    raise ActiveRecord::RecordNotFound
+  end
+
+  if blob.service_name == "cloudinary"
+    resource_type = cloudinary_resource_type(blob.content_type)
+    public_id     = "#{Rails.env}/#{blob.key}"
+    url = Cloudinary::Utils.cloudinary_url(
+      public_id,
+      resource_type: resource_type,
+      type:          "upload",
+      flags:         "attachment:#{File.basename(blob.filename.to_s, '.*').gsub(/[^a-zA-Z0-9_-]/, '_')}",
+      secure:        true
+    )
+    redirect_to url, allow_other_host: true
+  else
+    redirect_to rails_blob_url(blob, disposition: "attachment")
+  end
+end
+```
+
+En local → `rails_blob_url` (Active Storage sert le fichier directement).
+En production → URL Cloudinary avec `fl_attachment`.
+
+---
+
+### Problème 11 — Suppression du document ne supprime pas le fichier sur Cloudinary
+
+**Symptôme :** Le document disparaît de l'app (DB supprimée) mais le fichier
+reste sur le compte Cloudinary.
+
+**Cause 1 — `has_many_attached :file` sans `dependent`**
+
+Sans option `dependent`, Rails supprime les enregistrements en base
+(`active_storage_blobs`, `active_storage_attachments`) mais n'appelle jamais
+`service.delete(key)` → le fichier reste sur Cloudinary.
+
+**Cause 2 — `dependent: :purge_later` sans worker**
+
+`purge_later` enqueue un job Active Storage (`ActiveStorage::PurgeJob`) qui
+supprime le fichier en arrière-plan. Sur Heroku sans dyno worker (pas de
+Procfile), le job s'accumule en queue mais n'est jamais exécuté.
+
+**Cause 3 — `resource_type` potentiellement incorrect lors de la suppression**
+
+Lors de l'upload, `resource_type: auto` dans `storage.yml` laisse Cloudinary
+auto-détecter le type. Lors de la suppression via le service, le `resource_type`
+est recalculé depuis le `content_type` du blob. Si Cloudinary a stocké le fichier
+sous un type différent de ce que le service calcule, `Cloudinary::Uploader.destroy`
+retourne `{"result"=>"not found"}` silencieusement sans lever d'erreur.
+
+**Fix complet :**
+
+**`app/models/document.rb` :**
+```ruby
+# Avant
+has_many_attached :file
+
+# Après
+has_many_attached :file, dependent: :purge
+# :purge = synchrone (dans la requête)
+# :purge_later = asynchrone (nécessite un worker — ne pas utiliser sans Procfile)
+```
+
+**`app/controllers/documents_controller.rb` :**
+```ruby
+def destroy
+  folder = @document.folder
+  cloudinary_purge_files if Rails.env.production?  # supprime sur Cloudinary avant destroy
+  @document.destroy
+  destination = folder ? folder_path(folder) : espaces_path
+  redirect_to destination, notice: "Document supprimé.", status: :see_other
+end
+
+private
+
+def cloudinary_purge_files
+  @document.file.each do |attachment|
+    key = "#{Rails.env}/#{attachment.blob.key}"
+    %w[image raw video].each do |resource_type|
+      Cloudinary::Uploader.destroy(key, resource_type: resource_type, invalidate: true)
+    end
+  end
+end
+```
+
+La méthode tente la suppression sur les 3 `resource_type` possibles (`image`,
+`raw`, `video`) — quel que soit le type réel stocké par Cloudinary, le fichier
+sera supprimé. `invalidate: true` invalide aussi le cache CDN.
+
+---
+
+## État final du code (après session du 2026-06-04)
+
+### `app/models/document.rb`
+```ruby
+has_many_attached :file, dependent: :purge
+```
+
+### `app/controllers/documents_controller.rb` (parties modifiées)
+```ruby
+def download
+  blob = ActiveStorage::Blob.find_signed!(params[:blob_signed_id])
+  unless @document.file.map { |a| a.blob.id }.include?(blob.id)
+    raise ActiveRecord::RecordNotFound
+  end
+  if blob.service_name == "cloudinary"
+    resource_type = cloudinary_resource_type(blob.content_type)
+    public_id     = "#{Rails.env}/#{blob.key}"
+    url = Cloudinary::Utils.cloudinary_url(
+      public_id,
+      resource_type: resource_type,
+      type:          "upload",
+      flags:         "attachment:#{File.basename(blob.filename.to_s, '.*').gsub(/[^a-zA-Z0-9_-]/, '_')}",
+      secure:        true
+    )
+    redirect_to url, allow_other_host: true
+  else
+    redirect_to rails_blob_url(blob, disposition: "attachment")
+  end
+end
+
+def destroy
+  folder = @document.folder
+  cloudinary_purge_files if Rails.env.production?
+  @document.destroy
+  destination = folder ? folder_path(folder) : espaces_path
+  redirect_to destination, notice: "Document supprimé.", status: :see_other
+end
+
+def cloudinary_purge_files
+  @document.file.each do |attachment|
+    key = "#{Rails.env}/#{attachment.blob.key}"
+    %w[image raw video].each do |resource_type|
+      Cloudinary::Uploader.destroy(key, resource_type: resource_type, invalidate: true)
+    end
+  end
+end
+
+def cloudinary_resource_type(content_type)
+  case content_type
+  when %r{\Aimage/}       then "image"
+  when %r{\Avideo/}       then "video"
+  when "application/pdf"  then "image"
+  else                         "raw"
+  end
+end
+```
+
+### `app/views/documents/show.html.erb`
+```erb
+<%= link_to download_document_path(@document, blob_signed_id: attachment.blob.signed_id),
+            class: "btn btn-outline-primary btn-sm",
+            data: { turbo: false },
+            aria: { label: "Télécharger #{attachment.filename}" } do %>
+  <i class="fa-solid fa-download fa-xs me-1" aria-hidden="true"></i>
+  <%= attachment.filename.to_s.truncate(25) %>
+<% end %>
+```
+
+---
+
 ## Commandes utiles
 
 ```bash

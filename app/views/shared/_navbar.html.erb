@@ -38,6 +38,9 @@
           </ul>
         </li>
         <li class="nav-item">
+          <%= link_to "Comment ça marche", "/#features", class: "nav-link" %>
+        </li>
+        <li class="nav-item">
           <%= link_to "FAQ", faq_path, class: "nav-link" %>
         </li>
         <% if user_signed_in? %>
@@ -60,7 +63,7 @@
               <%= current_user.first_name&.first&.upcase || "?" %><%= current_user.last_name&.first&.upcase %>
             </button>
             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-              <%= link_to "Paramètres", edit_user_registration_path, class: "dropdown-item" %>
+              <%= link_to "Mon profil", edit_user_registration_path, class: "dropdown-item" %>
               <div class="dropdown-divider"></div>
               <%= link_to "Déconnexion", destroy_user_session_path, data: { turbo_method: :delete }, class: "dropdown-item" %>
             </div>

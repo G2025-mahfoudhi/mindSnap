@@ -8,20 +8,19 @@
   }
 }
 
-.hero__tagline {
-  color: $teal;
-  font-weight: 600;
-  font-size: .875rem;
-  text-transform: uppercase;
-  letter-spacing: .1em;
-  margin-bottom: 1rem;
+.hero__title {
+  font-size: clamp(3rem, 7vw, 5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: $near-black;
+  margin-bottom: .5rem;
 }
 
-.hero__title {
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 800;
-  line-height: 1.15;
-  color: $near-black;
+.hero__tagline {
+  color: $teal;
+  font-weight: 500;
+  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+  letter-spacing: .01em;
   margin-bottom: 1.25rem;
 }
 
