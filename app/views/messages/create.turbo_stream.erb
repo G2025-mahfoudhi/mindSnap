@@ -2,6 +2,15 @@
   <%= render @user_message %>
 <% end %>
 
+<% if @title_updated %>
+  <%= turbo_stream.replace "conversation-header-title" do %>
+    <h1 class="h6 mb-0 fw-semibold" id="conversation-header-title"><%= @conversation.name %></h1>
+  <% end %>
+  <%= turbo_stream.replace "chat-title-#{@conversation.id}" do %>
+    <span class="text-truncate small" id="chat-title-<%= @conversation.id %>"><%= @conversation.name %></span>
+  <% end %>
+<% end %>
+
 <%= turbo_stream.append "messages" do %>
   <%= render @ai_message %>
 <% end %>

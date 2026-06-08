@@ -12,6 +12,7 @@ class MessagesController < ApplicationController
     end
 
     @user_message = @conversation.messages.create!(role: "user", content: content)
+    maybe_update_title(content)
 
     begin
       ai_content = OpenRouterService.new(@conversation, @user_message).call
@@ -35,5 +36,13 @@ class MessagesController < ApplicationController
 
   def message_params
     params.require(:message).permit(:content)
+  end
+
+  def maybe_update_title(content)
+    return unless @conversation.name == "Nouvelle conversation"
+    return unless @conversation.messages.where(role: "user").one?
+
+    @conversation.update!(name: content.truncate(60))
+    @title_updated = true
   end
 end
