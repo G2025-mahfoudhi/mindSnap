@@ -1,4 +1,9 @@
-<aside class="border-end d-flex flex-column" style="width: 260px; min-width: 260px; background: #f7f5f4; overflow: hidden; padding-bottom: var(--footer-height);">
+<aside class="border-end d-flex flex-column"
+        style="width: 260px; min-width: 260px; background: #f7f5f4; overflow: hidden; padding-bottom: var(--footer-height);"
+        data-controller="sidebar-tree"
+        data-sidebar-tree-open-class="is-open"
+        data-sidebar-tree-storage-key-value="mindsnap_sidebar_v1">
+
   <div class="p-3 border-bottom d-flex justify-content-between align-items-center" style="flex-shrink: 0;">
     <%= link_to "Mon espace", espaces_path, class: "fw-semibold small text-decoration-none", style: "color: #3d7f7e;" %>
     <div class="dropdown">
@@ -30,33 +35,71 @@
   <div class="overflow-auto flex-grow-1 py-2">
     <% root_folders = folders.select { |f| f.parent_id.nil? } %>
     <% root_folders.each do |folder| %>
-      <div class="px-3 py-1">
-        <%= render "documents/folder_node",
-                   folder: folder,
-                   all_folders: folders,
-                   depth: 0,
-                   current_document: current_document %>
-      </div>
+      <%= render "documents/folder_node",
+                 folder: folder,
+                 all_folders: folders,
+                 depth: 0,
+                 current_document: current_document %>
     <% end %>
 
     <% if documents_without_folder.any? %>
-      <div class="px-3 py-1 mt-2">
+      <div class="folder-node is-open mt-2"
+           data-folder-id="__no_folder__"
+           data-sidebar-tree-target="node">
 
-        <%# — Section sans dossier — %>
-        <div class="fw-semibold text-uppercase mb-1"
-             style="font-size: 11px; letter-spacing: 0.05em; color: #5a6370;">
-          <i class="fa-solid fa-inbox fa-xs me-1" aria-hidden="true"></i> Sans dossier
+        <%# — Header : chevron + label Sans dossier — %>
+        <div class="folder-node__header d-flex align-items-center"
+             style="padding-left: 0.75rem; padding-right: 0.5rem;">
+
+          <button type="button"
+                  class="folder-node__chevron"
+                  data-sidebar-tree-target="chevron"
+                  data-action="click->sidebar-tree#toggle"
+                  aria-expanded="true"
+                  aria-controls="sidebar-no-folder-children"
+                  aria-label="Plier/déplier la section Sans dossier">
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </button>
+
+          <div class="d-flex align-items-center gap-2 py-1 small flex-grow-1 fw-semibold text-uppercase"
+               style="font-size: 11px; letter-spacing: 0.05em; color: #5a6370;">
+            <i class="fa-solid fa-inbox fa-xs" aria-hidden="true"></i>
+            <span>Sans dossier</span>
+          </div>
         </div>
 
-        <% documents_without_folder.each do |doc| %>
-          <%= link_to document_path(doc),
-                      class: "d-flex align-items-center gap-2 px-2 py-1 rounded text-decoration-none small #{doc == current_document ? 'fw-semibold sidebar-doc-active' : 'sidebar-doc-item'}" do %>
-            <i class="fa-solid fa-file-lines fa-xs" style="color: #3d7f7e; flex-shrink: 0;" aria-hidden="true"></i>
-            <span class="text-truncate"><%= doc.title %></span>
+        <%# — Documents sans dossier (pliables) — %>
+        <div id="sidebar-no-folder-children"
+             class="folder-node__children"
+             data-sidebar-tree-target="children">
+          <% documents_without_folder.each do |doc| %>
+            <%= link_to document_path(doc),
+                        class: "d-flex align-items-center gap-2 py-1 rounded text-decoration-none small #{doc == current_document ? 'fw-semibold sidebar-doc-active' : 'sidebar-doc-item'}",
+                        style: "padding-left: 1.75rem; padding-right: 0.5rem;" do %>
+              <i class="fa-solid fa-file-lines fa-xs" style="color: #3d7f7e; flex-shrink: 0;" aria-hidden="true"></i>
+              <span class="text-truncate"><%= doc.title %></span>
+            <% end %>
           <% end %>
-        <% end %>
-
+        </div>
       </div>
     <% end %>
   </div>
+
+  <%# — Footer : actions plier/déplier — %>
+  <% if folders.any? %>
+    <div class="border-top p-2 d-flex gap-2" style="flex-shrink: 0;">
+      <button type="button"
+              class="btn btn-sm btn-link p-1 text-decoration-none flex-grow-1"
+              data-action="click->sidebar-tree#expandAll"
+              style="font-size: 0.75rem; color: #5a6370;">
+        <i class="fa-solid fa-angles-down fa-xs me-1" aria-hidden="true"></i> Tout déplier
+      </button>
+      <button type="button"
+              class="btn btn-sm btn-link p-1 text-decoration-none flex-grow-1"
+              data-action="click->sidebar-tree#collapseAll"
+              style="font-size: 0.75rem; color: #5a6370;">
+        <i class="fa-solid fa-angles-up fa-xs me-1" aria-hidden="true"></i> Tout plier
+      </button>
+    </div>
+  <% end %>
 </aside>

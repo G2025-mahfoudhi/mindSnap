@@ -15,12 +15,17 @@
   border-radius: $border-radius;
 }
 
-// Dropdown "Fonctionnalités" — headers de section
-.navbar .dropdown-header {
-  font-size: .6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: $teal;
-  padding: .5rem 1rem .25rem;
+.navbar .dropdown-menu {
+  min-width: 10rem;
+  width: 10rem;
 }
+
+// // Dropdown "Fonctionnalités" — headers de section
+// .navbar .dropdown-header {
+//   font-size: .6875rem;
+//   font-weight: 700;
+//   text-transform: uppercase;
+//   letter-spacing: .08em;
+//   color: $teal;
+//   padding: .5rem 1rem .25rem;
+// }

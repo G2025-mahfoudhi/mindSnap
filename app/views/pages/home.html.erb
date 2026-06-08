@@ -9,7 +9,11 @@
           Capture tes idées, tes cours, tes documents. Retrouve-les instantanément grâce à l'IA.
         </p>
         <div class="hero__actions">
-          <%= link_to "Commencer", new_user_registration_path, class: "btn btn-primary btn-lg px-4" %>
+          <% if user_signed_in? %>
+            <%= link_to "Dashboard", dashboard_path, class: "btn btn-primary btn-lg px-4" %>
+          <% else %>
+            <%= link_to "Commencer", new_user_registration_path, class: "btn btn-primary btn-lg px-4" %>
+          <% end %>
           <%= link_to "En savoir plus", "#features", class: "btn btn-outline-secondary btn-lg px-4" %>
         </div>
       </div>

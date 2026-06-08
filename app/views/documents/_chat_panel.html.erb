@@ -1,0 +1,36 @@
+<%= turbo_frame_tag "doc-chat-frame", class: "d-flex flex-column flex-grow-1", style: "min-height: 0;" do %>
+  <div id="doc-chat-messages"
+       class="flex-grow-1 overflow-auto p-3"
+       data-controller="chat-scroll voice"
+       style="min-height: 0;">
+    <% if messages.empty? %>
+      <p class="text-center text-muted small py-4">
+        Commence à discuter avec l'IA à propos de ce document.
+      </p>
+    <% else %>
+      <%= render messages %>
+    <% end %>
+  </div>
+
+  <div class="border-top p-3 bg-white flex-shrink-0">
+    <%= turbo_frame_tag "doc-chat-form" do %>
+      <%= simple_form_for [conversation, message],
+                          url: conversation_messages_path(conversation, source: "doc_chat"),
+                          html: { "aria-label": "Envoyer un message" } do |f| %>
+        <div class="d-flex gap-2 align-items-end">
+          <%= f.text_area :content,
+                          class: "form-control rounded-3 flex-grow-1",
+                          placeholder: "Ton message...",
+                          rows: 2,
+                          required: true,
+                          style: "resize: none;",
+                          data: {
+                            controller: "textarea-autoresize",
+                            action: "input->textarea-autoresize#resize"
+                          } %>
+          <%= f.submit "Envoyer", class: "btn btn-primary px-3 flex-shrink-0" %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

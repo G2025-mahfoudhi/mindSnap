@@ -32,7 +32,17 @@ class Document < ApplicationRecord
   # Uniquement si le contenu a changé ou si le document n'a jamais été embeddé
   after_commit :embed_async, on: %i[create update], if: :should_reembed?
 
+  # Résumé IA déclenché indépendamment de l'embedding (évite que l'échec d'embedding bloque le résumé)
+  after_commit :summarize_async, on: %i[create update], if: :should_summarize?
+
   # -- Scopes & Predicates -------------------------------------------------
+  # Filtre full-text : retourne les documents dont le contenu matche la query.
+  # Le scoring exact (ts_rank) est calculé côté Ruby dans RagService pour
+  # éviter les injections SQL (Arel.sql refuse les user inputs depuis Rails 8).
+  scope :full_text_search, lambda { |query|
+    where("search_vector @@ plainto_tsquery('french', ?)", query)
+  }
+
   def embedded?
     embedding_status == "completed"
   end
@@ -94,5 +104,15 @@ class Document < ApplicationRecord
       embedding_status == "pending" ||
       saved_change_to_content?
     )
+  end
+
+  def summarize_async
+    SummarizeDocumentJob.perform_later(id)
+  end
+
+  # Génère le résumé dès que le contenu est disponible ou change, sauf si c'est
+  # le job lui-même qui met à jour le résumé (évite la boucle infinie)
+  def should_summarize?
+    content.present? && saved_change_to_content? && !saved_change_to_summary?
   end
 end

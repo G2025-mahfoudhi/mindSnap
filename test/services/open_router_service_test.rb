@@ -34,11 +34,13 @@ class OpenRouterServiceTest < ActiveSupport::TestCase
     assert_includes context, "[Document:"
   end
 
-  test "system_prompt contient MindSnap" do
+  test "system_prompt contient MindSnap et les sections attendues" do
     service = OpenRouterService.new(@conversation, @user_message)
     prompt = service.send(:system_prompt)
     assert_includes prompt, "MindSnap"
-    assert_includes prompt, "Contexte documentaire"
+    assert_includes prompt, "Inventaire complet"
+    assert_includes prompt, "Contenu pertinent"
+    assert_includes prompt, "Règles"
   end
 
   test "models_to_try inclut le modèle configuré" do
