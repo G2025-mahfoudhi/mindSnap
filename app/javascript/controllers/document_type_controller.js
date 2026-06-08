@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 
-const FILE_TYPES = ["Article", "Fichier"]
+const FILE_TYPES = ["Fichier"]
 
 export default class extends Controller {
   static targets = ["select", "fileField", "urlField", "contentField"]
