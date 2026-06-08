@@ -100,20 +100,20 @@
           <div class="row">
             <div class="col-md-6 mb-3">
               <%= f.input :first_name,
-                          required: true,
+                          required: false,
                           autofocus: true,
                           label: "Prénom",
                           input_html: { autocomplete: "given-name" } %>
             </div>
             <div class="col-md-6 mb-3">
               <%= f.input :last_name,
-                          required: true,
+                          required: false,
                           label: "Nom",
                           input_html: { autocomplete: "family-name" } %>
             </div>
           </div>
 
-          <%= f.input :email, required: true %>
+          <%= f.input :email, required: false %>
 
           <%# Message si email en attente de confirmation %>
           <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
@@ -136,7 +136,7 @@
           <%= f.input :current_password,
                       label: "Mot de passe actuel",
                       hint: "Nous avons besoin de ton mot de passe actuel pour confirmer les changements",
-                      required: true,
+                      required: false,
                       input_html: { autocomplete: "current-password" } %>
         </div>
 

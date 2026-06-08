@@ -3,6 +3,10 @@ Rails.application.routes.draw do
 
   devise_for :users
   resource :avatar, only: [:destroy]
+  devise_for :users,
+      controllers:{
+         omniauth_callbacks:'users/omniauth_callbacks'
+      }
   root to: "pages#home"
   get "dashboard", to: "dashboard#index"
 
@@ -34,4 +38,7 @@ Rails.application.routes.draw do
   post "tts/speak", to: "tts#speak"
   post "transcribe", to: "transcriptions#create"
   get "up" => "rails/health#show", as: :rails_health_check
+
+
+
 end
