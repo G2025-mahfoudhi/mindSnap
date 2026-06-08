@@ -95,6 +95,50 @@ class RagServiceTest < ActiveSupport::TestCase # rubocop:disable Metrics/ClassLe
     assert_empty rag.search_documents("test", limit: 5)
   end
 
+  test "search_documents elimine les faux positifs du stemming" do
+    # Doc avec un mot qui se stem en "franc" mais ne contient pas "france" en clair
+    # (ex: "franc-maçon"). Le full-text matche via stemming, mais l'ILIKE
+    # doit filtrer pour eviter le bonus full-text abusif.
+    doc_stem = Document.create!(
+      user: @user,
+      title: "Franc-maçonnerie",
+      content: "Un article sur la franc-maçonnerie moderne.",
+      document_type: "Note"
+    )
+    # Embedding orthogonal : cosine eleve, sera filtre par le seuil cosine
+    DocumentChunk.create!(
+      document: doc_stem,
+      chunk_index: 0,
+      content: "Franc-maçonnerie et sociétés secretes.",
+      embedding: test_vector("autre seed different xyz")
+    )
+
+    rag = RagService.new(@user)
+    results = rag.search_documents("france", limit: 10)
+    refute_includes results.map { |r| r[:document].title }, "Franc-maçonnerie",
+                    "Le doc 'Franc-maçonnerie' (faux positif stemming) doit etre filtre"
+  end
+
+  test "search_documents garde un doc qui matche 'france' en clair" do
+    # Doc qui contient bien le mot "france" en clair → match exact ILIKE
+    doc_france = Document.create!(
+      user: @user,
+      title: "Voyage en France",
+      content: "Mon voyage en France cet été.",
+      document_type: "Note"
+    )
+    DocumentChunk.create!(
+      document: doc_france,
+      chunk_index: 0,
+      content: "Mon voyage en France cet été.",
+      embedding: test_vector("query stub")
+    )
+
+    rag = RagService.new(@user)
+    results = rag.search_documents("france", limit: 10)
+    assert_includes results.map { |r| r[:document].title }, "Voyage en France"
+  end
+
   # --- format_context() ----------------------------------------------------
 
   test "format_context retourne du texte structuré" do

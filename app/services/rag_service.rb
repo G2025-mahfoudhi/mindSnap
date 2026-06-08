@@ -1,4 +1,4 @@
-# Service de Retrieval Augmented Generation (RAG).
+  # Service de Retrieval Augmented Generation (RAG).
 #
 # Deux modes de recherche :
 # - search()         : retourne des DocumentChunk[] triés par cosine distance,
@@ -8,7 +8,9 @@
 #                      la page de recherche UI (résultats affichés à l'user).
 #
 # Scoring hybride (search_documents uniquement) :
-#   combined = 0.6 * vector_score + 0.3 * full_text_score + 0.1 * title_boost
+#   combined = 0.6 * vector_score + 0.3 * confirmed_full_text + 0.1 * title_boost
+#   où confirmed_full_text = match tsvector ET match exact en clair (ILIKE)
+#   (évite les faux positifs dus au stemming trop permissif du français)
 #
 # Seuils :
 #   - Cosine distance < 0.35 (première barrière, filtrage vectoriel strict)
@@ -54,12 +56,14 @@ class RagService
     return [] unless query_embedding
 
     vector_chunks = vector_search(query_embedding, folder_id: folder_id, limit: 50)
-    text_doc_ids = full_text_doc_ids(query, folder_id: folder_id)
     doc_vector_scores = best_vector_score_per_doc(vector_chunks)
+    # Le bonus full-text ne s'applique que si le mot exact est aussi présent
+    # en clair (titre ou content) — évite les faux positifs du stemming.
+    confirmed_text_doc_ids = confirmed_text_matches(query, folder_id: folder_id)
 
-    return [] if (doc_vector_scores.keys + text_doc_ids).empty?
+    return [] if (doc_vector_scores.keys + confirmed_text_doc_ids).empty?
 
-    score_and_rank(query, doc_vector_scores, text_doc_ids, limit)
+    score_and_rank(query, doc_vector_scores, confirmed_text_doc_ids, limit)
   end
 
   # Formate les chunks en un bloc de contexte structuré pour le prompt LLM.
@@ -128,6 +132,20 @@ class RagService
     scope = Document.where(user_id: @user.id).full_text_search(query)
     scope = scope.where(folder_id: folder_id) if folder_id
     scope.pluck(:id)
+  end
+
+  # Match full-text confirmé par une présence exacte en clair (insensible à la casse).
+  # Filtre les faux positifs où le stemming français fait matcher un mot qui n'a
+  # rien à voir avec la query (ex: "franc-maçon" stem en "franc" pour "france").
+  def confirmed_text_matches(query, folder_id:)
+    text_ids = full_text_doc_ids(query, folder_id: folder_id)
+    return [] if text_ids.empty?
+
+    scope = Document.where(id: text_ids)
+    scope = scope.where(folder_id: folder_id) if folder_id
+    scope
+      .where("title ILIKE :q OR content ILIKE :q", q: "%#{query}%")
+      .pluck(:id)
   end
 
   def cosine_distance(chunk)

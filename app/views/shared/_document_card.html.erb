@@ -5,7 +5,7 @@
     <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
       <span class="badge bg-primary bg-opacity-10 text-primary"><%= document.document_type %></span>
       <% if local_assigns[:relevance_score] %>
-        <span class="badge bg-success bg-opacity-15 text-success"
+        <span class="badge bg-primary-subtle text-primary-emphasis"
               title="Score de pertinence : combinaison similarité sémantique, mots-clés et titre"
               aria-label="Pertinence : <%= (relevance_score * 100).round %>%">
           <i class="fa-solid fa-bullseye fa-xs me-1" aria-hidden="true"></i>
