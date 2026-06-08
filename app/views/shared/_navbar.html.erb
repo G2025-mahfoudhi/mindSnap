@@ -26,8 +26,8 @@
                   aria-expanded="false"
                   aria-label="Mon compte"
                   style="width: 36px; height: 36px;">
-            <% if current_user.avatar.attached? %>
-              <%= image_tag current_user.avatar, style: "width: 36px; height: 36px; object-fit: cover; border-radius: 50%;", alt: "Photo de profil" %>
+            <% if current_user.avatar.attached? && current_user.avatar.blob.persisted? %>
+              <img src="<%= avatar_url(current_user.avatar) %>" style="width: 36px; height: 36px; object-fit: cover; border-radius: 50%;" alt="Photo de profil">
             <% else %>
               <span class="d-flex align-items-center justify-content-center fw-semibold text-white w-100 h-100"
                     style="background-color: #549695; font-size: 13px; border-radius: 50%;">
