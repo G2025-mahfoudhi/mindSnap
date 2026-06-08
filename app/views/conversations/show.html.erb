@@ -1,5 +1,7 @@
 <% content_for :title, "#{@conversation.name} — MindSnap" %>
 
+<%= turbo_stream_from @conversation %>
+
 <div class="d-flex" style="height: calc(100vh - 56px - 4rem);" role="main" aria-label="<%= @conversation.name %>">
   <%= render "conversations/sidebar", conversations: @conversations, current_conversation: @conversation %>
 

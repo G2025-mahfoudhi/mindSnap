@@ -2,6 +2,10 @@
 <% content_for :body_class, "overflow-hidden" %>
 <% content_for :main_style, "height: calc(100vh - 56px); overflow: hidden;" %>
 
+<%# Turbo Stream ActionCable : on streame la conversation doc-chat dans la page
+    show pour que les messages apparaissent en temps reel dans l'offcanvas. %>
+<%= turbo_stream_from @doc_chat_conversation %>
+
 <div class="offcanvas offcanvas-end"
      id="doc-chat-panel"
      tabindex="-1"

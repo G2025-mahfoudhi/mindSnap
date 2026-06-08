@@ -6,19 +6,36 @@
       <span class="small fw-semibold <%= message.role == 'user' ? 'text-white-50' : 'text-muted' %>">
         <%= message.role == 'user' ? 'Vous' : 'MindSnap AI' %>
       </span>
-      <% if message.role == "assistant" %>
+      <%# Bouton voice desactive tant que le stream n'est pas termine (pour eviter
+          de lire un texte incomplet via TTS). %>
+      <% if message.role == "assistant" && !message.streaming %>
         <button type="button"
                 data-action="click->voice#speak"
                 data-voice-text-param="<%= message.content %>"
-                class="btn btn-sm btn-link p-0 <%= message.role == 'user' ? 'text-white' : '' %>"
+                class="btn btn-sm btn-link p-0"
                 aria-label="Lire la réponse à voix haute"
                 style="font-size: 0.75rem;">
           <i class="fa-solid fa-volume-high"></i>
         </button>
       <% end %>
+      <%# Indicateur de streaming (3 petits points qui clignotent). %>
+      <% if message.streaming %>
+        <span class="small text-muted" aria-label="Génération en cours">
+          <i class="fa-solid fa-circle" style="font-size: 0.4rem; animation: pulse 1s infinite;"></i>
+          <i class="fa-solid fa-circle mx-1" style="font-size: 0.4rem; animation: pulse 1s 0.2s infinite;"></i>
+          <i class="fa-solid fa-circle" style="font-size: 0.4rem; animation: pulse 1s 0.4s infinite;"></i>
+        </span>
+      <% end %>
     </div>
     <div class="markdown-content">
-      <%= markdown message.content %>
+      <%= markdown(message.content.to_s) %>
     </div>
   </div>
 </div>
+
+<style>
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+</style>

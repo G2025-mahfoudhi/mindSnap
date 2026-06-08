@@ -1,4 +1,4 @@
-class DocumentsController < ApplicationController
+class DocumentsController < ApplicationController # rubocop:disable Metrics/ClassLength
   before_action :set_document, only: %i[show edit update destroy download summarize summary_status chat]
 
   def index
@@ -20,10 +20,14 @@ class DocumentsController < ApplicationController
     end
   end
 
-  def show
+  def show # rubocop:disable Metrics/MethodLength
     @folders = current_user.folders.where(parent_id: nil).includes(:documents, children: :documents)
     @sidebar_folders = current_user.folders.includes(:documents).to_a
     @documents_without_folder = current_user.documents.where(folder_id: nil)
+    # Conversation doc-scopee (necessaire pour turbo_stream_from si l'offcanvas est ouvert)
+    @doc_chat_conversation = current_user.conversations.find_or_create_by!(
+      context_type: "Document", context_id: @document.id
+    ) { |c| c.name = "Discussion — #{@document.title}" }
   end
 
   def chat
@@ -59,13 +63,12 @@ class DocumentsController < ApplicationController
 
   def summarize
     if @document.content.blank?
-      if @document.file.attached?
-        # Lancer l'extraction de texte qui chaînera → EmbedDocumentJob → SummarizeDocumentJob
-        ExtractTextJob.perform_later(@document.id)
-        return redirect_to @document, notice: "Extraction du texte en cours, le résumé suivra automatiquement…"
-      else
-        return redirect_to @document, alert: "Le document n'a pas de contenu à résumer."
-      end
+      return redirect_to @document, alert: "Le document n'a pas de contenu à résumer." unless @document.file.attached?
+
+      # Lancer l'extraction de texte qui chaînera → EmbedDocumentJob → SummarizeDocumentJob
+      ExtractTextJob.perform_later(@document.id)
+      return redirect_to @document, notice: "Extraction du texte en cours, le résumé suivra automatiquement…"
+
     end
 
     SummarizeDocumentJob.perform_later(@document.id)
