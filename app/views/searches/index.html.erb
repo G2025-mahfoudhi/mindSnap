@@ -20,22 +20,24 @@
   <% end %>
 
   <% if @query.present? %>
-    <% if @documents&.any? %>
+    <% if @results&.any? %>
       <p class="text-muted mb-4">
-        <%= @documents.count %> document(s) trouvé(s) pour « <%= @query %> »
+        <%= @results.count %> document(s) pertinent(s) pour « <%= @query %> »
       </p>
       <div class="row g-4">
-        <% @documents.each do |document| %>
+        <% @results.each do |result| %>
           <div class="col-12">
-            <%= render "shared/document_card", document: document %>
+            <%= render "shared/document_card",
+                       document: result[:document],
+                       relevance_score: result[:score] %>
           </div>
         <% end %>
       </div>
     <% else %>
       <div class="text-center py-5">
         <i class="fa-solid fa-file-circle-question fa-3x text-muted mb-3 d-block"></i>
-        <p class="mb-1">Aucun document trouvé pour « <%= @query %> ».</p>
-        <p class="text-muted small">Essaie avec d'autres mots ou crée un nouveau document.</p>
+        <p class="mb-1">Aucun document pertinent trouvé pour « <%= @query %> ».</p>
+        <p class="text-muted small">La recherche combine similarité sémantique et mots-clés. Essaie d'autres termes ou reformule.</p>
         <%= link_to "Créer un document", new_document_path, class: "btn btn-primary mt-3" %>
       </div>
     <% end %>

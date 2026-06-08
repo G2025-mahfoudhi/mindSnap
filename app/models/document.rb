@@ -36,6 +36,13 @@ class Document < ApplicationRecord
   after_commit :summarize_async, on: %i[create update], if: :should_summarize?
 
   # -- Scopes & Predicates -------------------------------------------------
+  # Filtre full-text : retourne les documents dont le contenu matche la query.
+  # Le scoring exact (ts_rank) est calculé côté Ruby dans RagService pour
+  # éviter les injections SQL (Arel.sql refuse les user inputs depuis Rails 8).
+  scope :full_text_search, lambda { |query|
+    where("search_vector @@ plainto_tsquery('french', ?)", query)
+  }
+
   def embedded?
     embedding_status == "completed"
   end
