@@ -1,40 +1,11 @@
 require "test_helper"
 
-class RagServiceTest < ActiveSupport::TestCase
+class RagServiceTest < ActiveSupport::TestCase # rubocop:disable Metrics/ClassLength
   setup do
     @user = users(:test_user1)
     # Stub EmbeddingService.embed pour des tests déterministes
     stub_embedding(test_vector("query stub"))
-
-    @document = Document.create!(
-      user: @user,
-      title: "Machine Learning Basics",
-      content: "Le machine learning est une branche de l'IA.",
-      document_type: "Note"
-    )
-
-    # Chunk avec embedding quasi-identique à la query stub → cosine ~0
-    @chunk_ml = DocumentChunk.create!(
-      document: @document,
-      chunk_index: 0,
-      content: "Le machine learning est une branche de l'intelligence artificielle.",
-      embedding: test_vector("query stub")
-    )
-
-    @doc2 = Document.create!(
-      user: @user,
-      title: "Cuisine italienne",
-      content: "Recette de pasta carbonara.",
-      document_type: "Note"
-    )
-
-    # Chunk avec embedding orthogonal → cosine ~1 (sera filtré par seuil)
-    @chunk_cuisine = DocumentChunk.create!(
-      document: @doc2,
-      chunk_index: 0,
-      content: "La recette des pâtes carbonara.",
-      embedding: test_vector("autre seed totalement different xyz")
-    )
+    create_test_documents
   end
 
   # --- search() : chunks pour RAG chat --------------------------------------
@@ -57,7 +28,7 @@ class RagServiceTest < ActiveSupport::TestCase
     titles = results.map { |c| c.document.title }.uniq
     # Le doc cuisine a un embedding orthogonal → doit être filtré
     refute_includes titles, "Cuisine italienne",
-                     "Le doc 'Cuisine italienne' (embedding orthogonal) doit être filtré par le seuil cosine"
+                    "Le doc 'Cuisine italienne' (embedding orthogonal) doit être filtré par le seuil cosine"
     # Le doc ML a un embedding quasi-identique à la query stub → doit passer
     assert_includes titles, "Machine Learning Basics"
   end
@@ -149,6 +120,44 @@ class RagServiceTest < ActiveSupport::TestCase
 
   private
 
+  # Crée les 2 documents de test : un pertinent (embedding quasi-identique à la
+  # query stub) et un non-pertinent (embedding orthogonal, sera filtré).
+  def create_test_documents
+    @document = create_ml_document
+    @doc2 = create_cuisine_document
+    @chunk_cuisine = create_chunk_for(@doc2, "La recette des pâtes carbonara.", "autre seed totalement different xyz")
+  end
+
+  def create_ml_document
+    doc = Document.create!(
+      user: @user,
+      title: "Machine Learning Basics",
+      content: "Le machine learning est une branche de l'IA.",
+      document_type: "Note"
+    )
+    @chunk_ml = create_chunk_for(doc, "Le machine learning est une branche de l'intelligence artificielle.",
+                                 "query stub")
+    doc
+  end
+
+  def create_cuisine_document
+    Document.create!(
+      user: @user,
+      title: "Cuisine italienne",
+      content: "Recette de pasta carbonara.",
+      document_type: "Note"
+    )
+  end
+
+  def create_chunk_for(document, content, vector_seed)
+    DocumentChunk.create!(
+      document: document,
+      chunk_index: 0,
+      content: content,
+      embedding: test_vector(vector_seed)
+    )
+  end
+
   # Génère un vecteur déterministe à partir d'une chaîne (seed = hash).
   # Utilisé pour avoir des embeddings cohérents en test (pas d'appel API).
   def test_vector(keywords)
@@ -165,8 +174,8 @@ class RagServiceTest < ActiveSupport::TestCase
   end
 
   def teardown
-    if @original_embed
-      EmbeddingService.define_singleton_method(:embed, @original_embed)
-    end
+    return unless @original_embed
+
+    EmbeddingService.define_singleton_method(:embed, @original_embed)
   end
 end

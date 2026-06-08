@@ -11,15 +11,17 @@ class SearchesController < ApplicationController
     @query = params[:q]
     return if @query.blank?
 
-    begin
-      rag = RagService.new(current_user)
-      @results = rag.search_documents(@query, limit: RESULTS_LIMIT)
-      @documents = @results.map { |r| r[:document] }
-    rescue StandardError => e
-      Rails.logger.error "Search error: #{e.class} — #{e.message}"
-      @results = []
-      @documents = []
-      flash.now[:alert] = "La recherche est momentanément indisponible."
-    end
+    @results = perform_search
+    @documents = @results.map { |r| r[:document] }
+  end
+
+  private
+
+  def perform_search
+    RagService.new(current_user).search_documents(@query, limit: RESULTS_LIMIT)
+  rescue StandardError => e
+    Rails.logger.error "Search error: #{e.class} — #{e.message}"
+    flash.now[:alert] = "La recherche est momentanément indisponible."
+    []
   end
 end

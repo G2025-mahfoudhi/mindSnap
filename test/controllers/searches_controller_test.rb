@@ -49,7 +49,7 @@ class SearchesControllerTest < ActionDispatch::IntegrationTest
 
   test "search n'affiche pas le badge de pertinence sur d'autres pages" do
     # Sur la page "Mon espace", les cards n'ont pas de score
-    doc = Document.create!(user: @user, title: "Doc test", content: "x", document_type: "Note")
+    Document.create!(user: @user, title: "Doc test", content: "x", document_type: "Note")
 
     get espaces_path
     assert_response :success
@@ -84,8 +84,8 @@ class SearchesControllerTest < ActionDispatch::IntegrationTest
   end
 
   def teardown
-    if @original_embed
-      EmbeddingService.define_singleton_method(:embed, @original_embed)
-    end
+    return unless @original_embed
+
+    EmbeddingService.define_singleton_method(:embed, @original_embed)
   end
 end

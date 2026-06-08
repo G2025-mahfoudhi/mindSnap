@@ -55,34 +55,11 @@ class RagService
 
     vector_chunks = vector_search(query_embedding, folder_id: folder_id, limit: 50)
     text_doc_ids = full_text_doc_ids(query, folder_id: folder_id)
+    doc_vector_scores = best_vector_score_per_doc(vector_chunks)
 
-    # Index : meilleur score vectoriel par document
-    doc_vector_scores = {}
-    vector_chunks.each do |chunk|
-      next if cosine_distance(chunk) >= COSINE_DISTANCE_THRESHOLD
-      score = 1.0 - cosine_distance(chunk)
-      doc_id = chunk.document_id
-      doc_vector_scores[doc_id] = score if score > (doc_vector_scores[doc_id] || 0.0)
-    end
+    return [] if (doc_vector_scores.keys + text_doc_ids).empty?
 
-    # Pré-charge les documents (évite N+1)
-    doc_ids = (doc_vector_scores.keys + text_doc_ids).uniq
-    return [] if doc_ids.empty?
-    documents_by_id = Document.where(id: doc_ids).includes(:tags, :folder).index_by(&:id)
-
-    query_down = query.downcase.strip
-
-    # Calcul score combiné par document
-    documents_by_id.values.map do |doc|
-      v = doc_vector_scores[doc.id] || 0.0
-      t = text_doc_ids.include?(doc.id) ? 1.0 : 0.0
-      title_match = doc.title.to_s.downcase.include?(query_down) ? 1.0 : 0.0
-      combined = (WEIGHT_VECTOR * v) + (WEIGHT_TEXT * t) + (WEIGHT_TITLE * title_match)
-      { document: doc, score: combined }
-    end
-      .select { |r| r[:score] >= RELEVANCE_FLOOR }
-      .sort_by { |r| -r[:score] }
-      .first(limit)
+    score_and_rank(query, doc_vector_scores, text_doc_ids, limit)
   end
 
   # Formate les chunks en un bloc de contexte structuré pour le prompt LLM.
@@ -99,6 +76,38 @@ class RagService
   end
 
   private
+
+  def best_vector_score_per_doc(chunks)
+    scores = {}
+    chunks.each do |chunk|
+      next if cosine_distance(chunk) >= COSINE_DISTANCE_THRESHOLD
+
+      score = 1.0 - cosine_distance(chunk)
+      doc_id = chunk.document_id
+      scores[doc_id] = score if score > (scores[doc_id] || 0.0)
+    end
+    scores
+  end
+
+  def score_and_rank(query, doc_vector_scores, text_doc_ids, limit)
+    doc_ids = (doc_vector_scores.keys + text_doc_ids).uniq
+    documents_by_id = Document.where(id: doc_ids).includes(:tags, :folder).index_by(&:id)
+    query_down = query.downcase.strip
+
+    scored = documents_by_id.values.map { |doc| score_document(doc, doc_vector_scores, text_doc_ids, query_down) }
+
+    scored.select { |r| r[:score] >= RELEVANCE_FLOOR }
+          .sort_by { |r| -r[:score] }
+          .first(limit)
+  end
+
+  def score_document(doc, doc_vector_scores, text_doc_ids, query_down)
+    v = doc_vector_scores[doc.id] || 0.0
+    t = text_doc_ids.include?(doc.id) ? 1.0 : 0.0
+    title_match = doc.title.to_s.downcase.include?(query_down) ? 1.0 : 0.0
+    combined = (WEIGHT_VECTOR * v) + (WEIGHT_TEXT * t) + (WEIGHT_TITLE * title_match)
+    { document: doc, score: combined }
+  end
 
   def vector_search(query_embedding, folder_id:, limit:)
     scope = DocumentChunk
