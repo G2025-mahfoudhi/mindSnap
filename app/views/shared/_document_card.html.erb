@@ -2,7 +2,17 @@
   <%= link_to document_path(document),
               class: "doc-card__link",
               aria: { label: "Ouvrir #{document.title}" } do %>
-    <span class="badge bg-primary bg-opacity-10 text-primary mb-2"><%= document.document_type %></span>
+    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+      <span class="badge bg-primary bg-opacity-10 text-primary"><%= document.document_type %></span>
+      <% if local_assigns[:relevance_score] %>
+        <span class="badge bg-success bg-opacity-15 text-success"
+              title="Score de pertinence : combinaison similarité sémantique, mots-clés et titre"
+              aria-label="Pertinence : <%= (relevance_score * 100).round %>%">
+          <i class="fa-solid fa-bullseye fa-xs me-1" aria-hidden="true"></i>
+          <%= (relevance_score * 100).round %>% pertinent
+        </span>
+      <% end %>
+    </div>
     <h2 class="h6 fw-semibold"><%= document.title %></h2>
     <p class="text-muted small mb-0"><%= truncate(document.content.to_s, length: 100) %></p>
 
