@@ -19,6 +19,10 @@ class ConversationsController < ApplicationController
     @conversations = current_user.conversations.order(created_at: :desc)
     @messages = @conversation.messages.order(:created_at)
     @message  = Message.new
+    return unless @conversation.context_type == "Document"
+
+    @suggest_document = current_user.documents.find_by(id: @conversation.context_id)
+    @suggest_folders  = current_user.folders.includes(:parent).order(:name).to_a
   end
 
   def destroy
