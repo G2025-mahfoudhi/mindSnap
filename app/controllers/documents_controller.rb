@@ -1,5 +1,5 @@
-class DocumentsController < ApplicationController
-  before_action :set_document, only: %i[show edit update destroy download summarize summary_status chat]
+class DocumentsController < ApplicationController # rubocop:disable Metrics/ClassLength
+  before_action :set_document, only: %i[show edit update destroy download summarize summary_status chat reset_chat]
 
   def index
     @documents = current_user.documents.where(folder_id: nil)
@@ -20,10 +20,14 @@ class DocumentsController < ApplicationController
     end
   end
 
-  def show
+  def show # rubocop:disable Metrics/MethodLength
     @folders = current_user.folders.where(parent_id: nil).includes(:documents, children: :documents)
     @sidebar_folders = current_user.folders.includes(:documents).to_a
     @documents_without_folder = current_user.documents.where(folder_id: nil)
+    # Conversation doc-scopee (necessaire pour turbo_stream_from si l'offcanvas est ouvert)
+    @doc_chat_conversation = current_user.conversations.find_or_create_by!(
+      context_type: "Document", context_id: @document.id
+    ) { |c| c.name = "Discussion — #{@document.title}" }
   end
 
   def chat
@@ -34,6 +38,28 @@ class DocumentsController < ApplicationController
     @message = Message.new
     render partial: "documents/chat_panel",
            locals: { conversation: @conversation, messages: @messages, message: @message }
+  end
+
+  def reset_chat
+    conversation = current_user.conversations.find_by(
+      context_type: "Document", context_id: @document.id
+    )
+    conversation&.messages&.destroy_all
+    conversation ||= current_user.conversations.create!(
+      context_type: "Document", context_id: @document.id,
+      name: "Discussion — #{@document.title}"
+    )
+
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          "doc-chat-frame",
+          partial: "documents/chat_panel",
+          locals: { conversation: conversation, messages: [], message: Message.new }
+        )
+      end
+      format.html { redirect_to @document, notice: "Discussion réinitialisée." }
+    end
   end
 
   def download
@@ -59,13 +85,12 @@ class DocumentsController < ApplicationController
 
   def summarize
     if @document.content.blank?
-      if @document.file.attached?
-        # Lancer l'extraction de texte qui chaînera → EmbedDocumentJob → SummarizeDocumentJob
-        ExtractTextJob.perform_later(@document.id)
-        return redirect_to @document, notice: "Extraction du texte en cours, le résumé suivra automatiquement…"
-      else
-        return redirect_to @document, alert: "Le document n'a pas de contenu à résumer."
-      end
+      return redirect_to @document, alert: "Le document n'a pas de contenu à résumer." unless @document.file.attached?
+
+      # Lancer l'extraction de texte qui chaînera → EmbedDocumentJob → SummarizeDocumentJob
+      ExtractTextJob.perform_later(@document.id)
+      return redirect_to @document, notice: "Extraction du texte en cours, le résumé suivra automatiquement…"
+
     end
 
     SummarizeDocumentJob.perform_later(@document.id)
@@ -73,7 +98,7 @@ class DocumentsController < ApplicationController
   end
 
   def summary_status
-    render json: { summary: @document.summary }
+    render json: { summary: @document.summary, content_present: @document.content.present? }
   end
 
   def edit

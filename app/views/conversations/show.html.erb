@@ -1,13 +1,13 @@
 <% content_for :title, "#{@conversation.name} — MindSnap" %>
 
+<%= turbo_stream_from @conversation %>
+
 <div class="d-flex" style="height: calc(100vh - 56px - 4rem);" role="main" aria-label="<%= @conversation.name %>">
   <%= render "conversations/sidebar", conversations: @conversations, current_conversation: @conversation %>
 
   <div class="d-flex flex-column flex-grow-1 overflow-hidden"
        data-controller="voice"
        data-voice-auto-submit-value="true">
-    <%= render partial: "conversations/header", locals: { conversation: @conversation } %>
-
     <div id="messages"
          class="flex-grow-1 overflow-auto p-4"
          data-controller="chat-scroll"
@@ -20,17 +20,29 @@
           Envoie ton premier message pour démarrer la conversation.
         </p>
       <% else %>
-        <%= render @messages %>
+        <% prev_date = nil %>
+        <% @messages.each do |message| %>
+          <% msg_date = message.created_at.to_date %>
+          <% if msg_date != prev_date %>
+            <%= render "messages/date_separator", date: msg_date %>
+            <% prev_date = msg_date %>
+          <% end %>
+          <%= render message %>
+        <% end %>
       <% end %>
     </div>
 
     <div class="border-top p-3 bg-white">
       <%= turbo_frame_tag "new_message_form" do %>
+        <span id="msg-hint" class="visually-hidden">
+          Appuyez sur Entrée pour envoyer, Maj+Entrée pour un saut de ligne.
+        </span>
         <%= simple_form_for [@conversation, @message],
                               html: {
                                 "aria-label": "Envoyer un message",
                                 data: {
-                                  action: "turbo:submit-end->voice#clearInput"
+                                  controller: "message-form",
+                                  action: "turbo:submit-start->message-form#submitStart turbo:submit-end->message-form#submitEnd"
                                 }
                               } do |f| %>
           <div class="d-flex gap-2 align-items-end">
@@ -41,10 +53,13 @@
                             required: true,
                             style: "resize: none; overflow-y: hidden; max-height: 150px;",
                             "aria-label": "Ton message",
+                            "aria-describedby": "msg-hint",
+                            "aria-required": "true",
                             data: {
                               controller: "textarea-autoresize",
-                              action: "input->textarea-autoresize#resize",
-                              voice_target: "input"
+                              action: "input->textarea-autoresize#resize keydown->textarea-autoresize#submitOnEnter",
+                              voice_target: "input",
+                              message_form_target: "input"
                             } %>
             <button type="button"
                     data-action="voice#toggle"
@@ -57,7 +72,8 @@
             </button>
             <button type="submit"
                     class="btn btn-primary px-3 flex-shrink-0"
-                    aria-label="Envoyer le message">
+                    aria-label="Envoyer le message"
+                    data-message-form-target="submit">
               <i class="fa-solid fa-paper-plane me-md-2" aria-hidden="true"></i>
               <span class="d-none d-md-inline">Envoyer</span>
             </button>

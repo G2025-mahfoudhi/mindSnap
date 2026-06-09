@@ -1,7 +1,7 @@
 <div class="border-bottom px-4 py-3 d-flex align-items-center justify-content-between bg-white">
   <div class="d-flex align-items-center gap-2">
     <i class="fa-solid fa-comment text-primary" aria-hidden="true"></i>
-    <h1 class="h6 mb-0 fw-semibold"><%= conversation.name %></h1>
+    <h1 class="h6 mb-0 fw-semibold" id="conversation-header-title"><%= conversation.name %></h1>
   </div>
   <%= button_to conversation_path(conversation),
                 method: :delete,

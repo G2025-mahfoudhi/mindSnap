@@ -28,7 +28,7 @@
             <div class="dropdown d-inline-block mb-2">
               <div class="avatar-upload-wrapper" data-bs-toggle="dropdown" data-bs-auto-close="outside" style="cursor: pointer;">
                 <% if has_avatar %>
-                  <img src="<%= url_for(resource.avatar) %>"
+                  <img src="<%= avatar_url(resource.avatar) %>"
                        class="avatar-upload-img"
                        alt="Photo de profil"
                        data-avatar-preview-target="preview">
@@ -43,7 +43,7 @@
                 </div>
               </div>
 
-              <ul class="dropdown-menu shadow-sm" style="min-width: 220px;">
+              <ul class="dropdown-menu shadow-sm" style="min-width: 230px;">
                 <% if has_avatar %>
                   <li>
                     <button type="button" class="dropdown-item py-2" data-bs-toggle="modal" data-bs-target="#avatarModal">
@@ -57,6 +57,16 @@
                     <i class="fa-solid fa-camera me-2 text-muted"></i>Modifier la photo de profil
                   </button>
                 </li>
+                <% if has_avatar %>
+                  <li><hr class="dropdown-divider my-1"></li>
+                  <li>
+                    <%= link_to avatar_path,
+                                data: { turbo_method: :delete, turbo_confirm: "Supprimer définitivement ta photo de profil ?" },
+                                class: "dropdown-item py-2 text-danger" do %>
+                      <i class="fa-solid fa-trash me-2"></i>Supprimer la photo de profil
+                    <% end %>
+                  </li>
+                <% end %>
               </ul>
             </div>
 
@@ -79,7 +89,7 @@
                 <div class="modal-content border-0" style="background: rgba(0,0,0,0.85);">
                   <div class="modal-body text-center p-4 position-relative">
                     <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
-                    <%= image_tag resource.avatar, class: "rounded-circle", style: "width: 280px; height: 280px; object-fit: cover;" %>
+                    <img src="<%= avatar_url(resource.avatar) %>" class="rounded-circle" style="width: 280px; height: 280px; object-fit: cover;" alt="Photo de profil">
                   </div>
                 </div>
               </div>
