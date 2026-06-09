@@ -246,3 +246,57 @@
 
   strong { font-weight: 600; }
 }
+
+// ——— Curseur de streaming résumé ———
+.summary-stream-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: currentColor;
+  vertical-align: text-bottom;
+  margin-left: 2px;
+  border-radius: 1px;
+  animation: stream-pulse 1s step-start infinite;
+}
+
+// ——— Poignée de redimensionnement du panel chat ———
+#doc-chat-panel {
+  // L'offcanvas doit accepter un overflow visible sur le bord gauche
+  overflow: visible !important;
+}
+
+.doc-chat-resize-handle {
+  position: absolute;
+  left: -4px;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  z-index: 1060;   // au-dessus du backdrop Bootstrap
+  border-radius: 4px 0 0 4px;
+  transition: background 0.15s ease;
+
+  // Indicateur visuel centré
+  &::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 36px;
+    border-radius: 2px;
+    background: #ced4da;
+    transition: background 0.15s ease, height 0.15s ease;
+  }
+
+  &:hover,
+  &:active {
+    background: rgba(61, 127, 126, 0.12);
+
+    &::after {
+      background: #3d7f7e;
+      height: 56px;
+    }
+  }
+}
