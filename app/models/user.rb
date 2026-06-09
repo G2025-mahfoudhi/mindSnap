@@ -6,6 +6,20 @@ class User < ApplicationRecord
          # for Google OmniAuth
          :omniauthable, omniauth_providers:[:google_oauth2]
 
+  PLANS = {
+    "free"     => { label: "Gratuit",  document_limit: 50,  price_monthly: 0,    price_annual: 0 },
+    "pro"      => { label: "Pro",      document_limit: 500, price_monthly: 5.90, price_annual: 4.90 },
+    "business" => { label: "Business", document_limit: nil, price_monthly: 15,   price_annual: 12.50 }
+  }.freeze
+
+  def document_limit
+    PLANS.key?(plan) ? PLANS.dig(plan, :document_limit) : 50
+  end
+
+  def plan_label
+    PLANS.dig(plan, :label) || "Gratuit"
+  end
+
   has_one_attached :avatar
 
   has_many :documents, dependent: :destroy

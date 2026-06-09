@@ -3,47 +3,75 @@
 
     <%# Greeting %>
     <div class="dashboard__greeting">
-      <h1>Bonjour, <span class="dashboard__name"><%= current_user.first_name.presence || current_user.email.split("@").first %></span> 👋</h1>
-      <p class="dashboard__date"><%= l(Date.today, format: :long) %></p>
+      <div class="dashboard__greeting-inner">
+        <div>
+          <h1>Bonjour, <span class="dashboard__name"><%= current_user.first_name.presence || current_user.email.split("@").first %></span> 👋</h1>
+          <p class="dashboard__date"><%= l(Date.today, format: :long) %></p>
+        </div>
+        <div class="dashboard__greeting-icon">
+          <i class="fa-solid fa-brain"></i>
+        </div>
+      </div>
     </div>
 
     <%# Stats %>
     <div class="row g-4 mb-5">
       <div class="col-md-4">
-        <div class="dashboard__stat-card">
-          <div class="dashboard__stat-header">
-            <span class="dashboard__stat-label">Documents utilisés</span>
+        <div class="dashboard__stat-card dashboard__stat-card--teal">
+          <div class="dashboard__stat-icon">
+            <i class="fa-solid fa-file-lines"></i>
           </div>
-          <div class="dashboard__stat-body">
-            <span class="dashboard__stat-number"><%= @document_count %></span>
-            <span class="dashboard__stat-max">/ <%= @document_limit %></span>
-            <%= link_to "#", class: "dashboard__pro-btn ms-auto" do %>
-              Pro <i class="fa-solid fa-arrow-right"></i>
+          <div class="dashboard__stat-content">
+            <span class="dashboard__stat-label">Documents utilisés</span>
+            <div class="dashboard__stat-body">
+              <span class="dashboard__stat-number"><%= @document_count %></span>
+              <% if @document_limit %>
+                <span class="dashboard__stat-max">/ <%= @document_limit %></span>
+              <% else %>
+                <span class="dashboard__stat-max ms-1" style="font-size: .8rem;">· Illimité</span>
+              <% end %>
+              <div class="ms-auto d-flex align-items-center gap-2">
+                <span class="dashboard__plan-label"><%= current_user.plan_label %></span>
+                <%= link_to "#", class: "dashboard__pro-btn", data: { bs_toggle: "modal", bs_target: "#proModal" } do %>
+                  <i class="fa-solid fa-arrow-right"></i>
+                <% end %>
+              </div>
+            </div>
+            <% if @document_limit %>
+              <div class="progress mt-2" style="height: 5px;">
+                <div class="progress-bar" role="progressbar"
+                     style="width: <%= [(@document_count * 100 / @document_limit), 100].min %>%; background-color: #3d7f7e;">
+                </div>
+              </div>
             <% end %>
           </div>
-          <div class="progress mt-3" style="height: 6px;">
-            <div class="progress-bar <%= @document_count >= @document_limit ? 'bg-danger' : 'bg-success' %>"
-                 role="progressbar"
-                 style="width: <%= [(@document_count * 100 / @document_limit), 100].min %>%">
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="dashboard__stat-card dashboard__stat-card--blue">
+          <div class="dashboard__stat-icon">
+            <i class="fa-solid fa-folder"></i>
+          </div>
+          <div class="dashboard__stat-content">
+            <span class="dashboard__stat-label">Dossiers</span>
+            <div class="dashboard__stat-body">
+              <span class="dashboard__stat-number"><%= current_user.folders.count %></span>
             </div>
           </div>
         </div>
       </div>
 
       <div class="col-md-4">
-        <div class="dashboard__stat-card">
-          <div class="dashboard__stat-label">Dossiers</div>
-          <div class="dashboard__stat-body">
-            <span class="dashboard__stat-number"><%= current_user.folders.count %></span>
+        <div class="dashboard__stat-card dashboard__stat-card--purple">
+          <div class="dashboard__stat-icon">
+            <i class="fa-solid fa-comments"></i>
           </div>
-        </div>
-      </div>
-
-      <div class="col-md-4">
-        <div class="dashboard__stat-card">
-          <div class="dashboard__stat-label">Conversations IA</div>
-          <div class="dashboard__stat-body">
-            <span class="dashboard__stat-number"><%= current_user.conversations.count %></span>
+          <div class="dashboard__stat-content">
+            <span class="dashboard__stat-label">Conversations IA</span>
+            <div class="dashboard__stat-body">
+              <span class="dashboard__stat-number"><%= current_user.conversations.count %></span>
+            </div>
           </div>
         </div>
       </div>
@@ -53,20 +81,22 @@
     <div class="dashboard__section">
       <div class="dashboard__section-header">
         <h2 class="dashboard__section-title">Documents récents</h2>
-        <%= link_to "Voir tous", documents_path, class: "dashboard__section-link" %>
+        <div class="d-flex align-items-center gap-2">
+          <%= link_to new_document_path(from: "dashboard"), class: "btn btn-primary btn-sm" do %>
+            <i class="fa-solid fa-plus me-1"></i>Nouveau
+          <% end %>
+          <%= link_to "Voir tous", documents_path, class: "dashboard__section-link" %>
+        </div>
       </div>
 
       <% if @recent_documents.any? %>
         <div class="row g-3">
           <% @recent_documents.each do |doc| %>
             <div class="col-md-6 col-lg-4">
-              <%= link_to document_path(doc), class: "dashboard__doc-card" do %>
-                <div class="dashboard__doc-icon">
-                  <i class="fa-solid <%= doc_icon(doc) %>"></i>
-                </div>
+              <%= link_to document_path(doc, from: "dashboard"), class: "dashboard__doc-card" do %>
                 <div class="dashboard__doc-info">
                   <p class="dashboard__doc-title"><%= doc.title %></p>
-                  <p class="dashboard__doc-date"><%= time_ago_in_words(doc.created_at) %> ago</p>
+                  <p class="dashboard__doc-date"><%= l(doc.created_at.to_date, format: :long) %></p>
                 </div>
               <% end %>
             </div>
@@ -81,5 +111,143 @@
       <% end %>
     </div>
 
+  </div>
+</div>
+
+<%# Modal Pricing %>
+<div class="modal fade" id="proModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0 pb-0 position-relative">
+        <div class="text-center w-100 pt-2">
+          <h4 class="mb-1" style="font-weight: 800;">Choisissez votre plan</h4>
+          <p class="text-muted small mb-0">Plan actuel : <strong><%= current_user.plan_label %></strong></p>
+        </div>
+        <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4 pb-4" data-controller="pricing-toggle">
+
+        <%# Switch mensuel / annuel %>
+        <div class="d-flex align-items-center justify-content-center gap-3 mb-4">
+          <span class="fw-500 small">Mensuel</span>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input pricing-switch" type="checkbox" role="switch"
+                   data-pricing-toggle-target="toggle"
+                   data-action="change->pricing-toggle#switch"
+                   style="width: 3rem; height: 1.5rem; cursor: pointer;">
+          </div>
+          <span class="fw-500 small">
+            Annuel
+            <span class="badge ms-1" style="background-color: #3d7f7e; font-size: .7rem;">2 mois offerts</span>
+          </span>
+        </div>
+
+        <div class="row g-3">
+
+          <%# Plan Gratuit %>
+          <div class="col-md-4">
+            <div class="pricing-card <%= 'pricing-card--current' if current_user.plan == 'free' %>">
+              <div class="pricing-card__header">
+                <% if current_user.plan == 'free' %>
+                  <span class="pricing-card__badge pricing-card__badge--current">✓ Plan actuel</span>
+                <% end %>
+                <h5 class="pricing-card__name">Gratuit</h5>
+                <div class="pricing-card__price">
+                  <span class="pricing-card__amount">0 €</span>
+                  <span class="pricing-card__period">/ mois</span>
+                </div>
+                <p class="pricing-card__desc">Pour découvrir MindSnap</p>
+              </div>
+              <ul class="pricing-card__features">
+                <li><i class="fa-solid fa-check me-2"></i>50 documents</li>
+                <li><i class="fa-solid fa-check me-2"></i>Conversations IA basiques</li>
+                <li><i class="fa-solid fa-check me-2"></i>Résumés automatiques</li>
+                <li class="text-muted"><i class="fa-solid fa-xmark me-2"></i>Support prioritaire</li>
+                <li class="text-muted"><i class="fa-solid fa-xmark me-2"></i>Projets & dossiers avancés</li>
+              </ul>
+              <% if current_user.plan == 'free' %>
+                <button class="btn btn-outline-secondary w-100" disabled>Plan actuel</button>
+              <% else %>
+                <%= button_to "Rétrograder", plan_path, method: :patch, params: { plan: 'free' },
+                    class: "btn btn-outline-secondary w-100",
+                    data: { turbo_confirm: "Revenir au plan Gratuit ? Vos limites seront réduites." } %>
+              <% end %>
+            </div>
+          </div>
+
+          <%# Plan Pro %>
+          <div class="col-md-4">
+            <div class="pricing-card pricing-card--featured <%= 'pricing-card--current' if current_user.plan == 'pro' %>">
+              <div class="pricing-card__header">
+                <span class="pricing-card__badge pricing-card__badge--pro">
+                  <%= current_user.plan == 'pro' ? '✓ Plan actuel' : 'Le plus populaire' %>
+                </span>
+                <h5 class="pricing-card__name">Pro</h5>
+                <div class="pricing-card__price">
+                  <span class="pricing-card__amount" data-pricing-toggle-target="proAmount">5,90 €</span>
+                </div>
+                <div class="pricing-card__price">
+                  <span class="pricing-card__period" data-pricing-toggle-target="proSub">/ mois</span>
+                </div>
+                <span class="badge d-none mt-1" style="background: #e6f4f1; color: #3d7f7e; font-size: .7rem;" data-pricing-toggle-target="savings">Économisez 12,20 €/an</span>
+                <p class="pricing-card__desc">Pour les utilisateurs intensifs</p>
+              </div>
+              <ul class="pricing-card__features">
+                <li><i class="fa-solid fa-check me-2"></i>500 documents</li>
+                <li><i class="fa-solid fa-check me-2"></i>Conversations IA illimitées</li>
+                <li><i class="fa-solid fa-check me-2"></i>Résumés & tags IA avancés</li>
+                <li><i class="fa-solid fa-check me-2"></i>Support prioritaire</li>
+                <li><i class="fa-solid fa-check me-2"></i>Projets & dossiers illimités</li>
+              </ul>
+              <% if current_user.plan == 'pro' %>
+                <button class="btn btn-primary w-100" disabled>Plan actuel</button>
+              <% else %>
+                <%= button_to "Passer à Pro", plan_path, method: :patch, params: { plan: 'pro' },
+                    class: "btn btn-primary w-100" %>
+              <% end %>
+            </div>
+          </div>
+
+          <%# Plan Business %>
+          <div class="col-md-4">
+            <div class="pricing-card pricing-card--business <%= 'pricing-card--current' if current_user.plan == 'business' %>">
+              <div class="pricing-card__header">
+                <% if current_user.plan == 'business' %>
+                  <span class="pricing-card__badge pricing-card__badge--current">✓ Plan actuel</span>
+                <% else %>
+                  <span class="pricing-card__badge pricing-card__badge--business">Entreprise</span>
+                <% end %>
+                <h5 class="pricing-card__name">Business</h5>
+                <div class="pricing-card__price">
+                  <span class="pricing-card__amount" data-pricing-toggle-target="businessAmount">15 €</span>
+                </div>
+                <div class="pricing-card__price">
+                  <span class="pricing-card__period" data-pricing-toggle-target="businessSub">/ mois</span>
+                </div>
+                <span class="badge d-none mt-1" style="background: #f0f0f0; color: #1a1a2e; font-size: .7rem;" data-pricing-toggle-target="savings">Économisez 30 €/an</span>
+                <p class="pricing-card__desc">Pour les équipes & organisations</p>
+              </div>
+              <ul class="pricing-card__features">
+                <li><i class="fa-solid fa-check me-2"></i>Documents <strong>illimités</strong></li>
+                <li><i class="fa-solid fa-check me-2"></i>Accès multi-utilisateurs</li>
+                <li><i class="fa-solid fa-check me-2"></i>Tableau de bord équipe</li>
+                <li><i class="fa-solid fa-check me-2"></i>Support dédié 24/7</li>
+                <li><i class="fa-solid fa-check me-2"></i>Facturation & rapports</li>
+              </ul>
+              <% if current_user.plan == 'business' %>
+                <button class="btn btn-dark w-100" disabled>Plan actuel</button>
+              <% else %>
+                <%= button_to "Passer à Business", plan_path, method: :patch, params: { plan: 'business' },
+                    class: "btn btn-dark w-100" %>
+              <% end %>
+            </div>
+          </div>
+
+        </div>
+        <p class="text-center text-muted small mt-3 mb-0">
+          <i class="fa-solid fa-shield-halved me-1"></i>Paiement sécurisé — Annulation à tout moment
+        </p>
+      </div>
+    </div>
   </div>
 </div>
