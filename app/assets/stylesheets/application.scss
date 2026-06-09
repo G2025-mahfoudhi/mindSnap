@@ -10,3 +10,9 @@
 // Your CSS partials
 @import "components/index";
 @import "pages/index";
+
+// Streaming indicator animation
+@keyframes stream-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
