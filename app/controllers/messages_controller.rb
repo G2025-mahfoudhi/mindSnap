@@ -1,5 +1,5 @@
 class MessagesController < ApplicationController
-  def create
+  def create # rubocop:disable Metrics/MethodLength
     @conversation = current_user.conversations.find(params[:conversation_id])
     content = message_params[:content].to_s.strip
 
@@ -17,14 +17,10 @@ class MessagesController < ApplicationController
                            previous_message.created_at.to_date != @user_message.created_at.to_date
     maybe_update_title(content)
 
-    begin
-      ai_content = OpenRouterService.new(@conversation, @user_message).call
-    rescue StandardError => e
-      Rails.logger.error "OpenRouter Error: #{e.class} — #{e.message}"
-      ai_content = "Désolé, je n'ai pas pu générer une réponse. Réessaie dans un instant."
-    end
-
-    @ai_message = @conversation.messages.create!(role: "assistant", content: ai_content)
+    # Streaming : on cree le ai_message VIDE (streaming: true), on enqueue le
+    # job qui va le remplir token par token et broadcaster chaque batch.
+    @ai_message = @conversation.messages.create!(role: "assistant", content: "", streaming: true)
+    StreamAiResponseJob.perform_later(@ai_message.id)
 
     respond_to do |format|
       format.turbo_stream do
