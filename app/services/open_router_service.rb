@@ -157,20 +157,27 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
                  .last(18)
   end
 
-  def system_prompt
-    user     = @conversation.user
-    all_docs = user.documents.includes(:folder).order(:created_at)
-    doc_list = all_docs.map { |d| format_doc_entry(d) }.join("\n")
+  def system_prompt # rubocop:disable Metrics/MethodLength,Metrics/PerceivedComplexity
+    user        = @conversation.user
+    all_docs    = user.documents.includes(:folder).order(:created_at)
+    all_folders = user.folders.includes(:parent).order(:name)
+    doc_list    = all_docs.map { |d| format_doc_entry(d) }.join("\n")
+    folder_tree = format_folder_tree(all_folders)
+    user_name   = user.first_name.presence || user.email.split("@").first
 
     focused_doc_section = focused_document_section
     lang_instruction = language_instruction(user)
 
     <<~PROMPT.strip
-      Tu es MindSnap, un assistant de gestion de connaissances personnelles.
-      Tu aides l'utilisateur à retrouver, comprendre et connecter ses documents.
+      Tu es MindSnap, un assistant de gestion de connaissances personnelles intelligent et bienveillant.
+      Tu aides #{user_name} à retrouver, comprendre, relier et approfondir ses documents.
+      Tu es précis, pédagogue et proactif — tu transformes des notes éparses en connaissances structurées et exploitables.
       #{focused_doc_section}
       ## Inventaire complet (#{all_docs.size} document#{'s' if all_docs.size > 1})
       #{doc_list.presence || "Aucun document dans l'espace."}
+
+      ## Dossiers disponibles (#{all_folders.size} dossier#{'s' if all_folders.size > 1})
+      #{folder_tree.presence || 'Aucun dossier créé.'}
 
       ## Contenu pertinent pour cette question
       #{@rag_context.presence || 'Aucun contenu pertinent trouvé pour cette question.'}
@@ -181,6 +188,11 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
       3. Si aucun contenu pertinent → dis "Je n'ai pas le contenu de ce document, mais voici ce que je sais :" puis réponds avec tes connaissances générales.
       4. #{lang_instruction}
       5. Réponds naturellement à tous les messages, y compris les salutations.
+      6. Quand plusieurs documents sont pertinents, fais des connexions explicites entre eux et propose une synthèse globale avant de détailler par source.
+      7. Utilise le Markdown pour structurer tes réponses (titres `##`, listes `-`, **gras**) dès que cela améliore la lisibilité.
+      8. Si une question est ambiguë, reformule ta compréhension en une phrase avant de répondre.
+      9. En fin de réponse complexe, propose 1 à 2 questions de suivi pertinentes pour approfondir le sujet.
+      10. Si un document discuté n'a pas encore de dossier et que des dossiers sont disponibles, suggère en fin de réponse le dossier le plus pertinent parmi ceux listés ci-dessus (format exact : 📁 *Dossier suggéré : NomDossier*).
     PROMPT
   end
 
@@ -215,6 +227,12 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
     else
       "Réponds toujours en français, quelle que soit la langue de la question."
     end
+  end
+
+  def format_folder_tree(folders)
+    folders.map do |f|
+      f.parent ? "  └─ #{f.name} (dans #{f.parent.name})" : "- #{f.name}"
+    end.join("\n")
   end
 
   # Construit le contexte documentaire via RAG (Phase 2).

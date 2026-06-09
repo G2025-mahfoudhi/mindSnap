@@ -50,7 +50,14 @@
     <div style="max-width: 760px; margin: 0 auto;">
 
       <%# ——— BOUTON RETOUR ——— %>
-      <% if @document.folder %>
+      <% if params[:from] == "dashboard" %>
+        <%= link_to dashboard_path,
+                    class: "d-inline-flex align-items-center gap-2 text-decoration-none small mb-3",
+                    style: "color: #5a6370;" do %>
+          <i class="fa-solid fa-arrow-left fa-xs" aria-hidden="true"></i>
+          Dashboard
+        <% end %>
+      <% elsif params[:from] == "espace" && @document.folder %>
         <%= link_to folder_path(@document.folder),
                     class: "d-inline-flex align-items-center gap-2 text-decoration-none small mb-3",
                     style: "color: #5a6370;",
@@ -64,7 +71,7 @@
                     style: "color: #5a6370;",
                     aria: { label: "Retour à Mon espace" } do %>
           <i class="fa-solid fa-arrow-left fa-xs" aria-hidden="true"></i>
-          Retour à Mon espace
+          Mon espace
         <% end %>
       <% end %>
 
@@ -132,7 +139,7 @@
       <% end %>
 
       <%# ——— RÉSUMÉ IA ——— %>
-      <%= render "documents/summary", document: @document %>
+      <%= render "documents/summary", document: @document, suggest_folders: @suggest_folders %>
 
 
       <%# ——— CONTENU ——— %>

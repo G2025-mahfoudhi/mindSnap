@@ -3,6 +3,7 @@ Rails.application.routes.draw do
 
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks" }
   resource :avatar, only: [:destroy]
+  resource :plan, only: [:update]
   root to: "pages#home"
   get "dashboard", to: "dashboard#index"
 
@@ -14,6 +15,7 @@ Rails.application.routes.draw do
       get :summary_status
       get :chat
       post :summarize
+      patch :assign_folder
       delete :reset_chat
     end
     resources :conversations, only: [:create, :show] do

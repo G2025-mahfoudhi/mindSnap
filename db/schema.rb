@@ -276,7 +276,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_101501) do
     t.string "encrypted_password", default: "", null: false
     t.string "first_name"
     t.string "last_name"
+<<<<<<< HEAD
     t.string "preferred_language", default: "fr"
+=======
+    t.string "plan", default: "free", null: false
+>>>>>>> master
     t.string "provider"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"

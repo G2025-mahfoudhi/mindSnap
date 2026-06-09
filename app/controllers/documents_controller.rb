@@ -1,5 +1,6 @@
 class DocumentsController < ApplicationController # rubocop:disable Metrics/ClassLength
-  before_action :set_document, only: %i[show edit update destroy download summarize summary_status chat reset_chat]
+  before_action :set_document,
+                only: %i[show edit update destroy download summarize summary_status chat reset_chat assign_folder]
 
   def index
     @documents = current_user.documents.where(folder_id: nil)
@@ -20,9 +21,10 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
     end
   end
 
-  def show # rubocop:disable Metrics/MethodLength
+  def show
     @folders = current_user.folders.where(parent_id: nil).includes(:documents, children: :documents)
     @sidebar_folders = current_user.folders.includes(:documents).to_a
+    @suggest_folders = current_user.folders.includes(:parent).order(:name).to_a
     @documents_without_folder = current_user.documents.where(folder_id: nil)
     # Conversation doc-scopee (necessaire pour turbo_stream_from si l'offcanvas est ouvert)
     @doc_chat_conversation = current_user.conversations.find_or_create_by!(
@@ -36,11 +38,13 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
     ) { |c| c.name = "Discussion — #{@document.title}" }
     @messages = @conversation.messages.order(:created_at)
     @message = Message.new
+    @suggest_folders = current_user.folders.includes(:parent).order(:name).to_a
     render partial: "documents/chat_panel",
-           locals: { conversation: @conversation, messages: @messages, message: @message }
+           locals: { conversation: @conversation, messages: @messages, message: @message,
+                     document: @document, suggest_folders: @suggest_folders }
   end
 
-  def reset_chat
+  def reset_chat # rubocop:disable Metrics/MethodLength
     conversation = current_user.conversations.find_by(
       context_type: "Document", context_id: @document.id
     )
@@ -55,14 +59,15 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
         render turbo_stream: turbo_stream.replace(
           "doc-chat-frame",
           partial: "documents/chat_panel",
-          locals: { conversation: conversation, messages: [], message: Message.new }
+          locals: { conversation: conversation, messages: [], message: Message.new,
+                    document: @document, suggest_folders: @suggest_folders }
         )
       end
       format.html { redirect_to @document, notice: "Discussion réinitialisée." }
     end
   end
 
-  def download
+  def download # rubocop:disable Metrics/MethodLength
     blob = ActiveStorage::Blob.find_signed!(params[:blob_signed_id])
 
     raise ActiveRecord::RecordNotFound unless @document.file.map { |a| a.blob.id }.include?(blob.id)
@@ -99,6 +104,18 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
 
   def summary_status
     render json: { summary: @document.summary, content_present: @document.content.present? }
+  end
+
+  def assign_folder
+    folder = current_user.folders.find(params[:folder_id])
+    @document.update!(folder: folder)
+    redirect_back fallback_location: document_path(@document),
+                  notice: "Document classé dans « #{folder.name} ».",
+                  status: :see_other
+  rescue ActiveRecord::RecordNotFound
+    redirect_back fallback_location: document_path(@document),
+                  alert: "Dossier introuvable.",
+                  status: :see_other
   end
 
   def edit

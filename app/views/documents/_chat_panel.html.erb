@@ -1,7 +1,11 @@
 <%= turbo_frame_tag "doc-chat-frame", class: "d-flex flex-column flex-grow-1", style: "min-height: 0;" do %>
+  <% panel_doc_id      = document&.folder_id.blank? ? document&.id.to_i : 0 %>
+  <% panel_folders_json = (suggest_folders || []).map { |f| { id: f.id, name: f.name } }.to_json %>
   <div id="doc-chat-messages"
        class="flex-grow-1 overflow-auto p-3"
-       data-controller="chat-scroll voice"
+       data-controller="chat-scroll voice folder-suggest"
+       data-folder-suggest-document-id-value="<%= panel_doc_id %>"
+       data-folder-suggest-folders-value="<%= panel_folders_json %>"
        style="min-height: 0;">
     <% if messages.empty? %>
       <p class="text-center text-muted small py-4">
