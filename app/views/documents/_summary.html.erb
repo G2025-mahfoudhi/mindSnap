@@ -16,7 +16,6 @@
       <%= button_to summarize_document_path(document),
                     method: :post,
                     class: "btn btn-outline-secondary btn-sm",
-                    form: { data: { turbo: false } },
                     aria: { label: "Régénérer le résumé de #{document.title}" } do %>
         <i class="fa-solid fa-rotate fa-xs" aria-hidden="true"></i>
         <span class="d-none d-md-inline ms-1">Régénérer</span>
