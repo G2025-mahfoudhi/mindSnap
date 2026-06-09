@@ -58,6 +58,14 @@
           <i class="fa-solid fa-arrow-left fa-xs" aria-hidden="true"></i>
           Dashboard
         <% end %>
+      <% elsif params[:from] == "documents" %>
+        <%= link_to documents_path,
+                    class: "d-inline-flex align-items-center gap-2 text-decoration-none small mb-3",
+                    style: "color: #5a6370;",
+                    aria: { label: "Retour à Mes documents" } do %>
+          <i class="fa-solid fa-arrow-left fa-xs" aria-hidden="true"></i>
+          Mes documents
+        <% end %>
       <% elsif params[:from] == "espace" && @document.folder %>
         <%= link_to folder_path(@document.folder),
                     class: "d-inline-flex align-items-center gap-2 text-decoration-none small mb-3",

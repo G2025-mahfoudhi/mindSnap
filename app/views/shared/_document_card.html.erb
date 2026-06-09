@@ -1,5 +1,5 @@
 <div class="doc-card" draggable="true" data-document-id="<%= document.id %>">
-  <%= link_to document_path(document, from: "espace"),
+  <%= link_to document_path(document, from: local_assigns[:from] || "espace"),
               class: "doc-card__link",
               aria: { label: "Ouvrir #{document.title}" } do %>
     <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
