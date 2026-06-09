@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { Swal, buildOptions } from "confirm"
 
 // Scans message/summary containers for AI folder suggestions (📁 Dossier suggéré : Name)
 // and injects a one-click "Ranger dans" button next to each one.
@@ -70,9 +71,15 @@ export default class extends Controller {
     btn.className = "btn btn-sm btn-outline-success"
     btn.innerHTML = `<i class="fa-solid fa-folder-plus me-1"></i>Ranger dans « ${folder.name} »`
 
-    form.addEventListener("submit", (e) => {
-      if (!confirm(`Classer ce document dans « ${folder.name} » ?`)) e.preventDefault()
-    })
+    const confirmAndSubmit = async (e) => {
+      e.preventDefault()
+      const { isConfirmed } = await Swal.fire(buildOptions(`Classer ce document dans « ${folder.name} » ?`))
+      if (isConfirmed) {
+        form.removeEventListener("submit", confirmAndSubmit)
+        form.requestSubmit()
+      }
+    }
+    form.addEventListener("submit", confirmAndSubmit)
 
     form.appendChild(btn)
     return form
