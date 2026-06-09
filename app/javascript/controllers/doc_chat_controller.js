@@ -20,6 +20,9 @@ export default class extends Controller {
   disconnect() {
     this.element.removeEventListener("show.bs.offcanvas", this._onShow)
     this._stopResize()
+    if (this._handle && this._boundStartResize) {
+      this._handle.removeEventListener("mousedown", this._boundStartResize)
+    }
   }
 
   // ——— Lazy-load the chat frame ———
@@ -50,29 +53,42 @@ export default class extends Controller {
     const delta    = this._startX - e.clientX           // drag left → wider
     const maxWidth = window.innerWidth * MAX_RATIO
     const newWidth = Math.min(Math.max(this._startWidth + delta, MIN_WIDTH), maxWidth)
-    this.element.style.width = `${newWidth}px`
+    this._setWidth(newWidth)
   }
 
   _stopResize() {
-    document.removeEventListener("mousemove", this._boundMove)
-    document.removeEventListener("mouseup",   this._boundUp)
+    if (this._boundMove) document.removeEventListener("mousemove", this._boundMove)
+    if (this._boundUp)   document.removeEventListener("mouseup",   this._boundUp)
     document.body.style.userSelect = ""
     document.body.style.cursor     = ""
-    localStorage.setItem(STORAGE_KEY, this.element.offsetWidth)
+    localStorage.setItem(STORAGE_KEY, this._currentWidth())
   }
 
   _restoreWidth() {
     const saved = parseInt(localStorage.getItem(STORAGE_KEY), 10)
-    if (saved && saved >= MIN_WIDTH) this.element.style.width = `${saved}px`
+    if (saved && saved >= MIN_WIDTH) this._setWidth(saved)
   }
 
-  // Injecte la poignée dynamiquement pour ne pas toucher le HTML ERB
+  _setWidth(px) {
+    this.element.style.width = `${px}px`
+    this.element.style.setProperty("--bs-offcanvas-width", `${px}px`)
+  }
+
+  _currentWidth() {
+    return this.element.offsetWidth
+  }
+
+  // Injecte ou réutilise la poignée, et re-bind toujours le listener
+  // (nécessaire après restauration depuis le cache Turbo Drive).
   _injectHandle() {
-    if (this.element.querySelector(".doc-chat-resize-handle")) return
-    const handle = document.createElement("div")
-    handle.className = "doc-chat-resize-handle"
-    handle.setAttribute("aria-hidden", "true")
-    handle.addEventListener("mousedown", this.startResize.bind(this))
-    this.element.prepend(handle)
+    this._handle = this.element.querySelector(".doc-chat-resize-handle")
+    if (!this._handle) {
+      this._handle = document.createElement("div")
+      this._handle.className = "doc-chat-resize-handle"
+      this._handle.setAttribute("aria-hidden", "true")
+      this.element.prepend(this._handle)
+    }
+    this._boundStartResize = this.startResize.bind(this)
+    this._handle.addEventListener("mousedown", this._boundStartResize)
   }
 }
