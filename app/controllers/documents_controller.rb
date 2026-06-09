@@ -3,7 +3,7 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
                 only: %i[show edit update destroy download summarize summary_status chat reset_chat assign_folder]
 
   def index
-    @documents = current_user.documents.where(folder_id: nil)
+    @documents = current_user.documents.order(created_at: :desc)
   end
 
   def new

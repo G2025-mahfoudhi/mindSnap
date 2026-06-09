@@ -41,19 +41,20 @@
 
   // ── Stat cards ────────────────────────────────────────────────────────
   &__stat-card {
-    background: $white;
+    background: #f8f9fa;
     border-radius: 16px;
     padding: 1.5rem;
     height: 100%;
     display: flex;
     align-items: flex-start;
     gap: 1.25rem;
-    border: 1px solid rgba($near-black, .06);
+    border: 1px solid rgba($near-black, .08);
     transition: box-shadow .2s ease, transform .2s ease;
 
     &:hover {
       box-shadow: 0 6px 20px rgba($near-black, .08);
       transform: translateY(-2px);
+      background: #f2f4f6;
     }
 
     &--teal  { border-top: 4px solid $teal; }
