@@ -24,6 +24,11 @@
   background-color: $teal !important;
 }
 
+.dropdown-item.logout-link:hover {
+  background-color: $orange;
+  color: #fff;
+}
+
 // // Dropdown "Fonctionnalités" — headers de section
 // .navbar .dropdown-header {
 //   font-size: .6875rem;

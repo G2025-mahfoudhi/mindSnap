@@ -1,0 +1,66 @@
+.settings-pills {
+  gap: 0.5rem;
+}
+
+.settings-pills .nav-link {
+  border-radius: $border-radius-xxl;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+  color: $gray-600;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.settings-pills .nav-link:hover {
+  color: $teal;
+  background: rgba($teal, 0.08);
+}
+
+.settings-pills .nav-link.active {
+  color: $white;
+  background: $teal;
+  border-color: $teal;
+}
+
+.settings-page__title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: $near-black;
+}
+
+.settings-content {
+  position: relative;
+}
+
+.settings-panel {
+  display: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.settings-panel.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.settings-panel--exiting {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.settings-content .card {
+  border: none;
+  border-radius: $border-radius-lg;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, .06);
+}
+
+.tag-row {
+  transition: background-color 0.15s ease;
+}
+
+.tag-row:hover {
+  background-color: rgba($teal, 0.03);
+}

@@ -1,0 +1,47 @@
+<div class="list-group-item d-flex align-items-center gap-3 tag-row" id="<%= dom_id(tag) %>">
+  <input type="checkbox"
+         class="form-check-input tag-select-checkbox flex-shrink-0"
+         value="<%= tag.id %>"
+         data-settings-tabs-target="tagCheckbox"
+         data-action="change->settings-tabs#updateSelectionCount">
+
+  <div class="flex-grow-1">
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis px-3 py-2 tag-name-display"
+            data-tag-id="<%= tag.id %>">
+        <i class="fa-solid fa-tag me-1"></i>
+        <span class="tag-name-text"><%= tag.name %></span>
+      </span>
+      <span class="text-muted small">
+        <%= tag.respond_to?(:taggings_count) ? tag.taggings_count : tag.taggings.count %> document(s)
+      </span>
+    </div>
+
+    <%= form_with model: tag, url: tag_path(tag), method: :patch,
+          class: "d-none tag-rename-form mt-2",
+          data: { tag_id: tag.id } do |f| %>
+      <div class="input-group input-group-sm" style="max-width: 300px;">
+        <%= f.text_field :name, value: tag.name, class: "form-control form-control-sm" %>
+        <%= f.submit "✓", class: "btn btn-success btn-sm" %>
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                data-action="click->settings-tabs#cancelRename"
+                data-tag-id="<%= tag.id %>">✕</button>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="flex-shrink-0 d-flex gap-1">
+    <button class="btn btn-sm btn-outline-secondary"
+            data-action="click->settings-tabs#startRename"
+            data-tag-id="<%= tag.id %>"
+            title="Renommer">
+      <i class="fa-solid fa-pen"></i>
+    </button>
+    <%= button_to tag_path(tag), method: :delete,
+          class: "btn btn-sm btn-outline-danger",
+          title: "Supprimer",
+          data: { turbo_confirm: "Supprimer le tag '#{tag.name}' ? Cette action est irréversible." } do %>
+      <i class="fa-solid fa-trash"></i>
+    <% end %>
+  </div>
+</div>
