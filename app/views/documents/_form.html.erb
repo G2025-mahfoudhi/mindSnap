@@ -87,6 +87,6 @@
 
   <div class="d-flex gap-2 justify-content-center">
     <%= f.button :submit, "Valider", class: "btn btn-outline-secondary" %>
-    <%= link_to "Annuler", (back_path || (document.folder_id ? folder_path(document.folder_id) : espaces_path)), class: "btn btn-outline-secondary" %>
+    <%= link_to "Annuler", (local_assigns[:back_path] || (document.folder_id ? folder_path(document.folder_id) : espaces_path)), class: "btn btn-outline-secondary" %>
   </div>
 <% end %>
