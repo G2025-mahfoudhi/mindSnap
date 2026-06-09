@@ -1,68 +1,94 @@
 .dashboard {
-  padding: 3rem 0 5rem;
+  padding: 2.5rem 0 5rem;
 
+  // ── Greeting ──────────────────────────────────────────────────────────
   &__greeting {
+    background: linear-gradient(135deg, $teal-dark 0%, $teal 100%);
+    border-radius: 20px;
+    padding: 2rem 2.5rem;
     margin-bottom: 2.5rem;
+    color: $white;
+  }
+
+  &__greeting-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
     h1 {
-      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-size: clamp(1.5rem, 3.5vw, 2.2rem);
       font-weight: 800;
-      color: $near-black;
+      color: $white;
       margin-bottom: .25rem;
     }
   }
 
   &__name {
-    color: $teal;
+    color: rgba($white, .9);
   }
 
   &__date {
-    color: rgba($near-black, .5);
+    color: rgba($white, .7);
     font-size: .95rem;
     margin: 0;
   }
 
+  &__greeting-icon {
+    font-size: 3rem;
+    color: rgba($white, .25);
+    line-height: 1;
+  }
+
+  // ── Stat cards ────────────────────────────────────────────────────────
   &__stat-card {
     background: $white;
-    border: 1px solid rgba($near-black, .08);
     border-radius: 16px;
     padding: 1.5rem;
     height: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    border: 1px solid rgba($near-black, .06);
+    transition: box-shadow .2s ease, transform .2s ease;
 
     &:hover {
-      box-shadow: 0 4px 16px rgba($near-black, .08);
+      box-shadow: 0 6px 20px rgba($near-black, .08);
+      transform: translateY(-2px);
     }
+
+    &--teal  { border-top: 4px solid $teal; }
+    &--blue  { border-top: 4px solid #0d6efd; }
+    &--purple { border-top: 4px solid #7c3aed; }
   }
 
-  &__stat-header {
+  &__stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
-    margin-bottom: .75rem;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+
+    .dashboard__stat-card--teal  & { background: rgba($teal, .1);    color: $teal; }
+    .dashboard__stat-card--blue  & { background: rgba(#0d6efd, .1);  color: #0d6efd; }
+    .dashboard__stat-card--purple & { background: rgba(#7c3aed, .1); color: #7c3aed; }
   }
 
-  &__pro-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: .3rem;
-    font-size: .75rem;
-    font-weight: 700;
-    color: $white;
-    background: linear-gradient(135deg, #f59e0b, #f97316);
-    padding: .2rem .6rem;
-    border-radius: 20px;
-    text-decoration: none;
-    letter-spacing: .03em;
-    transition: opacity .15s ease;
-
-    &:hover { opacity: .85; color: $white; }
+  &__stat-content {
+    flex: 1;
+    min-width: 0;
   }
 
   &__stat-label {
-    font-size: .85rem;
+    font-size: .8rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: .05em;
-    color: rgba($near-black, .5);
+    letter-spacing: .06em;
+    color: rgba($near-black, .45);
+    display: block;
+    margin-bottom: .4rem;
   }
 
   &__stat-body {
@@ -72,17 +98,42 @@
   }
 
   &__stat-number {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     font-weight: 800;
     color: $near-black;
     line-height: 1;
   }
 
   &__stat-max {
-    font-size: 1rem;
+    font-size: .95rem;
     color: rgba($near-black, .4);
   }
 
+  &__plan-label {
+    font-size: .78rem;
+    font-weight: 700;
+    color: $teal;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+  }
+
+  &__pro-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    color: $white;
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    border-radius: 50%;
+    text-decoration: none;
+    transition: opacity .15s ease, transform .15s ease;
+    font-size: .75rem;
+
+    &:hover { opacity: .85; color: $white; transform: scale(1.1); }
+  }
+
+  // ── Section documents récents ─────────────────────────────────────────
   &__section {
     margin-top: 1rem;
   }
@@ -92,12 +143,14 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 1.25rem;
+    padding-bottom: .75rem;
+    border-bottom: 2px solid rgba($teal, .15);
   }
 
   &__section-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: $near-black;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: $teal-dark;
     margin: 0;
   }
 
@@ -115,28 +168,17 @@
     align-items: center;
     gap: 1rem;
     padding: 1rem 1.25rem;
-    background: $white;
-    border: 1px solid rgba($near-black, .08);
+    background: linear-gradient(135deg, #fff 60%, rgba($teal, .04) 100%);
+    border: 1px solid rgba($teal, .18);
+    border-left: 4px solid $teal;
     border-radius: 12px;
     text-decoration: none;
     transition: box-shadow .15s ease, transform .15s ease;
 
     &:hover {
-      box-shadow: 0 4px 12px rgba($near-black, .08);
+      box-shadow: 0 6px 18px rgba($teal, .12);
       transform: translateY(-2px);
     }
-  }
-
-  &__doc-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: rgba($teal, .1);
-    color: $teal;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
   }
 
   &__doc-title {
@@ -151,9 +193,12 @@
 
   &__doc-date {
     font-size: .8rem;
-    color: rgba($near-black, .45);
+    color: $teal;
+    font-weight: 500;
     margin: 0;
   }
+
+  // ── Pricing modal ────────────────────────────────────────────────────
 
   &__empty {
     text-align: center;
@@ -161,5 +206,98 @@
     color: rgba($near-black, .4);
     border: 1px dashed rgba($near-black, .15);
     border-radius: 12px;
+  }
+}
+
+// ── Pricing cards ──────────────────────────────────────────────────────
+.pricing-card {
+  border: 1px solid rgba($near-black, .1);
+  border-radius: 16px;
+  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  transition: box-shadow .2s ease;
+
+  &:hover { box-shadow: 0 6px 20px rgba($near-black, .08); }
+
+  &--featured {
+    border: 2px solid $teal;
+    background: linear-gradient(160deg, #fff 60%, rgba($teal, .04) 100%);
+    box-shadow: 0 4px 20px rgba($teal, .12);
+  }
+
+  &--business {
+    border: 2px solid #1a1a2e;
+    background: linear-gradient(160deg, #fff 60%, rgba(#1a1a2e, .03) 100%);
+  }
+
+  &--current {
+    box-shadow: 0 0 0 3px rgba($teal, .25);
+  }
+
+  &__header { text-align: center; }
+
+  &__badge {
+    display: inline-block;
+    font-size: .7rem;
+    font-weight: 700;
+    padding: .2rem .7rem;
+    border-radius: 20px;
+    background: rgba($near-black, .07);
+    color: rgba($near-black, .5);
+    margin-bottom: .5rem;
+
+    &--pro      { background: rgba($teal, .12);     color: $teal; }
+    &--business { background: rgba(#1a1a2e, .08);  color: #1a1a2e; }
+    &--current  { background: rgba($teal, .12);     color: $teal; font-weight: 700; }
+  }
+
+  &__name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: $near-black;
+    margin-bottom: .5rem;
+  }
+
+  &__price {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: .25rem;
+  }
+
+  &__amount {
+    font-size: 2rem;
+    font-weight: 800;
+    color: $near-black;
+  }
+
+  &__period {
+    font-size: .85rem;
+    color: rgba($near-black, .45);
+  }
+
+  &__desc {
+    font-size: .8rem;
+    color: rgba($near-black, .45);
+    margin: .25rem 0 0;
+  }
+
+  &__features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+    font-size: .875rem;
+
+    li {
+      padding: .35rem 0;
+      border-bottom: 1px solid rgba($near-black, .05);
+
+      &:last-child { border-bottom: none; }
+      &.text-muted { color: rgba($near-black, .35) !important; }
+    }
   }
 }
