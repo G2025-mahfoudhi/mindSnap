@@ -159,11 +159,13 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
                  .last(18)
   end
 
-  def system_prompt
-    user      = @conversation.user
-    all_docs  = user.documents.includes(:folder).order(:created_at)
-    doc_list  = all_docs.map { |d| format_doc_entry(d) }.join("\n")
-    user_name = user.first_name.presence || user.email.split("@").first
+  def system_prompt # rubocop:disable Metrics/MethodLength,Metrics/PerceivedComplexity
+    user        = @conversation.user
+    all_docs    = user.documents.includes(:folder).order(:created_at)
+    all_folders = user.folders.includes(:parent).order(:name)
+    doc_list    = all_docs.map { |d| format_doc_entry(d) }.join("\n")
+    folder_tree = format_folder_tree(all_folders)
+    user_name   = user.first_name.presence || user.email.split("@").first
 
     focused_doc_section = focused_document_section
 
@@ -174,6 +176,9 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
       #{focused_doc_section}
       ## Inventaire complet (#{all_docs.size} document#{'s' if all_docs.size > 1})
       #{doc_list.presence || "Aucun document dans l'espace."}
+
+      ## Dossiers disponibles (#{all_folders.size} dossier#{'s' if all_folders.size > 1})
+      #{folder_tree.presence || 'Aucun dossier créé.'}
 
       ## Contenu pertinent pour cette question
       #{@rag_context.presence || 'Aucun contenu pertinent trouvé pour cette question.'}
@@ -188,6 +193,7 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
       7. Utilise le Markdown pour structurer tes réponses (titres `##`, listes `-`, **gras**) dès que cela améliore la lisibilité.
       8. Si une question est ambiguë, reformule ta compréhension en une phrase avant de répondre.
       9. En fin de réponse complexe, propose 1 à 2 questions de suivi pertinentes pour approfondir le sujet.
+      10. Si un document discuté n'a pas encore de dossier et que des dossiers sont disponibles, suggère en fin de réponse le dossier le plus pertinent parmi ceux listés ci-dessus (format exact : 📁 *Dossier suggéré : NomDossier*).
     PROMPT
   end
 
@@ -213,6 +219,12 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
     summary_info = doc.summary.present? ? "\n  Résumé : #{doc.summary.truncate(200)}" : ""
     content_info = doc.content.present? && doc.summary.blank? ? "\n  Contenu : #{doc.content.truncate(300)}" : ""
     "- #{doc.title} [#{doc.document_type}]#{folder_info}#{summary_info}#{content_info}"
+  end
+
+  def format_folder_tree(folders)
+    folders.map do |f|
+      f.parent ? "  └─ #{f.name} (dans #{f.parent.name})" : "- #{f.name}"
+    end.join("\n")
   end
 
   # Construit le contexte documentaire via RAG (Phase 2).

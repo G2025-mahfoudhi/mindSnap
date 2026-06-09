@@ -1,0 +1,31 @@
+// ——— Drag-and-drop document classification ———
+
+// Draggable document elements
+[data-document-id][draggable="true"] {
+  cursor: grab;
+
+  &:active { cursor: grabbing; }
+}
+
+.doc-dragging {
+  opacity: 0.45;
+  cursor: grabbing !important;
+  transform: scale(0.97);
+  transition: none;
+}
+
+// Drop target — folder card (espaces grid)
+.card.doc-drop-target {
+  border: 2px dashed #3d7f7e !important;
+  background-color: rgba(61, 127, 126, 0.06) !important;
+  box-shadow: 0 0 0 3px rgba(61, 127, 126, 0.18) !important;
+  transition: box-shadow 0.12s ease;
+}
+
+// Drop target — folder node in sidebar (highlight header only)
+.folder-node.doc-drop-target > .folder-node__header {
+  background-color: rgba(61, 127, 126, 0.1);
+  border-radius: 5px;
+  outline: 1.5px dashed #3d7f7e;
+  outline-offset: -1px;
+}
