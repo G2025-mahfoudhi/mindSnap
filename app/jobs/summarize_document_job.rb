@@ -62,30 +62,51 @@ class SummarizeDocumentJob < ApplicationJob
     folder_instruction = build_folder_instruction(document)
     extracted_count = document.content.to_s.scan(/\[Fichier \d+/).size
     extracted_count = 1 if extracted_count.zero? && document.content.present?
+    length = document.user.summary_length
 
     <<~PROMPT
-      #{summary_instructions(extracted_count)}
+      #{summary_instructions(extracted_count, length)}
       #{folder_instruction}
       Contenu :
       #{document.content.truncate(extracted_count * 4_000)}
     PROMPT
   end
 
-  def summary_instructions(file_count) # rubocop:disable Metrics/MethodLength
+  def summary_instructions(file_count, length = "medium") # rubocop:disable Metrics/MethodLength
     if file_count > 1
+      per_file = case length
+                 when "short"   then "1 phrase par fichier"
+                 when "detailed" then "3 à 4 phrases par fichier"
+                 else                 "1 à 2 phrases par fichier"
+                 end
       <<~INST.strip
         Ce document regroupe #{file_count} fichiers attachés.
         Rédige un résumé structuré en deux parties :
         1. Une synthèse globale en 1 phrase.
-        2. Pour chaque fichier (identifié entre crochets dans le contenu), 1 à 2 phrases résumant son contenu essentiel — sur une seule ligne, sans saut de ligne après le titre, format strict : **Fichier N – nomfichier :** résumé ici.
+        2. Pour chaque fichier (identifié entre crochets dans le contenu), #{per_file} résumant son contenu essentiel — sur une seule ligne, sans saut de ligne après le titre, format strict : **Fichier N – nomfichier :** résumé ici.
         Sois factuel. Ne commence pas par "Ce document" ou "L'auteur".
       INST
     else
-      <<~INST.strip
-        Résume le document suivant en 3 phrases maximum.
-        Sois concis et factuel. Ne commence pas par "Ce document..."
-        ou "L'auteur...". Va directement au contenu essentiel.
-      INST
+      case length
+      when "short"
+        <<~INST.strip
+          Résume le document suivant en 3 phrases maximum.
+          Sois concis et factuel. Ne commence pas par "Ce document..."
+          ou "L'auteur...". Va directement au contenu essentiel.
+        INST
+      when "detailed"
+        <<~INST.strip
+          Résume le document suivant en 2 à 3 paragraphes détaillés.
+          Sois factuel et structuré. Ne commence pas par "Ce document..."
+          ou "L'auteur...". Couvre les points essentiels en profondeur.
+        INST
+      else
+        <<~INST.strip
+          Résume le document suivant en 5 à 6 phrases.
+          Sois concis et factuel. Ne commence pas par "Ce document..."
+          ou "L'auteur...". Va directement au contenu essentiel.
+        INST
+      end
     end
   end
 

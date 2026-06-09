@@ -34,7 +34,7 @@ class EmbedDocumentJob < ApplicationJob
 
     document.update!(embedding_status: "completed")
 
-    TagDocumentJob.perform_later(document_id)
+    TagDocumentJob.perform_later(document_id) if document.user.auto_tagging?
   rescue ActiveRecord::RecordNotFound
     Rails.logger.warn "EmbedDocumentJob: document #{document_id} introuvable"
   rescue StandardError => e

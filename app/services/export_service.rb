@@ -49,8 +49,10 @@ class ExportService
   private
 
   def documents_for_tags(tags)
-    Document.where(id: Tagging.where(tag: tags).select(:taggable_id).distinct)
-            .where(taggable_type: "Document")
+    Document.joins(:taggings)
+            .where(taggings: { tag: tags })
+            .where(user: @user)
+            .distinct
             .includes(:tags, :folder)
   end
 
@@ -139,7 +141,7 @@ class ExportService
   end
 
   def attach_doc_files(zio, doc, prefix)
-    doc.files.each do |file|
+    doc.file.each do |file|
       next unless file.attached?
 
       ext = File.extname(file.filename.to_s).presence || ".bin"

@@ -48,6 +48,7 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     sign_in @user
     patch settings_path, params: {
       user: {
+        _tab: "profile",
         first_name: "Jean",
         last_name: "Dupont"
       }

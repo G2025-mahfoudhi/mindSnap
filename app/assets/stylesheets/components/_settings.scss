@@ -29,26 +29,19 @@
   color: $near-black;
 }
 
-.settings-content {
-  position: relative;
-}
-
 .settings-panel {
-  display: none;
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  animation: settingsFadeIn 0.25s ease;
 }
 
-.settings-panel.active {
-  display: block;
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.settings-panel--exiting {
-  opacity: 0;
-  transform: translateY(-8px);
+@keyframes settingsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .settings-content .card {
@@ -63,4 +56,8 @@
 
 .tag-row:hover {
   background-color: rgba($teal, 0.03);
+}
+
+.tag-row.hidden-by-filter {
+  display: none;
 }

@@ -6,11 +6,12 @@ class SettingsController < ApplicationController
   end
 
   def update
+    tab = params[:user]&.delete(:_tab)&.to_sym || :preferences
     if @user.update(user_preferences_params)
-      tab = params[:user][:first_name].present? || params[:user][:avatar].present? ? :profile : :preferences
       redirect_to settings_path(tab: tab), notice: "Modifications enregistrées."
     else
-      @tags = @user.tags.includes(:taggings).order(:name)
+      @tags = load_tags_with_counts
+      params[:tab] = tab.to_s
       render :show, status: :unprocessable_entity
     end
   end
@@ -66,11 +67,15 @@ class SettingsController < ApplicationController
   end
 
   def set_tags
-    @tags = @user.tags
-                 .left_joins(:taggings)
-                 .group(:id)
-                 .select("tags.*, COUNT(taggings.id) AS taggings_count")
-                 .order(:name)
+    @tags = load_tags_with_counts
+  end
+
+  def load_tags_with_counts
+    @user.tags
+         .left_joins(:taggings)
+         .group(:id)
+         .select("tags.*, COUNT(taggings.id) AS taggings_count")
+         .order(:name)
   end
 
   def user_preferences_params

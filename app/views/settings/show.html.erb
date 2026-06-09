@@ -1,7 +1,7 @@
 <% content_for :title, "Paramètres — MindSnap" %>
 <% active_tab = params[:tab]&.to_sym || :preferences %>
 
-<div class="settings-page" data-controller="settings-tabs" data-settings-tabs-active-value="<%= active_tab %>">
+<div class="settings-page" data-controller="settings-tabs">
   <div class="container py-4">
     <h1 class="settings-page__title text-center mb-4">Paramètres</h1>
 
@@ -12,30 +12,17 @@
       <%= settings_tab :data, "Mes données", active_tab %>
     </ul>
 
-    <div class="settings-content">
-      <div class="settings-panel <%= 'active' if active_tab == :profile %>"
-           data-settings-tabs-target="panel"
-           data-tab="profile">
+    <div class="settings-content settings-panel">
+      <% case active_tab
+         when :profile %>
         <%= render "profile", user: @user %>
-      </div>
-
-      <div class="settings-panel <%= 'active' if active_tab == :preferences %>"
-           data-settings-tabs-target="panel"
-           data-tab="preferences">
+      <% when :preferences %>
         <%= render "preferences", user: @user %>
-      </div>
-
-      <div class="settings-panel <%= 'active' if active_tab == :tags %>"
-           data-settings-tabs-target="panel"
-           data-tab="tags">
+      <% when :tags %>
         <%= render "tags", tags: @tags %>
-      </div>
-
-      <div class="settings-panel <%= 'active' if active_tab == :data %>"
-           data-settings-tabs-target="panel"
-           data-tab="data">
+      <% when :data %>
         <%= render "data", user: @user, tags: @tags %>
-      </div>
+      <% end %>
     </div>
   </div>
 </div>

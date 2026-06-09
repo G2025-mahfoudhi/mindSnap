@@ -6,14 +6,18 @@ class TagsController < ApplicationController
       respond_to do |format|
         format.html { redirect_to settings_path(tab: :tags), notice: "Tag renommé." }
         format.turbo_stream
+        format.json { render json: { status: "ok" } }
       end
     else
       respond_to do |format|
         format.html { redirect_to settings_path(tab: :tags), alert: @tag.errors.full_messages.to_sentence }
         format.turbo_stream do
-          render turbo_stream: turbo_stream.replace(@tag, partial: "settings/tag_row", locals: { tag: @tag.reload }),
+          render turbo_stream: turbo_stream.replace(@tag,
+                   partial: "settings/tag_row",
+                   locals: { tag: @tag.reload, show_rename_form: true }),
                  status: :unprocessable_entity
         end
+        format.json { render json: { errors: @tag.errors.full_messages }, status: :unprocessable_entity }
       end
     end
   end
@@ -23,6 +27,7 @@ class TagsController < ApplicationController
     respond_to do |format|
       format.html { redirect_to settings_path(tab: :tags), notice: "Tag supprimé." }
       format.turbo_stream
+      format.json { render json: { status: "ok" } }
     end
   end
 

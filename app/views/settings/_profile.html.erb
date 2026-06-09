@@ -5,6 +5,7 @@
         <h5 class="card-title mb-4">Photo de profil</h5>
 
         <%= simple_form_for user, url: settings_path, method: :put, html: { multipart: true } do |f| %>
+          <%= f.hidden_field :_tab, value: "profile" %>
           <div class="d-flex align-items-center gap-4 mb-4">
             <div class="position-relative">
               <div class="rounded-circle overflow-hidden border border-2"

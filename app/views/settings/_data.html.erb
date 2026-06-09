@@ -7,18 +7,22 @@
         <p class="text-muted">Télécharge l'ensemble de tes documents et conversations.</p>
 
         <div class="d-flex gap-2">
-          <%= link_to "Exporter en JSON",
-              export_settings_path(export_format: :json),
+          <%= button_to "Exporter en JSON",
+              export_settings_path,
               method: :post,
+              params: { export_format: "json" },
               class: "btn btn-primary",
+              form: { data: { turbo: false } },
               data: {
                 bs_toggle: "tooltip",
                 bs_title: "Format idéal pour donner à une IA — inclut toutes les métadonnées"
               } %>
-          <%= link_to "Exporter en Markdown",
-              export_settings_path(export_format: :markdown),
+          <%= button_to "Exporter en Markdown",
+              export_settings_path,
               method: :post,
+              params: { export_format: "markdown" },
               class: "btn btn-outline-primary",
+              form: { data: { turbo: false } },
               data: {
                 bs_toggle: "tooltip",
                 bs_title: "Format idéal pour lire — inclut les pièces jointes"
@@ -31,6 +35,9 @@
       <div class="card-body p-4">
         <h5 class="card-title mb-4">Export par tags</h5>
         <p class="text-muted">Sélectionne des tags dans l'onglet "Mes tags" pour exporter les documents associés.</p>
+        <div class="mt-2">
+          <%= link_to "Aller dans Mes tags", settings_path(tab: :tags), class: "btn btn-outline-primary btn-sm" %>
+        </div>
       </div>
     </div>
 

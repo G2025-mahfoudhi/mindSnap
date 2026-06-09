@@ -5,6 +5,7 @@
         <h5 class="card-title mb-4">Préférences de l'IA</h5>
 
         <%= simple_form_for user, url: settings_path, method: :put, html: { class: "needs-validation" } do |f| %>
+          <%= f.hidden_field :_tab, value: "preferences" %>
 
           <div class="mb-4">
             <%= f.label :preferred_language, "Langue de l'IA", class: "form-label fw-semibold" %>
@@ -39,25 +40,13 @@
             <%= f.label :tts_voice, "Voix par défaut", class: "form-label fw-semibold" %>
             <%= f.select :tts_voice,
                 [
-                  ["ff_siwis — Français (F)", "ff_siwis"],
-                  ["af_heart — Anglais US (F)", "af_heart"],
-                  ["af_bella — Anglais US (F)", "af_bella"],
-                  ["am_michael — Anglais US (H)", "am_michael"],
-                  ["bf_emma — Anglais UK (F)", "bf_emma"],
-                  ["bm_george — Anglais UK (H)", "bm_george"]
+                  ["Siwis (Français - Femme)", "ff_siwis"],
+                  ["Heart (Anglais US - Femme)", "af_heart"],
+                  ["Bella (Anglais US - Femme)", "af_bella"],
+                  ["Michael (Anglais US - Homme)", "am_michael"],
+                  ["Emma (Anglais UK - Femme)", "bf_emma"],
+                  ["George (Anglais UK - Homme)", "bm_george"]
                 ],
-                {},
-                class: "form-select" %>
-          </div>
-
-          <hr class="my-4">
-
-          <h5 class="card-title mb-4">Affichage</h5>
-
-          <div class="mb-4">
-            <%= f.label :default_view, "Vue par défaut du dashboard", class: "form-label fw-semibold" %>
-            <%= f.select :default_view,
-                [["Grille", "grid"], ["Liste", "list"]],
                 {},
                 class: "form-select" %>
           </div>

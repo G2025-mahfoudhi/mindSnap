@@ -1,52 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["panel", "pill", "tagCheckbox", "selectAllLabel", "selectionCount"]
+  static targets = ["tagCheckbox", "selectAllLabel", "selectionCount", "renameInput"]
   static values = { active: String }
 
   connect() {
     this.initTooltips()
-  }
-
-  switch(event) {
-    event.preventDefault()
-    const tab = event.currentTarget.dataset.tab
-    if (!tab) return
-
-    const currentPanel = this.element.querySelector(".settings-panel.active")
-    const nextPanel = this.element.querySelector(`.settings-panel[data-tab="${tab}"]`)
-    if (!nextPanel || currentPanel === nextPanel) return
-
-    this.updatePills(tab)
-    this.transition(currentPanel, nextPanel)
-    window.history.replaceState({}, "", `${window.location.pathname}?tab=${tab}`)
-  }
-
-  updatePills(activeTab) {
-    this.pillTargets.forEach((pill) => {
-      pill.classList.toggle("active", pill.dataset.tab === activeTab)
-    })
-  }
-
-  transition(from, to) {
-    if (!from) {
-      to.classList.add("active")
-      return
-    }
-
-    from.classList.add("settings-panel--exiting")
-    from.addEventListener("transitionend", () => {
-      from.classList.remove("active", "settings-panel--exiting")
-      to.classList.add("active")
-    }, { once: true })
-  }
-
-  initTooltips() {
-    if (typeof bootstrap !== "undefined") {
-      this.element.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
-        new bootstrap.Tooltip(el)
-      })
-    }
+    document.addEventListener("turbo:render", () => this.initTooltips())
   }
 
   updateSelectionCount() {
@@ -57,6 +17,7 @@ export default class extends Controller {
     }
     if (this.hasSelectAllLabelTarget) {
       const allChecked = checked.length === this.tagCheckboxTargets.length
+        && this.tagCheckboxTargets.length > 0
       this.selectAllLabelTarget.textContent = allChecked ? "Tout désélectionner" : "Tout sélectionner"
     }
   }
@@ -67,58 +28,113 @@ export default class extends Controller {
     this.updateSelectionCount()
   }
 
-  exportByTags(event) {
-    const format = event.currentTarget.dataset.settingsTabsFormatParam
-    const checked = this.tagCheckboxTargets.filter((cb) => cb.checked)
-    if (checked.length === 0) {
-      alert("Sélectionne au moins un tag à exporter.")
-      return
-    }
-    const tagIds = checked.map((cb) => cb.value)
-    const params = new URLSearchParams()
-    tagIds.forEach((id) => params.append("tag_ids[]", id))
-    params.append("export_format", format)
+  filterTags(event) {
+    const rawQuery = event.currentTarget.value.toLowerCase().trim()
+    const query = rawQuery.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
 
-    const form = document.createElement("form")
-    form.method = "POST"
-    form.action = "/settings/export_by_tags"
-    form.style.display = "none"
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
-    if (csrfToken) {
-      const csrfInput = document.createElement("input")
-      csrfInput.type = "hidden"
-      csrfInput.name = "authenticity_token"
-      csrfInput.value = csrfToken
-      form.appendChild(csrfInput)
-    }
-    params.forEach((value, key) => {
-      const input = document.createElement("input")
-      input.type = "hidden"
-      input.name = key
-      input.value = value
-      form.appendChild(input)
+    const list = this.element.querySelector("#tags_list")
+    if (!list) return
+
+    const rows = Array.from(list.querySelectorAll(".tag-row"))
+    const scored = rows.map((row) => {
+      const rawName = (row.dataset.tagName || "").toLowerCase()
+      const name = rawName.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      const idx = name.indexOf(query)
+      let score = -1
+      if (query.length > 0 && idx !== -1) {
+        score = Math.round(((query.length / name.length) * 50) + ((name.length - idx) / name.length * 50))
+      }
+      return { row, score, name }
     })
-    document.body.appendChild(form)
-    form.submit()
-    form.remove()
+
+    if (query.length === 0) {
+      scored.sort((a, b) => a.name.localeCompare(b.name))
+      scored.forEach(({ row }) => {
+        row.classList.remove("hidden-by-filter")
+      })
+    } else {
+      scored.sort((a, b) => b.score - a.score)
+      scored.forEach(({ row, score }) => {
+        row.classList.toggle("hidden-by-filter", score < 0)
+      })
+    }
+    scored.forEach(({ row }) => list.appendChild(row))
   }
 
   startRename(event) {
     const tagId = event.currentTarget.dataset.tagId
     const display = this.element.querySelector(`.tag-name-display[data-tag-id="${tagId}"]`)
-    const form = this.element.querySelector(`.tag-rename-form[data-tag-id="${tagId}"]`)
+    const renameForm = this.element.querySelector(`.tag-rename-form[data-tag-id="${tagId}"]`)
+    const errorEl = this.element.querySelector(`.tag-rename-error[data-tag-id="${tagId}"]`)
     if (display) display.classList.add("d-none")
-    if (form) {
-      form.classList.remove("d-none")
-      form.querySelector("input[type=text]")?.focus()
+    if (errorEl) errorEl.classList.add("d-none")
+    if (renameForm) {
+      renameForm.classList.remove("d-none")
+      renameForm.querySelector("input[type=text]")?.focus()
     }
   }
 
   cancelRename(event) {
     const tagId = event.currentTarget.dataset.tagId
     const display = this.element.querySelector(`.tag-name-display[data-tag-id="${tagId}"]`)
-    const form = this.element.querySelector(`.tag-rename-form[data-tag-id="${tagId}"]`)
+    const renameForm = this.element.querySelector(`.tag-rename-form[data-tag-id="${tagId}"]`)
+    const errorEl = this.element.querySelector(`.tag-rename-error[data-tag-id="${tagId}"]`)
     if (display) display.classList.remove("d-none")
-    if (form) form.classList.add("d-none")
+    if (renameForm) renameForm.classList.add("d-none")
+    if (errorEl) errorEl.classList.add("d-none")
+  }
+
+  async submitRename(event) {
+    const tagId = event.currentTarget.dataset.tagId
+    const input = this.element.querySelector(`input[data-tag-id="${tagId}"]`)
+    const errorEl = this.element.querySelector(`.tag-rename-error[data-tag-id="${tagId}"]`)
+    if (!input) return
+
+    const newName = input.value.trim()
+    if (!newName) {
+      if (errorEl) {
+        errorEl.textContent = "Le nom ne peut pas être vide."
+        errorEl.classList.remove("d-none")
+      }
+      return
+    }
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || ""
+    try {
+      const response = await fetch(`/tags/${tagId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken,
+          "Accept": "text/vnd.turbo-stream.html"
+        },
+        body: JSON.stringify({ tag: { name: newName } })
+      })
+
+      if (response.ok) {
+        const html = await response.text()
+        Turbo.renderStreamMessage(html)
+      } else if (response.status === 422) {
+        const data = await response.json()
+        if (errorEl) {
+          errorEl.textContent = data.errors?.join(", ") || "Erreur de validation."
+          errorEl.classList.remove("d-none")
+        }
+      }
+    } catch (err) {
+      console.error("Rename failed:", err)
+      if (errorEl) {
+        errorEl.textContent = "Erreur réseau. Réessaie."
+        errorEl.classList.remove("d-none")
+      }
+    }
+  }
+
+  initTooltips() {
+    if (typeof bootstrap !== "undefined") {
+      this.element.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
+        new bootstrap.Tooltip(el)
+      })
+    }
   }
 }
