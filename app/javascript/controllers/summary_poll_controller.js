@@ -49,10 +49,16 @@ export default class extends Controller {
       if (data.summary) {
         this.updateContent(data.summary)
         this.stopPolling()
+        if (data.content_present) this.revealDocSection()
       }
     } catch {
       // réseau ou parse — on réessaie au prochain tick
     }
+  }
+
+  revealDocSection() {
+    const section = document.getElementById("doc-content-section")
+    if (section) section.classList.remove("d-none")
   }
 
   updateContent(text) {

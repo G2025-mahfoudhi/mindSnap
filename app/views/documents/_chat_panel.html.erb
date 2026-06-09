@@ -26,7 +26,7 @@
                           style: "resize: none;",
                           data: {
                             controller: "textarea-autoresize",
-                            action: "input->textarea-autoresize#resize"
+                            action: "input->textarea-autoresize#resize keydown->textarea-autoresize#submitOnEnter"
                           } %>
           <%= f.submit "Envoyer", class: "btn btn-primary px-3 flex-shrink-0" %>
         </div>

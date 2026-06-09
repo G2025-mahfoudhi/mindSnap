@@ -1,0 +1,7 @@
+<div class="d-flex align-items-center gap-3 my-3 px-2">
+  <hr class="flex-grow-1 my-0" style="border-color: rgba(0,0,0,.12);">
+  <span class="text-muted flex-shrink-0" style="font-size: 0.72rem;">
+    <%= date == Date.today ? "Aujourd'hui" : date == Date.yesterday ? "Hier" : l(date, format: :long) %>
+  </span>
+  <hr class="flex-grow-1 my-0" style="border-color: rgba(0,0,0,.12);">
+</div>
