@@ -38,6 +38,8 @@
       <%# Documents du dossier %>
       <% folder.documents.each do |doc| %>
         <%= link_to document_path(doc),
+                    draggable: "true",
+                    data: { document_id: doc.id },
                     class: "d-flex align-items-center gap-2 py-1 rounded text-decoration-none small #{doc == current_document ? 'fw-semibold sidebar-doc-active' : 'sidebar-doc-item'}",
                     style: "padding-left: #{0.5 + (depth + 1) * 1.0}rem; padding-right: 0.5rem;" do %>
           <i class="fa-solid fa-file-lines fa-xs" style="color: #3d7f7e; flex-shrink: 0;" aria-hidden="true"></i>
