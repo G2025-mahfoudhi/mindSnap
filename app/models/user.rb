@@ -2,7 +2,9 @@ class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+         :recoverable, :rememberable, :validatable,
+         # for Google OmniAuth
+         :omniauthable, omniauth_providers:[:google_oauth2]
 
   has_one_attached :avatar
 
@@ -16,18 +18,21 @@ class User < ApplicationRecord
   # validates :last_name, presence: true
   # validates :email, uniqueness: { scope: :password }
 
-  devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable,
-         # for Google OmniAuth
-         :omniauthable, omniauth_providers:[:google_oauth2]
-
   def self.from_omniauth(auth)
-    where(provider: auth.provider, uid: auth.uid).first_or_initialize do |user|
-      user.email      = auth.info.email
-      user.first_name = auth.info.first_name
-      user.last_name  = auth.info.last_name
-      user.password   = Devise.friendly_token[0, 20]
-      # goo_avatar = auth.info.image
+    user = where(provider: auth.provider, uid: auth.uid).first_or_initialize do |u|
+      u.email      = auth.info.email
+      u.first_name = auth.info.first_name
+      u.last_name  = auth.info.last_name
+      u.password   = Devise.friendly_token[0, 20]
     end
+    user.save
+    user.attach_google_avatar(auth.info.image) if !user.avatar.attached? && auth.info.image.present?
+    user
+  end
+
+  def attach_google_avatar(url)
+    require "open-uri"
+    file = URI.parse(url).open
+    avatar.attach(io: file, filename: "avatar.jpg", content_type: "image/jpeg")
   end
 end
