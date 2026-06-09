@@ -1,4 +1,12 @@
 module ApplicationHelper
+  def asset_exists?(path)
+    if Rails.application.config.assets.compile
+      Rails.application.assets&.find_asset(path).present?
+    else
+      Rails.application.assets_manifest.assets[path].present?
+    end
+  end
+
   def avatar_url(attachment)
     return nil unless attachment.attached? && attachment.blob.persisted?
 
