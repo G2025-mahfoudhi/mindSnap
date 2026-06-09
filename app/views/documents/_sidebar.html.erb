@@ -1,6 +1,6 @@
 <aside class="border-end d-flex flex-column"
         style="width: 260px; min-width: 260px; background: #f7f5f4; overflow: hidden; padding-bottom: var(--footer-height);"
-        data-controller="sidebar-tree"
+        data-controller="sidebar-tree doc-drop"
         data-sidebar-tree-open-class="is-open"
         data-sidebar-tree-storage-key-value="mindsnap_sidebar_v1">
 
@@ -74,6 +74,8 @@
              data-sidebar-tree-target="children">
           <% documents_without_folder.each do |doc| %>
             <%= link_to document_path(doc),
+                        draggable: "true",
+                        data: { document_id: doc.id },
                         class: "d-flex align-items-center gap-2 py-1 rounded text-decoration-none small #{doc == current_document ? 'fw-semibold sidebar-doc-active' : 'sidebar-doc-item'}",
                         style: "padding-left: 1.75rem; padding-right: 0.5rem;" do %>
               <i class="fa-solid fa-file-lines fa-xs" style="color: #3d7f7e; flex-shrink: 0;" aria-hidden="true"></i>

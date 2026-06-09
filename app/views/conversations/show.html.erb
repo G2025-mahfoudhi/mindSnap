@@ -8,9 +8,13 @@
   <div class="d-flex flex-column flex-grow-1 overflow-hidden"
        data-controller="voice"
        data-voice-auto-submit-value="true">
+    <% suggest_doc_id = @suggest_document&.folder_id.blank? ? @suggest_document&.id.to_i : 0 %>
+    <% suggest_folders_json = (@suggest_folders || []).map { |f| { id: f.id, name: f.name } }.to_json %>
     <div id="messages"
          class="flex-grow-1 overflow-auto p-4"
-         data-controller="chat-scroll"
+         data-controller="chat-scroll folder-suggest"
+         data-folder-suggest-document-id-value="<%= suggest_doc_id %>"
+         data-folder-suggest-folders-value="<%= suggest_folders_json %>"
          role="log"
          aria-label="Historique des messages"
          aria-live="polite"
