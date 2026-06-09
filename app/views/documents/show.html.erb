@@ -3,6 +3,7 @@
 <% content_for :main_style, "height: calc(100vh - 56px); overflow: hidden;" %>
 
 <%= turbo_stream_from @doc_chat_conversation %>
+<%= turbo_stream_from @document %>
 
 <div class="offcanvas offcanvas-end"
      id="doc-chat-panel"
