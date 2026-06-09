@@ -11,29 +11,53 @@
 
       <div class="col-sm-6 col-lg-3">
         <div class="team-card">
-          <div class="team-card__avatar">MG</div>
+          <div class="team-card__avatar">
+            <% if asset_exists?("equipe/mahfoudhi_ghzela.jpg") || asset_exists?("equipe/mahfoudhi_ghzela.png") %>
+              <%= image_tag (asset_exists?("equipe/mahfoudhi_ghzela.jpg") ? "equipe/mahfoudhi_ghzela.jpg" : "equipe/mahfoudhi_ghzela.png"), class: "team-card__photo", alt: "Mahfoudhi Ghzela" %>
+            <% else %>
+              <span>MG</span>
+            <% end %>
+          </div>
           <h3 class="team-card__name">Mahfoudhi Ghzela</h3>
         </div>
       </div>
 
       <div class="col-sm-6 col-lg-3">
         <div class="team-card">
-          <div class="team-card__avatar">NO</div>
+          <div class="team-card__avatar">
+            <% if asset_exists?("equipe/nabilah_ouro.jpg") || asset_exists?("equipe/nabilah_ouro.png") %>
+              <%= image_tag (asset_exists?("equipe/nabilah_ouro.jpg") ? "equipe/nabilah_ouro.jpg" : "equipe/nabilah_ouro.png"), class: "team-card__photo", alt: "Nabilah Ouro-Agouda" %>
+            <% else %>
+              <span>NO</span>
+            <% end %>
+          </div>
           <h3 class="team-card__name">Nabilah Ouro-Agouda</h3>
         </div>
       </div>
 
       <div class="col-sm-6 col-lg-3">
         <div class="team-card">
-          <div class="team-card__avatar">LD</div>
+          <div class="team-card__avatar">
+            <% if asset_exists?("equipe/luis_dernane.jpg") || asset_exists?("equipe/luis_dernane.png") %>
+              <%= image_tag (asset_exists?("equipe/luis_dernane.jpg") ? "equipe/luis_dernane.jpg" : "equipe/luis_dernane.png"), class: "team-card__photo", alt: "Luis Dernane" %>
+            <% else %>
+              <span>LD</span>
+            <% end %>
+          </div>
           <h3 class="team-card__name">Luis Dernane</h3>
         </div>
       </div>
 
       <div class="col-sm-6 col-lg-3">
         <div class="team-card">
-          <div class="team-card__avatar">T</div>
-          <h3 class="team-card__name">Thierry</h3>
+          <div class="team-card__avatar">
+            <% if asset_exists?("equipe/thierry_praud.jpg") || asset_exists?("equipe/thierry_praud.png") %>
+              <%= image_tag (asset_exists?("equipe/thierry_praud.jpg") ? "equipe/thierry_praud.jpg" : "equipe/thierry_praud.png"), class: "team-card__photo", alt: "Thierry Praud" %>
+            <% else %>
+              <span>TP</span>
+            <% end %>
+          </div>
+          <h3 class="team-card__name">Thierry Praud</h3>
         </div>
       </div>
 
