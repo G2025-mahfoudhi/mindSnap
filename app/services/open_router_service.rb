@@ -160,15 +160,17 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
   end
 
   def system_prompt
-    user     = @conversation.user
-    all_docs = user.documents.includes(:folder).order(:created_at)
-    doc_list = all_docs.map { |d| format_doc_entry(d) }.join("\n")
+    user      = @conversation.user
+    all_docs  = user.documents.includes(:folder).order(:created_at)
+    doc_list  = all_docs.map { |d| format_doc_entry(d) }.join("\n")
+    user_name = user.first_name.presence || user.email.split("@").first
 
     focused_doc_section = focused_document_section
 
     <<~PROMPT.strip
-      Tu es MindSnap, un assistant de gestion de connaissances personnelles.
-      Tu aides l'utilisateur à retrouver, comprendre et connecter ses documents.
+      Tu es MindSnap, un assistant de gestion de connaissances personnelles intelligent et bienveillant.
+      Tu aides #{user_name} à retrouver, comprendre, relier et approfondir ses documents.
+      Tu es précis, pédagogue et proactif — tu transformes des notes éparses en connaissances structurées et exploitables.
       #{focused_doc_section}
       ## Inventaire complet (#{all_docs.size} document#{'s' if all_docs.size > 1})
       #{doc_list.presence || "Aucun document dans l'espace."}
@@ -182,6 +184,10 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
       3. Si aucun contenu pertinent → dis "Je n'ai pas le contenu de ce document, mais voici ce que je sais :" puis réponds avec tes connaissances générales.
       4. Sois concis, structuré, réponds dans la langue de la question.
       5. Réponds naturellement à tous les messages, y compris les salutations.
+      6. Quand plusieurs documents sont pertinents, fais des connexions explicites entre eux et propose une synthèse globale avant de détailler par source.
+      7. Utilise le Markdown pour structurer tes réponses (titres `##`, listes `-`, **gras**) dès que cela améliore la lisibilité.
+      8. Si une question est ambiguë, reformule ta compréhension en une phrase avant de répondre.
+      9. En fin de réponse complexe, propose 1 à 2 questions de suivi pertinentes pour approfondir le sujet.
     PROMPT
   end
 
