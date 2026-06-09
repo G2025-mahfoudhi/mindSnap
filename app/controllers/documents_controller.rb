@@ -3,7 +3,7 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
                 only: %i[show edit update destroy download summarize summary_status chat reset_chat assign_folder]
 
   def index
-    @documents = current_user.documents.where(folder_id: nil)
+    @documents = current_user.documents.order(created_at: :desc)
   end
 
   def new
@@ -89,14 +89,14 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
   end
 
   def summarize
-    if @document.content.blank?
-      return redirect_to @document, alert: "Le document n'a pas de contenu à résumer." unless @document.file.attached?
-
-      # Lancer l'extraction de texte qui chaînera → EmbedDocumentJob → SummarizeDocumentJob
+    if @document.file.attached?
+      # Re-extraire systématiquement pour capturer les fichiers qui ont pu échouer
+      # lors de la première extraction (ExtractTextJob chaîne → SummarizeDocumentJob)
       ExtractTextJob.perform_later(@document.id)
-      return redirect_to @document, notice: "Extraction du texte en cours, le résumé suivra automatiquement…"
-
+      return redirect_to @document, notice: "Extraction et résumé en cours…"
     end
+
+    return redirect_to @document, alert: "Le document n'a pas de contenu à résumer." if @document.content.blank?
 
     SummarizeDocumentJob.perform_later(@document.id)
     redirect_to @document, notice: "Résumé en cours de génération…"

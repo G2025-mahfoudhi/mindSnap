@@ -196,19 +196,23 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
     PROMPT
   end
 
-  def focused_document_section
+  def focused_document_section # rubocop:disable Metrics/MethodLength
     return "" unless @conversation.context_type == "Document" && @conversation.context_id.present?
 
     doc = Document.find_by(id: @conversation.context_id)
     return "" unless doc
 
-    info = doc.summary.present? ? "Résumé : #{doc.summary.truncate(400)}" : doc.content.to_s.truncate(600)
+    parts = []
+    parts << "Résumé :\n#{doc.summary}" if doc.summary.present?
+    parts << "Contenu intégral :\n#{doc.content.truncate(6_000)}" if doc.content.present?
+    body = parts.join("\n\n").presence || "(contenu non encore extrait)"
+
     <<~SECTION
 
-      ## Document en cours de discussion
+      ## Document en cours de discussion — PRIORITÉ ABSOLUE
       Titre : #{doc.title}
-      Type : #{doc.document_type}
-      #{info}
+      Type  : #{doc.document_type}
+      #{body}
 
     SECTION
   end

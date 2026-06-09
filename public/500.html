@@ -1,135 +1,290 @@
-<!doctype html>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>500 — MindSnap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal:        #3d8c7a;
+      --teal-dark:   #2e6e5e;
+      --teal-light:  #8fc9be;
+      --teal-bg:     #e8f4f1;
+      --teal-border: #b3d9d1;
+      --bg:          #f7f7f5;
+      --surface:     #ffffff;
+      --border:      rgba(0,0,0,0.10);
+      --text:        #1a1a18;
+      --muted:       #6b6b67;
+      --hint:        #9b9b97;
+      --font:        'Inter', system-ui, sans-serif;
+    }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    nav { display: flex; align-items: center; padding: 0 2rem; height: 56px; background: var(--surface); border-bottom: 0.5px solid var(--border); }
+    .nav-brand { display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 15px; color: var(--text); text-decoration: none; }
+    .nav-logo { width: 28px; height: 28px; background: var(--teal); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1.5rem; text-align: center; }
+    #rubik-outer { display: flex; flex-direction: column; align-items: center; margin: 0 auto 2rem; }
+    #erreur-label { font-size: 26px; font-weight: 500; letter-spacing: 0.20em; text-transform: uppercase; color: var(--teal); margin-bottom: 14px; }
+    #rubik-wrap { width: 340px; height: 340px; }
+    #rubik-wrap canvas { display: block; }
+    h1 { font-size: 28px; font-weight: 500; color: var(--text); margin-bottom: 1rem; line-height: 1.3; opacity: 0; transform: translateY(12px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .subtitle { font-size: 16px; color: var(--muted); max-width: 440px; margin: 0 auto 2.5rem; line-height: 1.7; opacity: 0; transform: translateY(12px); transition: opacity 0.6s ease 0.15s, transform 0.6s ease 0.15s; }
+    .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; opacity: 0; transform: translateY(12px); transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s; }
+    h1.visible, .subtitle.visible, .actions.visible { opacity: 1; transform: translateY(0); }
+    .btn-primary { background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 10px 24px; font-size: 15px; font-weight: 500; cursor: pointer; font-family: var(--font); text-decoration: none; display: inline-block; transition: background 0.15s; }
+    .btn-primary:hover { background: var(--teal-dark); }
+    .btn-outline { background: transparent; color: var(--text); border: 0.5px solid rgba(0,0,0,0.25); border-radius: 8px; padding: 10px 24px; font-size: 15px; font-weight: 400; cursor: pointer; font-family: var(--font); text-decoration: none; display: inline-block; transition: background 0.15s; }
+    .btn-outline:hover { background: rgba(0,0,0,0.04); }
+    .detail-card { margin-top: 3rem; background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; max-width: 480px; text-align: left; opacity: 0; transform: translateY(12px); transition: opacity 0.6s ease 0.45s, transform 0.6s ease 0.45s; }
+    .detail-card.visible { opacity: 1; transform: translateY(0); }
+    .detail-label { font-size: 11px; color: var(--hint); margin-bottom: 6px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+    .detail-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .url-line { margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .url-label { font-size: 12px; color: var(--hint); white-space: nowrap; }
+    .url-val { font-family: ui-monospace, monospace; font-size: 12px; color: var(--hint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  </style>
+</head>
+<body>
 
-<html lang="en">
+<nav>
+  <a href="/" class="nav-brand">
+    <div class="nav-logo" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="3" fill="white" opacity="0.9"/>
+        <circle cx="3" cy="4" r="1.5" fill="white" opacity="0.6"/>
+        <circle cx="13" cy="4" r="1.5" fill="white" opacity="0.6"/>
+        <circle cx="3" cy="12" r="1.5" fill="white" opacity="0.6"/>
+        <circle cx="13" cy="12" r="1.5" fill="white" opacity="0.6"/>
+        <line x1="8" y1="8" x2="3" y2="4" stroke="white" stroke-width="0.8" opacity="0.5"/>
+        <line x1="8" y1="8" x2="13" y2="4" stroke="white" stroke-width="0.8" opacity="0.5"/>
+        <line x1="8" y1="8" x2="3" y2="12" stroke="white" stroke-width="0.8" opacity="0.5"/>
+        <line x1="8" y1="8" x2="13" y2="12" stroke="white" stroke-width="0.8" opacity="0.5"/>
+      </svg>
+    </div>
+    MindSnap
+  </a>
+</nav>
 
-  <head>
+<main>
+  <div id="rubik-outer">
+    <div id="erreur-label">Erreur</div>
+    <div id="rubik-wrap"></div>
+  </div>
 
-    <title>We're sorry, but something went wrong (500 Internal Server Error)</title>
+  <h1 id="title">Quelque chose s'est mal passé</h1>
+  <p class="subtitle" id="sub">Notre serveur a rencontré une erreur inattendue.<br>
+    Ton deuxième cerveau fait une petite pause — on s'en occupe.</p>
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="initial-scale=1, width=device-width">
-    <meta name="robots" content="noindex, nofollow">
+  <div class="actions" id="actions">
+    <a href="javascript:window.location.reload()" class="btn-primary">Réessayer</a>
+    <a href="/" class="btn-outline">Retour à l'accueil</a>
+  </div>
 
-    <style>
+  <div class="detail-card" id="card">
+    <p class="detail-label">Détail de l'erreur</p>
+    <p class="detail-text">Internal Server Error — une exception non gérée s'est produite lors du traitement de ta requête.</p>
+    <div class="url-line">
+      <span class="url-label">Référence</span>
+      <span class="url-val" id="ref">—</span>
+    </div>
+  </div>
+</main>
 
-      *, *::before, *::after {
-        box-sizing: border-box;
+<!-- nonce absent intentionnellement : fichier statique servi directement par le serveur quand Rails est hors service -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+
+  var ERROR_CODE = '500';
+  var FACE_COLORS = [
+    0x3d8c7a,  // +X
+    0x2e6e5e,  // -X
+    0xf0faf8,  // +Y
+    0xb3d9d1,  // -Y
+    0x8fc9be,  // +Z
+    0xe8f4f1,  // -Z
+  ];
+  var N = 3, SZ = 0.88, GAP = 0.07, STEP = SZ + GAP;
+  var W = 340, H = 340;
+
+  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(W, H);
+  renderer.setClearColor(0x000000, 0);
+  document.getElementById('rubik-wrap').appendChild(renderer.domElement);
+
+  var scene  = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(36, W / H, 0.1, 100);
+  camera.position.set(5.8, 4.6, 6.8);
+  camera.lookAt(0, 0, 0);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+  var sun = new THREE.DirectionalLight(0xffffff, 0.55);
+  sun.position.set(6, 10, 8);
+  scene.add(sun);
+
+  function makeDigitTexture(digit) {
+    var cv = document.createElement('canvas');
+    cv.width = cv.height = 128;
+    var ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, 128, 128);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 82px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(digit, 64, 68);
+    return new THREE.CanvasTexture(cv);
+  }
+
+  var blankTex = makeDigitTexture('');
+  var digitTexes = {};
+  for (var i = 0; i <= 9; i++) digitTexes[String(i)] = makeDigitTexture(String(i));
+
+  var half = (N - 1) / 2;
+
+  function makeCubie(cx, cy, cz) {
+    var cubie = new THREE.Group();
+    cubie.add(new THREE.Mesh(
+      new THREE.BoxGeometry(SZ*0.90, SZ*0.90, SZ*0.90),
+      new THREE.MeshPhongMaterial({ color: 0x151513, shininess: 20 })
+    ));
+    var faceHalf = SZ*0.76, faceThk = 0.012, off = SZ*0.45 + faceThk/2;
+    var defs = [
+      {a:'x',s: 1,ci:0},{a:'x',s:-1,ci:1},
+      {a:'y',s: 1,ci:2},{a:'y',s:-1,ci:3},
+      {a:'z',s: 1,ci:4},{a:'z',s:-1,ci:5},
+    ];
+    defs.forEach(function(d) {
+      var pos  = d.a==='x' ? cx : d.a==='y' ? cy : cz;
+      var edge = (d.s===1 && pos===half) || (d.s===-1 && pos===-half);
+      if (!edge) return;
+      var gw = d.a==='x' ? faceThk : faceHalf;
+      var gh = d.a==='y' ? faceThk : faceHalf;
+      var gd = d.a==='z' ? faceThk : faceHalf;
+      var isDigitFace = (d.a==='z' && d.s===1);
+      var mat;
+      if (isDigitFace) {
+        mat = new THREE.MeshPhongMaterial({ color: FACE_COLORS[4], map: blankTex, shininess: 60 });
+        cubie.userData.digitMat = mat;
+      } else {
+        mat = new THREE.MeshPhongMaterial({ color: FACE_COLORS[d.ci], shininess: 60 });
+      }
+      var mesh = new THREE.Mesh(new THREE.BoxGeometry(gw, gh, gd), mat);
+      mesh.position[d.a] = d.s * off;
+      cubie.add(mesh);
+    });
+    cubie.position.set(cx*STEP, cy*STEP, cz*STEP);
+    cubie.userData.home = new THREE.Vector3(cx*STEP, cy*STEP, cz*STEP);
+    return cubie;
+  }
+
+  var group = new THREE.Group(), cubies = [], digitCubies = [];
+  scene.add(group);
+
+  for (var x=-half; x<=half; x++)
+    for (var y=-half; y<=half; y++)
+      for (var z=-half; z<=half; z++) {
+        var c = makeCubie(x, y, z);
+        group.add(c); cubies.push(c);
+        if (z===half && y===0) digitCubies.push({cubie:c, col:x});
+      }
+  digitCubies.sort(function(a,b){return a.col-b.col;});
+
+  var SPREAD = 3.2;
+  var scattered = cubies.map(function(c) {
+    var h = c.userData.home;
+    return {
+      x: h.x+(Math.random()-0.5)*SPREAD*2,
+      y: h.y+(Math.random()-0.5)*SPREAD*2,
+      z: h.z+(Math.random()-0.5)*SPREAD*1.2,
+      rx:(Math.random()-0.5)*Math.PI,
+      ry:(Math.random()-0.5)*Math.PI,
+    };
+  });
+
+  cubies.forEach(function(c,i) {
+    c.position.set(scattered[i].x, scattered[i].y, scattered[i].z);
+    c.rotation.set(scattered[i].rx, scattered[i].ry, 0);
+    c.traverse(function(obj) { if(obj.isMesh){obj.material.transparent=true;obj.material.opacity=0;} });
+  });
+
+  function easeOutBack(t)  { var c1=1.70158,c3=c1+1; return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2); }
+  function easeInOutQuad(t){ return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+  function lerp(a,b,t)     { return a+(b-a)*t; }
+
+  var clock=new THREE.Clock(), phase='appear', phaseT=0, idleT=0;
+  var APPEAR_DUR=0.7, BUILD_DUR=2.0, REVEAL_DUR=0.9;
+  var buildDelays=cubies.map(function(){return Math.random()*0.8;});
+
+  function onAnimComplete() {
+    ['title','sub','actions','card'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.classList.add('visible');
+    });
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    var dt=clock.getDelta(); phaseT+=dt;
+
+    if (phase==='appear') {
+      var p=Math.min(phaseT/APPEAR_DUR,1);
+      cubies.forEach(function(c){c.traverse(function(obj){if(obj.isMesh)obj.material.opacity=p*0.55;});});
+      if(p>=1){phase='build';phaseT=0;}
+
+    } else if (phase==='build') {
+      cubies.forEach(function(c,i) {
+        var local=Math.max(0,phaseT-buildDelays[i]*BUILD_DUR*0.5);
+        var p=Math.min(local/(BUILD_DUR*0.55),1);
+        var ep=easeOutBack(p), h=c.userData.home;
+        c.position.x=lerp(scattered[i].x,h.x,ep);
+        c.position.y=lerp(scattered[i].y,h.y,ep);
+        c.position.z=lerp(scattered[i].z,h.z,ep);
+        c.rotation.x=lerp(scattered[i].rx,0,easeInOutQuad(p));
+        c.rotation.y=lerp(scattered[i].ry,0,easeInOutQuad(p));
+        c.traverse(function(obj){if(obj.isMesh)obj.material.opacity=lerp(0.55,1,p);});
+      });
+      group.rotation.y=easeInOutQuad(Math.min(phaseT/BUILD_DUR,1))*0.6;
+      if(phaseT>=BUILD_DUR) {
+        cubies.forEach(function(c){
+          c.position.copy(c.userData.home); c.rotation.set(0,0,0);
+          c.traverse(function(obj){if(obj.isMesh)obj.material.opacity=1;});
+        });
+        phase='reveal'; phaseT=0;
       }
 
-      * {
-        margin: 0;
-      }
-
-      html {
-        font-size: 16px;
-      }
-
-      body {
-        background: #FFF;
-        color: #261B23;
-        display: grid;
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Aptos, Roboto, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-        font-size: clamp(1rem, 2.5vw, 2rem);
-        -webkit-font-smoothing: antialiased;
-        font-style: normal;
-        font-weight: 400;
-        letter-spacing: -0.0025em;
-        line-height: 1.4;
-        min-height: 100dvh;
-        place-items: center;
-        text-rendering: optimizeLegibility;
-        -webkit-text-size-adjust: 100%;
-      }
-
-      #error-description {
-        fill: #d30001;
-      }
-
-      #error-id {
-        fill: #f0eff0;
-      }
-
-      @media (prefers-color-scheme: dark) {
-        body {
-          background: #101010;
-          color: #e0e0e0;
+    } else if (phase==='reveal') {
+      var digits=ERROR_CODE.split('');
+      digits.forEach(function(digit,idx) {
+        var triggerAt=(idx/digits.length)*REVEAL_DUR*0.8;
+        if(phaseT>=triggerAt && digitCubies[idx]) {
+          var mat=digitCubies[idx].cubie.userData.digitMat;
+          if(mat && mat.map!==digitTexes[digit]) {
+            mat.map=digitTexes[digit]; mat.needsUpdate=true;
+            mat.color.setHex(0xffffff);
+            var cubieRef=digitCubies[idx].cubie;
+            setTimeout(function(){if(cubieRef.userData.digitMat)cubieRef.userData.digitMat.color.setHex(FACE_COLORS[4]);},180);
+          }
         }
+      });
+      if(phaseT>=REVEAL_DUR){phase='idle';phaseT=0;onAnimComplete();}
 
-        #error-description {
-          fill: #FF6161;
-        }
+    } else if (phase==='idle') {
+      idleT+=dt;
+      group.rotation.y=0.6+idleT*0.35;
+      group.rotation.x=Math.sin(idleT*0.22)*0.28;
+    }
+    renderer.render(scene,camera);
+  }
 
-        #error-id {
-          fill: #2c2c2c;
-        }
-      }
+  animate();
+  var ts=Date.now().toString(36).toUpperCase();var rand=Math.random().toString(36).substring(2,6).toUpperCase();document.getElementById('ref').textContent='REQ-'+ts+'-'+rand;
 
-      a {
-        color: inherit;
-        font-weight: 700;
-        text-decoration: underline;
-        text-underline-offset: 0.0925em;
-      }
-
-      b, strong {
-        font-weight: 700;
-      }
-
-      i, em {
-        font-style: italic;
-      }
-
-      main {
-        display: grid;
-        gap: 1em;
-        padding: 2em;
-        place-items: center;
-        text-align: center;
-      }
-
-      main header {
-        width: min(100%, 12em);
-      }
-
-      main header svg {
-        height: auto;
-        max-width: 100%;
-        width: 100%;
-      }
-
-      main article {
-        width: min(100%, 30em);
-      }
-
-      main article p {
-        font-size: 75%;
-      }
-
-      main article br {
-        display: none;
-
-        @media(min-width: 48em) {
-          display: inline;
-        }
-      }
-
-    </style>
-
-  </head>
-
-  <body>
-
-    <!-- This file lives in public/500.html -->
-
-    <main>
-      <header>
-        <svg height="172" viewBox="0 0 480 172" width="480" xmlns="http://www.w3.org/2000/svg"><path d="m101.23 93.8427c-8.1103 0-15.4098 3.7849-19.7354 8.3813h-36.2269v-99.21891h103.8143v37.03791h-68.3984v24.8722c5.1366-2.7035 15.1396-5.9477 24.6014-5.9477 35.146 0 56.233 22.7094 56.233 55.4215 0 34.605-23.791 57.315-60.558 57.315-37.8492 0-61.64-22.169-63.8028-55.963h42.9857c1.0814 10.814 9.1919 19.195 21.6281 19.195 11.355 0 19.465-8.381 19.465-20.547 0-11.625-7.299-20.5463-20.006-20.5463zm138.833 77.8613c-40.822 0-64.884-35.146-64.884-85.7015 0-50.5554 24.062-85.700907 64.884-85.700907 40.823 0 64.884 35.145507 64.884 85.700907 0 50.5555-24.061 85.7015-64.884 85.7015zm0-133.2831c-17.572 0-22.709 21.8984-22.709 47.5816 0 25.6835 5.137 47.5815 22.709 47.5815 17.303 0 22.71-21.898 22.71-47.5815 0-25.6832-5.407-47.5816-22.71-47.5816zm140.456 133.2831c-40.823 0-64.884-35.146-64.884-85.7015 0-50.5554 24.061-85.700907 64.884-85.700907 40.822 0 64.884 35.145507 64.884 85.700907 0 50.5555-24.062 85.7015-64.884 85.7015zm0-133.2831c-17.573 0-22.71 21.8984-22.71 47.5816 0 25.6835 5.137 47.5815 22.71 47.5815 17.302 0 22.709-21.898 22.709-47.5815 0-25.6832-5.407-47.5816-22.709-47.5816z" id="error-id"/><path d="m23.1377 68.9967v34.0033h-8.9162v-34.0033zm4.3157 34.0033v-24.921h8.6947v2.1598c1.3845-1.5506 3.8212-2.7136 6.701-2.7136 5.538 0 8.8054 3.5997 8.8054 9.1377v16.3371h-8.6393v-14.2327c0-2.049-1.0522-3.5443-3.2674-3.5443-1.7168 0-3.1567.9969-3.5997 2.7136v15.0634zm29.9913-8.5839v-9.5807h-3.655v-6.7564h3.655v-6.8671h8.5839v6.8671h5.2058v6.7564h-5.2058v8.307c0 1.9383.9415 2.769 2.6583 2.769.9414 0 1.9937-.2216 2.769-.5538v7.3654c-.9969.443-2.8798.775-4.8181.775-5.8703 0-9.1931-2.769-9.1931-9.0819zm32.3666-.1108h8.0301c-.8861 5.7597-5.2057 9.2487-11.6852 9.2487-7.6424 0-12.682-5.2613-12.682-13.0145 0-7.6978 5.3165-13.0143 12.5159-13.0143 7.6424 0 11.9621 5.095 11.9621 12.5159v2.1598h-16.1156c.2769 2.9905 1.8275 4.5965 4.3196 4.5965 1.7722 0 3.1567-.7753 3.6551-2.4921zm-3.8212-10.0237c-2.0491 0-3.4336 1.2737-3.9874 3.5997h7.5317c-.1107-2.0491-1.3845-3.5997-3.5443-3.5997zm31.4299-6.3134v8.3624c-1.052-.5538-2.215-.7753-3.599-.7753-2.382 0-3.988 1.0522-4.431 2.8244v14.6203h-8.694v-24.921h8.694v2.2152c1.219-1.6614 3.157-2.769 5.649-2.769 1.108 0 1.994.2215 2.381.443zm2.949 25.0318v-24.921h8.694v2.1598c1.385-1.5506 3.821-2.7136 6.701-2.7136 5.538 0 8.806 3.5997 8.806 9.1377v16.3371h-8.64v-14.2327c0-2.049-1.052-3.5443-3.267-3.5443-1.717 0-3.157.9969-3.6 2.7136v15.0634zm50.371 0h-8.363v-1.274c-.83.831-3.323 1.717-5.981 1.717-4.929 0-9.082-2.769-9.082-8.0301 0-4.818 4.153-7.9193 9.581-7.9193 2.049 0 4.485.6646 5.482 1.3845v-1.606c0-1.606-.941-2.9905-3.046-2.9905-1.606 0-2.547.7199-2.935 1.8275h-8.196c.72-4.8181 4.984-8.6393 11.408-8.6393 7.089 0 11.132 3.7659 11.132 10.2453zm-8.363-6.9779v-1.4399c-.554-1.0522-2.049-1.7167-3.655-1.7167-1.717 0-3.433.7199-3.433 2.3813 0 1.7168 1.716 2.4367 3.433 2.4367 1.606 0 3.101-.6645 3.655-1.6614zm20.742-29.0191v35.997h-8.694v-35.997zm13.036 25.9178h9.248c.72 2.326 2.714 3.489 5.483 3.489 2.713 0 4.596-1.163 4.596-3.2674 0-1.6061-1.052-2.326-3.212-2.8244l-6.534-1.3845c-4.985-1.1076-8.751-3.7105-8.751-9.47 0-6.6456 5.538-11.0206 13.07-11.0206 8.307 0 13.014 4.5411 13.956 10.4114h-8.695c-.72-1.8829-2.27-3.3228-5.205-3.3228-2.548 0-4.265 1.1076-4.265 2.9905 0 1.4953 1.052 2.326 2.825 2.7137l6.645 1.5506c5.815 1.3845 9.027 4.5412 9.027 9.8023 0 6.9778-5.87 10.9654-13.291 10.9654-8.141 0-13.679-3.9322-14.897-10.6332zm46.509 1.3845h8.031c-.887 5.7597-5.206 9.2487-11.686 9.2487-7.642 0-12.682-5.2613-12.682-13.0145 0-7.6978 5.317-13.0143 12.516-13.0143 7.643 0 11.962 5.095 11.962 12.5159v2.1598h-16.115c.277 2.9905 1.827 4.5965 4.319 4.5965 1.773 0 3.157-.7753 3.655-2.4921zm-3.821-10.0237c-2.049 0-3.433 1.2737-3.987 3.5997h7.532c-.111-2.0491-1.385-3.5997-3.545-3.5997zm31.431-6.3134v8.3624c-1.053-.5538-2.216-.7753-3.6-.7753-2.381 0-3.988 1.0522-4.431 2.8244v14.6203h-8.694v-24.921h8.694v2.2152c1.219-1.6614 3.157-2.769 5.649-2.769 1.108 0 1.994.2215 2.382.443zm18.288 25.0318h-7.809l-9.47-24.921h8.861l4.763 14.288 4.652-14.288h8.528zm25.614-8.6947h8.03c-.886 5.7597-5.206 9.2487-11.685 9.2487-7.642 0-12.682-5.2613-12.682-13.0145 0-7.6978 5.316-13.0143 12.516-13.0143 7.642 0 11.962 5.095 11.962 12.5159v2.1598h-16.116c.277 2.9905 1.828 4.5965 4.32 4.5965 1.772 0 3.157-.7753 3.655-2.4921zm-3.821-10.0237c-2.049 0-3.434 1.2737-3.988 3.5997h7.532c-.111-2.0491-1.384-3.5997-3.544-3.5997zm31.43-6.3134v8.3624c-1.052-.5538-2.215-.7753-3.6-.7753-2.381 0-3.987 1.0522-4.43 2.8244v14.6203h-8.695v-24.921h8.695v2.2152c1.218-1.6614 3.157-2.769 5.649-2.769 1.107 0 1.993.2215 2.381.443zm13.703-8.9715h24.312v7.6424h-15.562v5.3165h14.232v7.4763h-14.232v5.8703h15.562v7.6978h-24.312zm44.667 8.9715v8.3624c-1.052-.5538-2.215-.7753-3.6-.7753-2.381 0-3.987 1.0522-4.43 2.8244v14.6203h-8.695v-24.921h8.695v2.2152c1.218-1.6614 3.156-2.769 5.648-2.769 1.108 0 1.994.2215 2.382.443zm19.673 0v8.3624c-1.053-.5538-2.216-.7753-3.6-.7753-2.381 0-3.987 1.0522-4.43 2.8244v14.6203h-8.695v-24.921h8.695v2.2152c1.218-1.6614 3.156-2.769 5.648-2.769 1.108 0 1.994.2215 2.382.443zm26.769 12.5713c0 7.6978-5.15 13.0145-12.737 13.0145-7.532 0-12.738-5.3167-12.738-13.0145s5.206-13.0143 12.738-13.0143c7.587 0 12.737 5.3165 12.737 13.0143zm-8.529 0c0-3.4336-1.495-5.8703-4.208-5.8703-2.659 0-4.154 2.4367-4.154 5.8703s1.495 5.8149 4.154 5.8149c2.713 0 4.208-2.3813 4.208-5.8149zm28.082-12.5713v8.3624c-1.052-.5538-2.215-.7753-3.6-.7753-2.381 0-3.987 1.0522-4.43 2.8244v14.6203h-8.695v-24.921h8.695v2.2152c1.218-1.6614 3.157-2.769 5.649-2.769 1.107 0 1.993.2215 2.381.443z" id="error-description"/></svg>
-      </header>
-      <article>
-        <p><strong>We're sorry, but something went wrong.</strong><br> If you're the application owner check the logs for more information.</p>
-      </article>
-    </main>
-
-  </body>
-
+})();
+</script>
+</body>
 </html>

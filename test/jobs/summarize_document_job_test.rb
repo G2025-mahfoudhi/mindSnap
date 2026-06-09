@@ -12,26 +12,25 @@ class SummarizeDocumentJobTest < ActiveJob::TestCase
       document_type: "Note"
     )
 
-    stub_llm_oneshot("Résumé généré par l'IA.") do
+    stub_llm_stream("Résumé généré par l'IA.") do
       SummarizeDocumentJob.perform_now(doc.id)
     end
 
     assert_equal "Résumé généré par l'IA.", doc.reload.summary
   end
 
-  test "stocke un message d'erreur si l'API retourne nil" do
+  test "stocke un message d'erreur si l'API ne yield rien" do
     doc = @user.documents.create!(
       title: "API fail test",
       content: "Un contenu quelconque.",
       document_type: "Note"
     )
 
-    original = LlmCallService.method(:oneshot)
-    LlmCallService.define_singleton_method(:oneshot) { |*_args| nil }
-    SummarizeDocumentJob.perform_now(doc.id)
+    stub_llm_stream(nil) do
+      SummarizeDocumentJob.perform_now(doc.id)
+    end
+
     assert_match(/indisponible/, doc.reload.summary.to_s)
-  ensure
-    LlmCallService.define_singleton_method(:oneshot, original)
   end
 
   test "ne crashe pas si l'API lève une exception" do
@@ -41,11 +40,11 @@ class SummarizeDocumentJobTest < ActiveJob::TestCase
       document_type: "Note"
     )
 
-    original = LlmCallService.method(:oneshot)
-    LlmCallService.define_singleton_method(:oneshot) { |*_args| raise StandardError, "boom" }
+    original = LlmCallService.method(:stream)
+    LlmCallService.define_singleton_method(:stream) { |*_args| raise StandardError, "boom" }
     assert_nothing_raised { SummarizeDocumentJob.perform_now(doc.id) }
   ensure
-    LlmCallService.define_singleton_method(:oneshot, original)
+    LlmCallService.define_singleton_method(:stream, original)
   end
 
   test "skip si contenu vide" do
@@ -70,7 +69,7 @@ class SummarizeDocumentJobTest < ActiveJob::TestCase
       document_type: "Note"
     )
 
-    stub_llm_oneshot("  Résumé avec espaces  \n") do
+    stub_llm_stream("  Résumé avec espaces  \n") do
       SummarizeDocumentJob.perform_now(doc.id)
     end
 
@@ -79,11 +78,17 @@ class SummarizeDocumentJobTest < ActiveJob::TestCase
 
   private
 
-  def stub_llm_oneshot(return_value)
-    original = LlmCallService.method(:oneshot)
-    LlmCallService.define_singleton_method(:oneshot) { |*_args| return_value }
+  def stub_llm_stream(return_value)
+    original = LlmCallService.respond_to?(:stream, true) ? LlmCallService.method(:stream) : nil
+    LlmCallService.define_singleton_method(:stream) do |*_args, &block|
+      block&.call(return_value) if return_value
+    end
     yield
   ensure
-    LlmCallService.define_singleton_method(:oneshot, original)
+    if original
+      LlmCallService.define_singleton_method(:stream, original)
+    else
+      LlmCallService.singleton_class.remove_method(:stream)
+    end
   end
 end
