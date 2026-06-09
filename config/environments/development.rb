@@ -58,7 +58,6 @@ Rails.application.configure do
 
   # Solid Queue — persistance PostgreSQL pour les jobs asynchrones
   config.active_job.queue_adapter = :solid_queue
-  config.solid_queue.connects_to = { database: { writing: :queue } }
 
   # Highlight code that triggered redirect in logs.
   config.action_dispatch.verbose_redirect_logs = true
