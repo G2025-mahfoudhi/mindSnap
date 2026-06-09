@@ -15,6 +15,7 @@ Rails.application.routes.draw do
       get :summary_status
       get :chat
       post :summarize
+      patch :assign_folder
       delete :reset_chat
     end
     resources :conversations, only: [:create, :show] do
