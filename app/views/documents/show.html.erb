@@ -145,14 +145,17 @@
       <%# ——— CONTENU ——— %>
       <% doc_ready = @document.file.attached? || @document.content.present? %>
         <div id="doc-content-section" class="mb-4 pt-4<%= ' d-none' unless doc_ready %>">
+          <% file_count = @document.file.count %>
           <button id="doc-toggle-btn"
                   class="btn btn-outline-secondary btn-sm"
                   type="button"
                   data-bs-toggle="collapse"
                   data-bs-target="#doc-content"
                   aria-expanded="false"
-                  aria-controls="doc-content">
-            Voir le document
+                  aria-controls="doc-content"
+                  data-label-show="<%= file_count > 1 ? "Voir les documents (#{file_count})" : "Voir le document" %>"
+                  data-label-hide="<%= file_count > 1 ? 'Fermer les documents' : 'Fermer le document' %>">
+            <%= file_count > 1 ? "Voir les documents (#{file_count})" : "Voir le document" %>
           </button>
           <div class="collapse mt-3" id="doc-content">
             <% if @document.file.attached? %>
@@ -181,16 +184,16 @@
           </div>
           <script nonce="<%= request.content_security_policy_nonce %>">
             (function() {
-              var el = document.getElementById('doc-content');
+              var el  = document.getElementById('doc-content');
               var btn = document.getElementById('doc-toggle-btn');
               el.addEventListener('show.bs.collapse', function() {
                 this.querySelectorAll('iframe[data-src]').forEach(function(iframe) {
                   if (iframe.src === 'about:blank') iframe.src = iframe.dataset.src;
                 });
-                btn.textContent = 'Fermer le document';
+                btn.textContent = btn.dataset.labelHide;
               });
               el.addEventListener('hide.bs.collapse', function() {
-                btn.textContent = 'Voir le document';
+                btn.textContent = btn.dataset.labelShow;
               });
             })();
           </script>
