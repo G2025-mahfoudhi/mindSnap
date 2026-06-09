@@ -19,14 +19,21 @@
         </ul>
 
         <div class="dropdown">
-          <button class="btn p-0 border-0 rounded-circle d-flex align-items-center justify-content-center fw-semibold text-white"
+          <button class="btn p-0 border-0 rounded-circle d-flex align-items-center justify-content-center overflow-hidden"
                   id="navbarDropdown"
                   data-bs-toggle="dropdown"
                   aria-haspopup="true"
                   aria-expanded="false"
                   aria-label="Mon compte"
-                  style="width: 36px; height: 36px; background-color: #549695; font-size: 13px;">
-            <%= current_user.first_name&.first&.upcase || "?" %><%= current_user.last_name&.first&.upcase %>
+                  style="width: 36px; height: 36px;">
+            <% if current_user.avatar.attached? && current_user.avatar.blob.persisted? %>
+              <img src="<%= avatar_url(current_user.avatar) %>" style="width: 36px; height: 36px; object-fit: cover; border-radius: 50%;" alt="Photo de profil">
+            <% else %>
+              <span class="d-flex align-items-center justify-content-center fw-semibold text-white w-100 h-100"
+                    style="background-color: #549695; font-size: 13px; border-radius: 50%;">
+                <%= current_user.first_name&.first&.upcase || "?" %><%= current_user.last_name&.first&.upcase %>
+              </span>
+            <% end %>
           </button>
           <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
             <%= link_to "Mon profil", edit_user_registration_path, class: "dropdown-item" %>

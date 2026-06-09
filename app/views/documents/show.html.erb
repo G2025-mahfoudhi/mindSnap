@@ -136,8 +136,8 @@
 
 
       <%# ——— CONTENU ——— %>
-      <% if @document.file.attached? || @document.content.present? %>
-        <div class="mb-4 pt-4">
+      <% doc_ready = @document.file.attached? || @document.content.present? %>
+        <div id="doc-content-section" class="mb-4 pt-4<%= ' d-none' unless doc_ready %>">
           <button id="doc-toggle-btn"
                   class="btn btn-outline-secondary btn-sm"
                   type="button"
@@ -161,14 +161,14 @@
                 <% elsif attachment.content_type.start_with?("image/") %>
                   <%= image_tag document_inline_url(attachment), style: "max-width: 100%; border-radius: 8px;", alt: attachment.filename %>
                 <% else %>
-                  <div class="doc-show-content">
-                    <pre style="white-space: pre-wrap; word-break: break-word; font-family: inherit; margin: 0;"><%= @document.content %></pre>
+                  <div class="doc-show-content markdown-content">
+                    <%= markdown(@document.content) %>
                   </div>
                 <% end %>
               <% end %>
             <% elsif @document.content.present? %>
-              <div class="doc-show-content">
-                <pre style="white-space: pre-wrap; word-break: break-word; font-family: inherit; margin: 0;"><%= @document.content %></pre>
+              <div class="doc-show-content markdown-content">
+                <%= markdown(@document.content) %>
               </div>
             <% end %>
           </div>
@@ -188,7 +188,6 @@
             })();
           </script>
         </div>
-      <% end %>
 
 
     </div>

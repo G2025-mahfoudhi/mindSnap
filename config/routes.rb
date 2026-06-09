@@ -1,7 +1,8 @@
 Rails.application.routes.draw do
   mount MissionControl::Jobs::Engine, at: "/jobs" if defined?(MissionControl::Jobs)
 
-  devise_for :users
+  devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks" }
+  resource :avatar, only: [:destroy]
   root to: "pages#home"
   get "dashboard", to: "dashboard#index"
 
@@ -34,4 +35,7 @@ Rails.application.routes.draw do
   post "tts/speak", to: "tts#speak"
   post "transcribe", to: "transcriptions#create"
   get "up" => "rails/health#show", as: :rails_health_check
+
+
+
 end

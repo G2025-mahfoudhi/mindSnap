@@ -1,4 +1,15 @@
 module ApplicationHelper
+  def avatar_url(attachment)
+    return nil unless attachment.attached? && attachment.blob.persisted?
+
+    if attachment.blob.service_name == "cloudinary"
+      key = "#{Rails.env}/#{attachment.blob.key}"
+      Cloudinary::Utils.cloudinary_url(key, resource_type: "image", type: "upload", secure: true)
+    else
+      url_for(attachment)
+    end
+  end
+
   def document_inline_url(attachment)
     if attachment.blob.service_name == "cloudinary"
       key = "#{Rails.env}/#{attachment.blob.key}"

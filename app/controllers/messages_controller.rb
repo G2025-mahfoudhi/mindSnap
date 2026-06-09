@@ -11,7 +11,11 @@ class MessagesController < ApplicationController
       return
     end
 
+    previous_message = @conversation.messages.order(:created_at).last
     @user_message = @conversation.messages.create!(role: "user", content: content)
+    @show_date_separator = previous_message.nil? ||
+                           previous_message.created_at.to_date != @user_message.created_at.to_date
+    maybe_update_title(content)
 
     # Streaming : on cree le ai_message VIDE (streaming: true), on enqueue le
     # job qui va le remplir token par token et broadcaster chaque batch.
@@ -31,5 +35,13 @@ class MessagesController < ApplicationController
 
   def message_params
     params.require(:message).permit(:content)
+  end
+
+  def maybe_update_title(content)
+    return unless @conversation.name == "Nouvelle conversation"
+    return unless @conversation.messages.where(role: "user").one?
+
+    @conversation.update!(name: content.truncate(60))
+    @title_updated = true
   end
 end

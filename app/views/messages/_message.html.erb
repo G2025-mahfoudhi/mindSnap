@@ -30,5 +30,8 @@
     <div class="markdown-content">
       <%= markdown(message.content.to_s) %>
     </div>
+    <div class="text-end mt-1" style="font-size: 0.68rem; opacity: 0.6;">
+      <%= message.created_at.strftime("%H:%M") %>
+    </div>
   </div>
 </div>

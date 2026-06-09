@@ -98,7 +98,7 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
   end
 
   def summary_status
-    render json: { summary: @document.summary }
+    render json: { summary: @document.summary, content_present: @document.content.present? }
   end
 
   def edit
