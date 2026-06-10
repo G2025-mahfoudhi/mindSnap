@@ -1,5 +1,6 @@
 <%= simple_form_for document, defaults: { required: false }, html: { data: { controller: "document-type" } } do |f| %>
   <%= f.error_notification %>
+  <%= hidden_field_tag :return_to, local_assigns[:return_to] if local_assigns[:return_to].present? %>
 
     <div class="mb-3">
       <%= f.input :title, label: "Titre", placeholder: "Titre du document" %>
