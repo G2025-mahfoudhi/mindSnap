@@ -12,3 +12,4 @@ pin_all_from "app/javascript/controllers", under: "controllers"
 # data-bs-* (offcanvas, dropdown, etc.) ne s'initialisaient pas.
 pin "bootstrap", to: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js", preload: true
 pin "@popperjs/core", to: "popper.js", preload: true
+pin "cropperjs", to: "https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.esm.min.js"
