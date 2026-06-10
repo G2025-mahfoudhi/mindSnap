@@ -119,6 +119,7 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
   end
 
   def edit
+    @return_to = safe_return_to(params[:return_to])
     return unless @document.document_type == "Lien" &&
                   @document.source_url.blank? &&
                   @document.content.present?
@@ -129,8 +130,10 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
   def update
     @document.folder = resolve_folder
     if @document.update(document_params)
-      redirect_to @document, notice: "Document mis à jour.", status: :see_other
+      destination = safe_return_to(params[:return_to]) || @document
+      redirect_to destination, notice: "Document mis à jour.", status: :see_other
     else
+      @return_to = safe_return_to(params[:return_to])
       render :edit, status: :unprocessable_entity
     end
   end
@@ -139,7 +142,7 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
     folder = @document.folder
     cloudinary_purge_files if Rails.env.production?
     @document.destroy
-    destination = folder ? folder_path(folder) : espaces_path
+    destination = safe_return_to(params[:return_to]) || (folder ? folder_path(folder) : espaces_path)
     redirect_to destination, notice: "Document supprimé.", status: :see_other
   end
 
@@ -172,11 +175,20 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
     end
   end
 
+  def safe_return_to(path)
+    return nil unless path.present?
+
+    uri = URI.parse(path)
+    uri.host.nil? ? path : nil
+  rescue URI::InvalidURIError
+    nil
+  end
+
   def cloudinary_resource_type(content_type)
     case content_type
     when %r{\Aimage/}  then "image"
     when %r{\Avideo/}  then "video"
-    when "application/pdf" then "image" # Cloudinary stocke les PDFs comme image
+    when "application/pdf" then "image" # rubocop:disable Lint/DuplicateBranch
     else "raw"
     end
   end
