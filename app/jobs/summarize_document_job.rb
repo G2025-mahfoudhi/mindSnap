@@ -3,8 +3,8 @@
 class SummarizeDocumentJob < ApplicationJob
   queue_as :ai
 
-  FLUSH_INTERVAL = 0.02
-  FLUSH_SIZE = 6
+  FLUSH_INTERVAL = 0.05
+  FLUSH_SIZE = 12
 
   def perform(document_id) # rubocop:disable Metrics/MethodLength
     document = Document.find(document_id)
@@ -48,6 +48,7 @@ class SummarizeDocumentJob < ApplicationJob
   end
 
   def broadcast_summary(document, text)
+    document.update_columns(summary: text)
     renderer = Redcarpet::Render::HTML.new(hard_wrap: true)
     parser   = Redcarpet::Markdown.new(renderer, autolink: true, tables: true,
                                                  fenced_code_blocks: true, strikethrough: true,
@@ -77,9 +78,9 @@ class SummarizeDocumentJob < ApplicationJob
   def summary_instructions(file_count, length = "medium") # rubocop:disable Metrics/MethodLength
     if file_count > 1
       per_file = case length
-                 when "short"   then "1 phrase par fichier"
+                 when "short" then "1 phrase par fichier"
                  when "detailed" then "3 à 4 phrases par fichier"
-                 else                 "1 à 2 phrases par fichier"
+                 else "1 à 2 phrases par fichier"
                  end
       <<~INST.strip
         Ce document regroupe #{file_count} fichiers attachés.

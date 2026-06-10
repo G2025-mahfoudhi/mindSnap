@@ -11,6 +11,6 @@ module MetaTagsHelper
     image = content_for?(:meta_image) ? content_for(:meta_image) : ::DEFAULT_META["meta_image"]
     return image if image.start_with?("http")
 
-    "#{request.base_url}#{image}"
+    asset_url(image)
   end
 end
