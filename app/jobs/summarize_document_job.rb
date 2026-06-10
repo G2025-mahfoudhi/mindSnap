@@ -3,8 +3,8 @@
 class SummarizeDocumentJob < ApplicationJob
   queue_as :ai
 
-  FLUSH_INTERVAL = 0.1  # secondes entre deux broadcasts
-  FLUSH_SIZE     = 80   # chars
+  FLUSH_INTERVAL = 0.02
+  FLUSH_SIZE = 6
 
   def perform(document_id) # rubocop:disable Metrics/MethodLength
     document = Document.find(document_id)
@@ -42,7 +42,9 @@ class SummarizeDocumentJob < ApplicationJob
   private
 
   def should_flush?(last_flush, buffer)
-    Time.current - last_flush >= FLUSH_INTERVAL || buffer.length >= FLUSH_SIZE
+    Time.current - last_flush >= FLUSH_INTERVAL ||
+      buffer.length >= FLUSH_SIZE ||
+      buffer.match?(/[\s.,!?;:\n]$/)
   end
 
   def broadcast_summary(document, text)
