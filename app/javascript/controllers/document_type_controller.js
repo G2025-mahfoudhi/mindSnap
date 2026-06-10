@@ -11,9 +11,9 @@ export default class extends Controller {
 
   update() {
     const type = this.selectTarget.value
-    this.fileFieldTarget.hidden = !FILE_TYPES.includes(type)
-    this.urlFieldTarget.hidden = type !== "Lien"
-    this.contentFieldTarget.hidden = type !== "Note"
+    this.fileFieldTargets.forEach(el => { el.hidden = !FILE_TYPES.includes(type) })
+    this.urlFieldTargets.forEach(el => { el.hidden = type !== "Lien" })
+    this.contentFieldTargets.forEach(el => { el.hidden = type !== "Note" })
     if (type !== "Note") {
       this.dispatch("hide", { bubbles: true })
     }
