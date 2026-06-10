@@ -11,9 +11,6 @@
 #    Cf. .opencode/design/DECISIONS.md #008
 # ============================================================
 class ApplicationController < ActionController::Base
-  def default_url_options
-    { host: ENV.fetch("DOMAIN", "localhost:3000") }
-  end
   # Authentification Devise : toutes les pages nécessitent
   # d'être connecté, sauf la homepage (skip dans PagesController).
   before_action :authenticate_user!
