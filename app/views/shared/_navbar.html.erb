@@ -61,12 +61,12 @@
         <div class="dropdown-menu dropdown-menu-end">
           <%= link_to "Connexion", new_user_session_path, class: "dropdown-item" %>
           <div class="dropdown-divider"></div>
-          <%= link_to "Créer un compte", new_user_registration_path, class: "dropdown-item fw-semibold", style: "color: #3d7f7e;" %>
+          <%= link_to "Créer un compte", new_user_registration_path, class: "dropdown-item fw-semibold", style: "background-color: #3d7f7e !important; color: #fff !important;" %>
         </div>
       </div>
 
       <%# Grand écran : liens en ligne %>
-      <div class="d-none d-md-flex align-items-center gap-1 ms-auto">
+      <div class="d-none d-md-flex align-items-center gap-3 ms-auto">
         <%= link_to "Connexion", new_user_session_path, class: "nav-link" %>
         <%= link_to "Créer un compte", new_user_registration_path, class: "btn btn-primary btn-sm px-3" %>
       </div>
