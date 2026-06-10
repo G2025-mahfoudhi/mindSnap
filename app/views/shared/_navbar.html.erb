@@ -9,12 +9,12 @@
       <div class="d-flex align-items-center ms-auto gap-3">
         <ul class="navbar-nav flex-row gap-3">
           <li class="nav-item">
-            <%= link_to search_path, class: "nav-link" do %>
+            <%= link_to search_path, class: "nav-link fs-6" do %>
               <i class="fa-solid fa-magnifying-glass me-1"></i> Recherche
             <% end %>
           </li>
           <li class="nav-item">
-            <%= link_to "Mon espace", espaces_path, class: "nav-link" %>
+            <%= link_to "Mon espace", espaces_path, class: "nav-link fs-6" %>
           </li>
         </ul>
 
@@ -49,19 +49,26 @@
         </div>
       </div>
     <% else %>
-      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Menu de navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <%# Petit écran : dropdown flottant (même style que l'avatar) %>
+      <div class="dropdown d-flex d-md-none ms-auto">
+        <button class="navbar-toggler border-0" type="button"
+                data-bs-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-label="Menu de navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="dropdown-menu dropdown-menu-end">
+          <%= link_to "Connexion", new_user_session_path, class: "dropdown-item fs-6" %>
+          <div class="dropdown-divider"></div>
+          <%= link_to "Créer un compte", new_user_registration_path, class: "dropdown-item fw-semibold fs-6", style: "background-color: #3d7f7e !important; color: #fff !important;" %>
+        </div>
+      </div>
 
-      <div class="collapse navbar-collapse" id="navbarMain">
-        <ul class="navbar-nav ms-auto align-items-md-center gap-1">
-          <li class="nav-item">
-            <%= link_to "Connexion", new_user_session_path, class: "nav-link" %>
-          </li>
-          <li class="nav-item ms-md-2">
-            <%= link_to "Créer un compte", new_user_registration_path, class: "btn btn-primary btn-sm px-3" %>
-          </li>
-        </ul>
+      <%# Grand écran : liens en ligne %>
+      <div class="d-none d-md-flex align-items-center gap-4 ms-auto">
+        <%= link_to "Connexion", new_user_session_path, class: "nav-link fs-6" %>
+        <%= link_to "Créer un compte", new_user_registration_path, class: "btn btn-primary px-3" %>
       </div>
     <% end %>
   </div>
