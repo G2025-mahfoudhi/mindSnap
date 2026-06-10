@@ -22,7 +22,7 @@ function buildOptions(message) {
     confirmButtonColor: danger ? "#dc3545" : "#3d7f7e",
     cancelButtonColor: "#6c757d",
     reverseButtons: true,
-    focusCancel: true,
+    focusCancel: danger,
     customClass: { popup: "swal-mindsnap" }
   }
 }

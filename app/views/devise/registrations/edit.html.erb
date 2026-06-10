@@ -26,7 +26,7 @@
 
             <%# Avatar + dropdown Facebook-style %>
             <div class="dropdown d-inline-block mb-2">
-              <div class="avatar-upload-wrapper" data-bs-toggle="dropdown" data-bs-auto-close="outside" style="cursor: pointer;">
+              <button type="button" class="avatar-upload-wrapper border-0 bg-transparent p-0" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false" aria-label="Modifier la photo de profil">
                 <% if has_avatar %>
                   <img src="<%= avatar_url(resource.avatar) %>"
                        class="avatar-upload-img"
@@ -41,7 +41,7 @@
                 <div class="avatar-camera-badge">
                   <i class="fa-solid fa-camera"></i>
                 </div>
-              </div>
+              </button>
 
               <ul class="dropdown-menu shadow-sm" style="min-width: 230px;">
                 <% if has_avatar %>
