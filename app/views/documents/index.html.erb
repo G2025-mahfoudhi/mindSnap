@@ -23,7 +23,7 @@
     <div class="row g-3">
       <% @documents.each do |document| %>
         <div class="col-sm-6 col-lg-4">
-          <%= render "shared/document_card", document: document %>
+          <%= render "shared/document_card", document: document, from: "documents", return_to: documents_path %>
         </div>
       <% end %>
     </div>

@@ -1,0 +1,28 @@
+<% content_for :title, "Paramètres — MindSnap" %>
+<% active_tab = params[:tab]&.to_sym || :preferences %>
+
+<div class="settings-page" data-controller="settings-tabs">
+  <div class="container py-4">
+    <h1 class="settings-page__title text-center mb-4">Paramètres</h1>
+
+    <ul class="nav nav-pills settings-pills justify-content-center mb-4" role="tablist">
+      <%= settings_tab :profile, "Profil", active_tab %>
+      <%= settings_tab :preferences, "Préférences", active_tab %>
+      <%= settings_tab :tags, "Mes tags", active_tab %>
+      <%= settings_tab :data, "Mes données", active_tab %>
+    </ul>
+
+    <div class="settings-content settings-panel">
+      <% case active_tab
+         when :profile %>
+        <%= render "profile", user: @user %>
+      <% when :preferences %>
+        <%= render "preferences", user: @user %>
+      <% when :tags %>
+        <%= render "tags", tags: @tags %>
+      <% when :data %>
+        <%= render "data", user: @user, tags: @tags %>
+      <% end %>
+    </div>
+  </div>
+</div>

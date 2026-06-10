@@ -58,6 +58,14 @@
           <i class="fa-solid fa-arrow-left fa-xs" aria-hidden="true"></i>
           Dashboard
         <% end %>
+      <% elsif params[:from] == "documents" %>
+        <%= link_to documents_path,
+                    class: "d-inline-flex align-items-center gap-2 text-decoration-none small mb-3",
+                    style: "color: #5a6370;",
+                    aria: { label: "Retour à Mes documents" } do %>
+          <i class="fa-solid fa-arrow-left fa-xs" aria-hidden="true"></i>
+          Mes documents
+        <% end %>
       <% elsif params[:from] == "espace" && @document.folder %>
         <%= link_to folder_path(@document.folder),
                     class: "d-inline-flex align-items-center gap-2 text-decoration-none small mb-3",
@@ -107,6 +115,12 @@
           <% end %>
         </div>
 
+        <% show_return_to = document_path(@document, from: params[:from]) %>
+        <% delete_return_to = case params[:from]
+                              when "documents" then documents_path
+                              when "dashboard" then dashboard_path
+                              else @document.folder ? folder_path(@document.folder) : espaces_path
+                              end %>
         <div class="doc-show-actions">
           <button type="button"
                   class="btn btn-primary btn-sm"
@@ -115,13 +129,14 @@
                   aria-controls="doc-chat-panel">
             <i class="fa-solid fa-comments me-1" aria-hidden="true"></i> Discuter
           </button>
-          <%= link_to edit_document_path(@document),
+          <%= link_to edit_document_path(@document, return_to: show_return_to),
                       class: "btn btn-outline-primary btn-sm",
                       aria: { label: "Modifier #{@document.title}" } do %>
             <i class="fa-solid fa-pen" aria-hidden="true"></i>
           <% end %>
           <%= button_to document_path(@document),
                         method: :delete,
+                        params: { return_to: delete_return_to },
                         data: { turbo_confirm: "Supprimer ce document ?" },
                         class: "btn btn-outline-danger btn-sm",
                         form: { aria: { label: "Supprimer #{@document.title}" } } do %>

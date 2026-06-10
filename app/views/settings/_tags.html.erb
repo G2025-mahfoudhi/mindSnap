@@ -1,0 +1,65 @@
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h5 class="card-title mb-4">Mes tags</h5>
+
+        <% if tags.empty? %>
+          <div class="text-center py-4 text-muted">
+            <i class="fa-solid fa-tags fa-2x mb-3 d-block"></i>
+            <p>Aucun tag pour l'instant.</p>
+            <p class="small">Ajoute des documents et l'IA générera des tags automatiquement.</p>
+          </div>
+        <% else %>
+          <div class="mb-3">
+            <input type="text"
+                   class="form-control"
+                   placeholder="Rechercher un tag..."
+                   data-action="input->settings-tabs#filterTags"
+                   aria-label="Rechercher un tag">
+          </div>
+
+          <p class="text-muted small mb-3">
+            Clique sur un tag pour le renommer. Utilise la sélection pour exporter par tags.
+          </p>
+
+          <%= form_with url: export_by_tags_settings_path, method: :post, data: { turbo: false } do |f| %>
+            <div class="list-group list-group-flush mb-3" id="tags_list">
+              <%= render partial: "tag_row", collection: tags, as: :tag %>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <button type="button"
+                      class="btn btn-outline-primary btn-sm"
+                      data-action="click->settings-tabs#toggleTagSelection">
+                <span data-settings-tabs-target="selectAllLabel">Tout sélectionner</span>
+              </button>
+              <span class="text-muted small" data-settings-tabs-target="selectionCount">0 tag(s) sélectionné(s)</span>
+            </div>
+
+            <div class="d-flex gap-2">
+              <%= f.button "Exporter en JSON",
+                    type: "submit",
+                    name: "export_format",
+                    value: "json",
+                    class: "btn btn-primary btn-sm",
+                    data: {
+                      bs_toggle: "tooltip",
+                      bs_title: "Format idéal pour donner à une IA"
+                    } %>
+              <%= f.button "Exporter en Markdown",
+                    type: "submit",
+                    name: "export_format",
+                    value: "markdown",
+                    class: "btn btn-outline-primary btn-sm",
+                    data: {
+                      bs_toggle: "tooltip",
+                      bs_title: "Format idéal pour lire"
+                    } %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

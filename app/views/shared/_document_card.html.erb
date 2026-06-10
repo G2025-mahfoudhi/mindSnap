@@ -1,5 +1,5 @@
 <div class="doc-card" draggable="true" data-document-id="<%= document.id %>">
-  <%= link_to document_path(document, from: "espace"),
+  <%= link_to document_path(document, from: local_assigns[:from] || "espace"),
               class: "doc-card__link",
               aria: { label: "Ouvrir #{document.title}" } do %>
     <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
@@ -45,13 +45,14 @@
   <div class="doc-card__footer">
     <small class="text-muted"><%= document.date_injection&.strftime("%d/%m/%Y") %></small>
     <div class="d-flex gap-2">
-      <%= link_to edit_document_path(document),
+      <%= link_to edit_document_path(document, return_to: local_assigns[:return_to]),
                   class: "btn btn-sm btn-outline-primary",
                   aria: { label: "Modifier #{document.title}" } do %>
         <i class="fa-solid fa-pen fa-xs"></i>
       <% end %>
       <%= button_to document_path(document),
                     method: :delete,
+                    params: { return_to: local_assigns[:return_to] },
                     data: { turbo_confirm: "Supprimer ce document ?" },
                     class: "btn btn-sm btn-outline-danger",
                     form: { aria: { label: "Supprimer #{document.title}" } } do %>

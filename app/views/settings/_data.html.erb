@@ -1,0 +1,65 @@
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h5 class="card-title mb-4">Export global</h5>
+        <p class="text-muted">Télécharge l'ensemble de tes documents et conversations.</p>
+
+        <div class="d-flex gap-2">
+          <%= button_to "Exporter en JSON",
+              export_settings_path,
+              method: :post,
+              params: { export_format: "json" },
+              class: "btn btn-primary",
+              form: { data: { turbo: false } },
+              data: {
+                bs_toggle: "tooltip",
+                bs_title: "Format idéal pour donner à une IA — inclut toutes les métadonnées"
+              } %>
+          <%= button_to "Exporter en Markdown",
+              export_settings_path,
+              method: :post,
+              params: { export_format: "markdown" },
+              class: "btn btn-outline-primary",
+              form: { data: { turbo: false } },
+              data: {
+                bs_toggle: "tooltip",
+                bs_title: "Format idéal pour lire — inclut les pièces jointes"
+              } %>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h5 class="card-title mb-4">Export par tags</h5>
+        <p class="text-muted">Sélectionne des tags dans l'onglet "Mes tags" pour exporter les documents associés.</p>
+        <div class="mt-2">
+          <%= link_to "Aller dans Mes tags", settings_path(tab: :tags), class: "btn btn-outline-primary btn-sm" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-danger shadow-sm">
+      <div class="card-body p-4">
+        <h5 class="card-title text-danger mb-3">Zone dangereuse</h5>
+
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <p class="fw-semibold mb-1">Vider l'historique des conversations</p>
+            <p class="text-muted small mb-0">Supprime définitivement toutes tes conversations et messages.</p>
+          </div>
+          <div>
+            <%= button_to "Tout supprimer",
+                clear_history_settings_path,
+                method: :delete,
+                class: "btn btn-outline-danger",
+                form: { data: { turbo_confirm: "ATTENTION : cette action est IRRÉVERSIBLE. Toutes tes conversations et messages seront définitivement perdus. Es-tu sûr de vouloir continuer ?" } } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
