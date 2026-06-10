@@ -1,0 +1,99 @@
+<% content_for :title, "À propos — MindSnap" %>
+
+<section class="equipe-hero">
+  <div class="container text-center">
+    <h1 class="equipe-hero__title">À propos de MindSnap</h1>
+    <p class="mt-3" style="font-size: 1.1rem; color: rgba(0,0,0,.55); max-width: 520px; margin: 0 auto;">
+      Le deuxième cerveau que tu aurais voulu avoir depuis le début.
+    </p>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container" style="max-width: 760px;">
+
+    <div class="mb-5">
+      <h2 class="h4 fw-bold mb-3">Notre mission</h2>
+      <p class="text-muted" style="line-height: 1.8;">
+        MindSnap est né d'un constat simple : on accumule des centaines de documents, de notes et de ressources,
+        mais on ne les retrouve jamais au bon moment. Cours, contrats, articles, idées griffonnées — tout finit
+        perdu dans un dossier oublié ou un téléphone encombré.
+      </p>
+      <p class="text-muted" style="line-height: 1.8;">
+        Notre mission est de te donner un espace unique et intelligent où capturer tout ce qui compte,
+        l'organiser sans effort et le retrouver instantanément — grâce à l'IA.
+      </p>
+    </div>
+
+    <div class="mb-5">
+      <h2 class="h4 fw-bold mb-3">Ce qu'est MindSnap</h2>
+      <p class="text-muted" style="line-height: 1.8;">
+        MindSnap est une application de gestion de connaissances personnelles. Tu peux y importer des fichiers
+        (PDF, Word, images), créer des notes, sauvegarder des liens web et organiser tout ça en dossiers.
+      </p>
+      <p class="text-muted" style="line-height: 1.8;">
+        Mais MindSnap va plus loin que le simple stockage : l'IA génère des résumés, attribue des tags,
+        indexe le contenu pour une recherche sémantique et répond à tes questions sur tes propres documents.
+        Comme un assistant qui aurait lu tous tes fichiers à ta place.
+      </p>
+    </div>
+
+    <div class="mb-5">
+      <h2 class="h4 fw-bold mb-3">Pourquoi MindSnap ?</h2>
+      <div class="row g-4 mt-1">
+        <div class="col-md-6">
+          <div class="feature-card">
+            <div class="feature-card__icon" aria-hidden="true">
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <h3 class="feature-card__title">Rapide à prendre en main</h3>
+            <p class="feature-card__text">Pas de configuration complexe. Tu importes, l'IA fait le reste automatiquement.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="feature-card">
+            <div class="feature-card__icon" aria-hidden="true">
+              <i class="fa-solid fa-brain"></i>
+            </div>
+            <h3 class="feature-card__title">IA au cœur de l'app</h3>
+            <p class="feature-card__text">Résumés, tags, recherche sémantique, conversations — l'IA est partout pour t'aider.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="feature-card">
+            <div class="feature-card__icon" aria-hidden="true">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <h3 class="feature-card__title">Tes données, tes documents</h3>
+            <p class="feature-card__text">Chaque utilisateur accède uniquement à ses propres documents. Rien n'est partagé sans ton accord.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="feature-card">
+            <div class="feature-card__icon" aria-hidden="true">
+              <i class="fa-solid fa-seedling"></i>
+            </div>
+            <h3 class="feature-card__title">Un projet en évolution</h3>
+            <p class="feature-card__text">MindSnap est un projet vivant, construit et amélioré en continu par une équipe passionnée.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-5">
+      <h2 class="h4 fw-bold mb-3">L'équipe</h2>
+      <p class="text-muted" style="line-height: 1.8;">
+        MindSnap a été créé par une équipe de quatre développeurs dans le cadre du programme
+        <a href="https://www.lewagon.com" target="_blank" rel="noopener" class="text-decoration-none fw-semibold">Le Wagon</a>,
+        une école de code intensif. Le projet est né de notre volonté commune de créer un outil
+        qu'on aurait nous-mêmes adoré avoir.
+      </p>
+      <div class="mt-3">
+        <%= link_to equipe_path, class: "btn btn-outline-primary" do %>
+          <i class="fa-solid fa-users me-2"></i>Découvrir l'équipe
+        <% end %>
+      </div>
+    </div>
+
+  </div>
+</section>

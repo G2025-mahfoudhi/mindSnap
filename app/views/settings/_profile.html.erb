@@ -6,28 +6,110 @@
 
         <%= simple_form_for user, url: settings_path, method: :put, html: { multipart: true } do |f| %>
           <%= f.hidden_field :_tab, value: "profile" %>
-          <div class="d-flex align-items-center gap-4 mb-4">
-            <div class="position-relative">
-              <div class="rounded-circle overflow-hidden border border-2"
-                   style="width: 80px; height: 80px;">
-                <% if user.avatar.attached? %>
+
+          <% has_avatar = user.avatar.attached? && user.avatar.blob.persisted? %>
+
+          <div class="mb-4 text-center" data-controller="avatar-preview">
+
+            <div class="dropdown d-inline-block mb-2">
+              <div class="avatar-upload-wrapper" data-bs-toggle="dropdown" data-bs-auto-close="outside" style="cursor: pointer;">
+                <% if has_avatar %>
                   <img src="<%= url_for(user.avatar) %>"
-                       style="width: 80px; height: 80px; object-fit: cover;"
-                       alt="Photo de profil">
+                       class="avatar-upload-img"
+                       alt="Photo de profil"
+                       data-avatar-preview-target="preview">
                 <% else %>
-                  <span class="d-flex align-items-center justify-content-center fw-bold text-white w-100 h-100"
-                        style="background-color: #549695; font-size: 28px;">
-                    <%= user.first_name&.first&.upcase || "?" %><%= user.last_name&.first&.upcase %>
-                  </span>
+                  <div class="avatar-upload-initials" data-avatar-preview-target="placeholder">
+                    <span><%= user.first_name&.first&.upcase %><%= user.last_name&.first&.upcase %></span>
+                  </div>
+                  <img src="" class="avatar-upload-img d-none" alt="Aperçu" data-avatar-preview-target="preview">
                 <% end %>
+                <div class="avatar-camera-badge">
+                  <i class="fa-solid fa-camera"></i>
+                </div>
               </div>
-              <% if user.avatar.attached? %>
-                <%= link_to "×", avatar_path, data: { turbo_method: :delete }, class: "position-absolute top-0 end-0 badge rounded-pill bg-danger text-white text-decoration-none", style: "transform: translate(25%, -25%); font-size: 0.65rem; width: 18px; height: 18px;", title: "Supprimer la photo" %>
-              <% end %>
+
+              <ul class="dropdown-menu shadow-sm" style="min-width: 230px;">
+                <% if has_avatar %>
+                  <li>
+                    <button type="button" class="dropdown-item py-2" data-bs-toggle="modal" data-bs-target="#avatarViewModal">
+                      <i class="fa-regular fa-image me-2 text-muted"></i>Voir la photo de profil
+                    </button>
+                  </li>
+                  <li>
+                    <button type="button" class="dropdown-item py-2" data-action="click->avatar-preview#openCropperFromCurrent">
+                      <i class="fa-solid fa-crop me-2 text-muted"></i>Recadrer la photo
+                    </button>
+                  </li>
+                  <li><hr class="dropdown-divider my-1"></li>
+                <% end %>
+                <li>
+                  <button type="button" class="dropdown-item py-2" data-action="click->avatar-preview#triggerInput">
+                    <i class="fa-solid fa-camera me-2 text-muted"></i><%= has_avatar ? "Modifier la photo de profil" : "Ajouter une photo de profil" %>
+                  </button>
+                </li>
+                <% if has_avatar %>
+                  <li><hr class="dropdown-divider my-1"></li>
+                  <li>
+                    <%= link_to avatar_path,
+                                data: { turbo_method: :delete, turbo_confirm: "Supprimer définitivement ta photo de profil ?" },
+                                class: "dropdown-item py-2 text-danger" do %>
+                      <i class="fa-solid fa-trash me-2"></i>Supprimer la photo de profil
+                    <% end %>
+                  </li>
+                <% end %>
+              </ul>
             </div>
-            <div>
-              <%= f.input :avatar, as: :file, label: "Choisir une photo", input_html: { accept: "image/*", class: "form-control form-control-sm" } %>
+
+            <%= f.input :avatar,
+                        label: false,
+                        as: :file,
+                        wrapper: false,
+                        input_html: {
+                          accept: "image/*",
+                          class: "d-none",
+                          data: {
+                            "avatar-preview-target": "input",
+                            action: "change->avatar-preview#preview",
+                            current_avatar: has_avatar ? url_for(user.avatar) : ""
+                          }
+                        } %>
+          <%# fin du div avatar-preview déplacée après les modals %>
+
+          <% if has_avatar %>
+            <div class="modal fade" id="avatarViewModal" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0" style="background: rgba(0,0,0,0.85);">
+                  <div class="modal-body text-center p-4 position-relative">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
+                    <img src="<%= url_for(user.avatar) %>" class="rounded-circle" style="width: 280px; height: 280px; object-fit: cover;" alt="Photo de profil">
+                  </div>
+                </div>
+              </div>
             </div>
+          <% end %>
+
+          <div class="modal fade" id="avatarCropModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Recadrer la photo</h5>
+                  <button type="button" class="btn-close" data-action="click->avatar-preview#cancelCrop" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body d-flex justify-content-center" style="max-height: 60vh;">
+                  <img id="crop-target"
+                       data-avatar-preview-target="cropImage"
+                       style="max-width: 100%; display: block;"
+                       alt="Image à recadrer">
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-outline-secondary" data-action="click->avatar-preview#cancelCrop">Annuler</button>
+                  <button type="button" class="btn btn-primary" data-action="click->avatar-preview#applyCrop">Appliquer</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           </div>
 
           <hr class="my-4">

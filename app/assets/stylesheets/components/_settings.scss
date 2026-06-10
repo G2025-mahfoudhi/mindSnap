@@ -61,3 +61,8 @@
 .tag-row.hidden-by-filter {
   display: none;
 }
+
+.cropper-view-box,
+.cropper-face {
+  border-radius: 50%;
+}

@@ -32,6 +32,9 @@ Rails.application.routes.draw do
   end
 
   get "equipe", to: "pages#equipe"
+  get "fonctionnalites", to: "pages#fonctionnalites"
+  get "a-propos", to: "pages#apropos", as: :apropos
+  get "confidentialite", to: "pages#confidentialite"
   get "faq", to: "faqs#index"
   get "search", to: "searches#index"
   post "tts/speak", to: "tts#speak"
