@@ -38,6 +38,12 @@ Rails.application.routes.draw do
   post "transcribe", to: "transcriptions#create"
   get "up" => "rails/health#show", as: :rails_health_check
 
+  resource :settings, only: [:show, :update] do
+    post :export, on: :member
+    post :export_by_tags, on: :member
+    delete :clear_history, on: :member
+  end
 
+  resources :tags, only: [:update, :destroy]
 
 end

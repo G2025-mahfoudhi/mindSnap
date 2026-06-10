@@ -11,7 +11,7 @@ class TtsController < ApplicationController
     return head :bad_request if text.blank?
     return head :bad_request if text.length > MAX_TEXT_LENGTH
 
-    voice = params[:voice] || DEFAULT_VOICE
+    voice = params[:voice] || current_user.tts_voice.presence || DEFAULT_VOICE
 
     uri = URI("#{ENV.fetch('OPENROUTER_BASE_URL', 'https://openrouter.ai/api/v1')}/audio/speech")
     http = Net::HTTP.new(uri.host, uri.port)

@@ -1,0 +1,61 @@
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h5 class="card-title mb-4">Préférences de l'IA</h5>
+
+        <%= simple_form_for user, url: settings_path, method: :put, html: { class: "needs-validation" } do |f| %>
+          <%= f.hidden_field :_tab, value: "preferences" %>
+
+          <div class="mb-4">
+            <%= f.label :preferred_language, "Langue de l'IA", class: "form-label fw-semibold" %>
+            <%= f.select :preferred_language,
+                [["Français", "fr"], ["English", "en"]],
+                {},
+                class: "form-select" %>
+            <div class="form-text">L'IA répondra dans cette langue par défaut.</div>
+          </div>
+
+          <div class="mb-4">
+            <%= f.label :summary_length, "Longueur des résumés", class: "form-label fw-semibold" %>
+            <%= f.select :summary_length,
+                [["Court (3 phrases)", "short"], ["Moyen", "medium"], ["Détaillé", "detailed"]],
+                {},
+                class: "form-select" %>
+          </div>
+
+          <div class="mb-4">
+            <div class="form-check form-switch">
+              <%= f.check_box :auto_tagging, class: "form-check-input", role: "switch" %>
+              <%= f.label :auto_tagging, "Tags automatiques", class: "form-check-label fw-semibold" %>
+            </div>
+            <div class="form-text ms-4">Laisse l'IA générer des tags automatiquement pour chaque nouveau document.</div>
+          </div>
+
+          <hr class="my-4">
+
+          <h5 class="card-title mb-4">Préférences TTS</h5>
+
+          <div class="mb-4">
+            <%= f.label :tts_voice, "Voix par défaut", class: "form-label fw-semibold" %>
+            <%= f.select :tts_voice,
+                [
+                  ["Siwis (Français - Femme)", "ff_siwis"],
+                  ["Heart (Anglais US - Femme)", "af_heart"],
+                  ["Bella (Anglais US - Femme)", "af_bella"],
+                  ["Michael (Anglais US - Homme)", "am_michael"],
+                  ["Emma (Anglais UK - Femme)", "bf_emma"],
+                  ["George (Anglais UK - Homme)", "bm_george"]
+                ],
+                {},
+                class: "form-select" %>
+          </div>
+
+          <div class="text-end">
+            <%= f.submit "Enregistrer les préférences", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

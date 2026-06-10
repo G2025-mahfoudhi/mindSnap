@@ -48,19 +48,17 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
     accumulated  = +""
 
     models_to_try.each do |model|
-      begin
-        tokens_yielded = false
-        stream_chunks(model) do |token|
-          accumulated << token
-          block.call(token)
-          tokens_yielded = true
-        end
-        return accumulated if tokens_yielded
-
-        Rails.logger.warn "OpenRouter streaming: #{model} a renvoyé un stream vide"
-      rescue Faraday::Error, OpenRouterStreamError => e
-        Rails.logger.error "OpenRouter streaming error for #{model}: #{e.class} — #{e.message}"
+      tokens_yielded = false
+      stream_chunks(model) do |token|
+        accumulated << token
+        block.call(token)
+        tokens_yielded = true
       end
+      return accumulated if tokens_yielded
+
+      Rails.logger.warn "OpenRouter streaming: #{model} a renvoyé un stream vide"
+    rescue Faraday::Error, OpenRouterStreamError => e
+      Rails.logger.error "OpenRouter streaming error for #{model}: #{e.class} — #{e.message}"
     end
 
     raise "Tous les modèles streaming ont échoué"
@@ -98,7 +96,7 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
     uri = URI(API_URL)
 
     Net::HTTP.start(uri.host, uri.port, use_ssl: true,
-                    open_timeout: 10, read_timeout: 60) do |http|
+                                        open_timeout: 10, read_timeout: 60) do |http|
       request = Net::HTTP::Post.new(uri)
       request["Authorization"] = "Bearer #{ENV.fetch('OPENROUTER_API_KEY')}"
       request["Content-Type"]  = "application/json"
@@ -168,6 +166,7 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
     user_name   = user.first_name.presence || user.email.split("@").first
 
     focused_doc_section = focused_document_section
+    lang_instruction = language_instruction(user)
 
     <<~PROMPT.strip
       Tu es MindSnap, un assistant de gestion de connaissances personnelles intelligent et bienveillant.
@@ -187,7 +186,7 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
       1. #{focused_doc_section.present? ? "Tu es en mode discussion sur un document précis — concentre-toi d'abord sur ce document." : "Tu connais TOUS les documents listés dans l'inventaire."}
       2. Si du contenu pertinent est fourni → base ta réponse dessus. Cite le titre : *(source: Titre)*.
       3. Si aucun contenu pertinent → dis "Je n'ai pas le contenu de ce document, mais voici ce que je sais :" puis réponds avec tes connaissances générales.
-      4. Sois concis, structuré, réponds dans la langue de la question.
+      4. #{lang_instruction}
       5. Réponds naturellement à tous les messages, y compris les salutations.
       6. Quand plusieurs documents sont pertinents, fais des connexions explicites entre eux et propose une synthèse globale avant de détailler par source.
       7. Utilise le Markdown pour structurer tes réponses (titres `##`, listes `-`, **gras**) dès que cela améliore la lisibilité.
@@ -223,6 +222,15 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
     summary_info = doc.summary.present? ? "\n  Résumé : #{doc.summary.truncate(200)}" : ""
     content_info = doc.content.present? && doc.summary.blank? ? "\n  Contenu : #{doc.content.truncate(300)}" : ""
     "- #{doc.title} [#{doc.document_type}]#{folder_info}#{summary_info}#{content_info}"
+  end
+
+  def language_instruction(user)
+    case user.preferred_language
+    when "en"
+      "Always respond in English, regardless of the question's language."
+    else
+      "Réponds toujours en français, quelle que soit la langue de la question."
+    end
   end
 
   def format_folder_tree(folders)

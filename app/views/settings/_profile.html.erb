@@ -1,0 +1,56 @@
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h5 class="card-title mb-4">Photo de profil</h5>
+
+        <%= simple_form_for user, url: settings_path, method: :put, html: { multipart: true } do |f| %>
+          <%= f.hidden_field :_tab, value: "profile" %>
+          <div class="d-flex align-items-center gap-4 mb-4">
+            <div class="position-relative">
+              <div class="rounded-circle overflow-hidden border border-2"
+                   style="width: 80px; height: 80px;">
+                <% if user.avatar.attached? %>
+                  <img src="<%= url_for(user.avatar) %>"
+                       style="width: 80px; height: 80px; object-fit: cover;"
+                       alt="Photo de profil">
+                <% else %>
+                  <span class="d-flex align-items-center justify-content-center fw-bold text-white w-100 h-100"
+                        style="background-color: #549695; font-size: 28px;">
+                    <%= user.first_name&.first&.upcase || "?" %><%= user.last_name&.first&.upcase %>
+                  </span>
+                <% end %>
+              </div>
+              <% if user.avatar.attached? %>
+                <%= link_to "×", avatar_path, data: { turbo_method: :delete }, class: "position-absolute top-0 end-0 badge rounded-pill bg-danger text-white text-decoration-none", style: "transform: translate(25%, -25%); font-size: 0.65rem; width: 18px; height: 18px;", title: "Supprimer la photo" %>
+              <% end %>
+            </div>
+            <div>
+              <%= f.input :avatar, as: :file, label: "Choisir une photo", input_html: { accept: "image/*", class: "form-control form-control-sm" } %>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <h5 class="card-title mb-4">Informations personnelles</h5>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <%= f.input :first_name, label: "Prénom", input_html: { class: "form-control" } %>
+            </div>
+            <div class="col-md-6">
+              <%= f.input :last_name, label: "Nom", input_html: { class: "form-control" } %>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <%= f.submit "Enregistrer le profil", class: "btn btn-primary" %>
+            <%= link_to "Gérer email, mot de passe et suppression du compte →",
+                edit_user_registration_path,
+                class: "text-muted small" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
