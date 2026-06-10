@@ -1,0 +1,16 @@
+module MetaTagsHelper
+  def meta_title
+    content_for?(:meta_title) ? content_for(:meta_title) : ::DEFAULT_META["meta_title"]
+  end
+
+  def meta_description
+    content_for?(:meta_description) ? content_for(:meta_description) : ::DEFAULT_META["meta_description"]
+  end
+
+  def meta_image
+    image = content_for?(:meta_image) ? content_for(:meta_image) : ::DEFAULT_META["meta_image"]
+    return image if image.start_with?("http")
+
+    "#{request.base_url}#{image}"
+  end
+end

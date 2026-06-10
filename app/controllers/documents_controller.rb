@@ -1,6 +1,6 @@
 class DocumentsController < ApplicationController # rubocop:disable Metrics/ClassLength
   before_action :set_document,
-                only: %i[show edit update destroy download summarize summary_status chat reset_chat assign_folder]
+                only: %i[show edit update destroy download summarize summary_status chat reset_chat assign_folder remove_file split_to_folder]
 
   def index
     @documents = current_user.documents.order(created_at: :desc)
@@ -15,7 +15,7 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
     @document.folder = resolve_folder
     @document.date_injection ||= Time.current
     if @document.save
-      redirect_to @document, notice: "Document créé avec succès.", status: :see_other
+      redirect_to document_path(@document), notice: "Document créé avec succès.", status: :see_other
     else
       render :new, status: :unprocessable_entity
     end
@@ -63,7 +63,7 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
                     document: @document, suggest_folders: @suggest_folders }
         )
       end
-      format.html { redirect_to @document, notice: "Discussion réinitialisée." }
+      format.html { redirect_to document_path(@document), notice: "Discussion réinitialisée." }
     end
   end
 
@@ -84,22 +84,26 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
       )
       redirect_to url, allow_other_host: true
     else
-      redirect_to rails_blob_url(blob, disposition: "attachment")
+      redirect_to rails_blob_url(blob, disposition: "attachment"), allow_other_host: true
     end
   end
 
-  def summarize
-    if @document.file.attached?
-      # Re-extraire systématiquement pour capturer les fichiers qui ont pu échouer
-      # lors de la première extraction (ExtractTextJob chaîne → SummarizeDocumentJob)
-      ExtractTextJob.perform_later(@document.id)
-      return redirect_to @document, notice: "Extraction et résumé en cours…"
+  def summarize # rubocop:disable Metrics/MethodLength
+    return redirect_to document_path(@document), alert: "Le document n'a pas de contenu à résumer." if
+      @document.content.blank? && !@document.file.attached?
+
+    @document.update_columns(summary: nil)
+    enqueue_summarize_job
+
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          "doc-summary-content",
+          partial: "documents/summary_regenerating"
+        )
+      end
+      format.html { redirect_to document_path(@document) }
     end
-
-    return redirect_to @document, alert: "Le document n'a pas de contenu à résumer." if @document.content.blank?
-
-    SummarizeDocumentJob.perform_later(@document.id)
-    redirect_to @document, notice: "Résumé en cours de génération…"
   end
 
   def summary_status
@@ -129,13 +133,34 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
 
   def update
     @document.folder = resolve_folder
-    if @document.update(document_params)
-      destination = safe_return_to(params[:return_to]) || @document
+    if @document.update(document_params_without_file)
+      attach_new_files_and_reindex
+      destination = safe_return_to(params[:return_to]) || document_path(@document)
       redirect_to destination, notice: "Document mis à jour.", status: :see_other
     else
       @return_to = safe_return_to(params[:return_to])
       render :edit, status: :unprocessable_entity
     end
+  end
+
+  def split_to_folder
+    attachment = @document.file.find(params[:attachment_id])
+    folder     = current_user.folders.find(params[:folder_id])
+    extract_file_to_folder(attachment, folder)
+    redirect_to document_path(@document),
+                notice: "« #{attachment.blob.filename} » extrait dans « #{folder.name} ».",
+                status: :see_other
+  rescue ActiveRecord::RecordNotFound
+    redirect_to document_path(@document), alert: "Dossier introuvable.", status: :see_other
+  end
+
+  def remove_file
+    attachment = @document.file.find(params[:attachment_id])
+    cloudinary_purge_attachment(attachment) if Rails.env.production?
+    attachment.purge
+    @document.update_columns(content: nil, summary: nil)
+    ExtractTextJob.perform_later(@document.id) if @document.file.attached?
+    redirect_to document_path(@document), notice: "Fichier supprimé.", status: :see_other
   end
 
   def destroy
@@ -166,12 +191,51 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
     params.require(:document).permit(:title, :content, :source_url, :document_type, :date_injection, file: [])
   end
 
+  def extract_file_to_folder(attachment, folder)
+    new_doc = current_user.documents.create!(
+      title: File.basename(attachment.blob.filename.to_s, ".*"),
+      document_type: "Fichier",
+      folder: folder,
+      date_injection: Time.current
+    )
+    new_doc.file.attach(attachment.blob)
+    attachment.destroy
+    @document.update_columns(content: nil, summary: nil)
+    ExtractTextJob.perform_later(@document.id) if @document.file.attached?
+    ExtractTextJob.perform_later(new_doc.id)
+  end
+
+  def enqueue_summarize_job
+    if @document.file.attached?
+      ExtractTextJob.perform_later(@document.id)
+    else
+      SummarizeDocumentJob.perform_later(@document.id)
+    end
+  end
+
+  def document_params_without_file
+    params.require(:document).permit(:title, :content, :source_url, :document_type, :date_injection)
+  end
+
+  def attach_new_files_and_reindex
+    new_files = params.dig(:document, :file)&.reject(&:blank?)
+    return unless new_files.present?
+
+    @document.file.attach(new_files)
+    @document.update_columns(content: nil, summary: nil)
+    ExtractTextJob.perform_later(@document.id)
+  end
+
   def cloudinary_purge_files
-    @document.file.each do |attachment|
-      key = "#{Rails.env}/#{attachment.blob.key}"
-      %w[image raw video].each do |resource_type|
-        Cloudinary::Uploader.destroy(key, resource_type: resource_type, invalidate: true)
-      end
+    @document.file.each { |a| cloudinary_purge_attachment(a) }
+  end
+
+  def cloudinary_purge_attachment(attachment)
+    key = "#{Rails.env}/#{attachment.blob.key}"
+    %w[image raw video].each do |resource_type|
+      Cloudinary::Uploader.destroy(key, resource_type: resource_type, invalidate: true)
+    rescue StandardError => e
+      Rails.logger.warn "cloudinary_purge_attachment: #{e.message}"
     end
   end
 

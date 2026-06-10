@@ -3,8 +3,8 @@
 class SummarizeDocumentJob < ApplicationJob
   queue_as :ai
 
-  FLUSH_INTERVAL = 0.1  # secondes entre deux broadcasts
-  FLUSH_SIZE     = 80   # chars
+  FLUSH_INTERVAL = 0.02
+  FLUSH_SIZE = 6
 
   def perform(document_id) # rubocop:disable Metrics/MethodLength
     document = Document.find(document_id)
@@ -42,7 +42,9 @@ class SummarizeDocumentJob < ApplicationJob
   private
 
   def should_flush?(last_flush, buffer)
-    Time.current - last_flush >= FLUSH_INTERVAL || buffer.length >= FLUSH_SIZE
+    Time.current - last_flush >= FLUSH_INTERVAL ||
+      buffer.length >= FLUSH_SIZE ||
+      buffer.match?(/[\s.,!?;:\n]$/)
   end
 
   def broadcast_summary(document, text)
@@ -120,14 +122,36 @@ class SummarizeDocumentJob < ApplicationJob
       f.parent ? "  └─ #{f.name} (dans #{f.parent.name})" : "- #{f.name}"
     end.join("\n")
 
-    <<~SECTION
+    file_count = document.content.to_s.scan(/\[Fichier \d+/).size
+    multi = file_count > 1
 
-      Après le résumé, ajoute sur une nouvelle ligne séparée la suggestion de dossier la plus pertinente pour classer ce document.
-      Format exact : **📁 Dossier suggéré :** NomDossier
+    if multi
+      <<~SECTION
 
-      Dossiers disponibles :
-      #{folder_list}
+        Après le résumé, analyse les thèmes de chaque fichier et ajoute des suggestions de classement.
 
-    SECTION
+        Règles strictes :
+        - Si tous les fichiers ont un thème similaire : une seule ligne **📁 Dossier suggéré :** NomDossier
+        - Si les fichiers ont des thèmes différents : une ligne par fichier avec le format **📁 Dossier suggéré :** NomDossier (répète ce format autant de fois que nécessaire, une ligne par fichier)
+        - Si les thèmes sont vraiment distincts, ajoute aussi : **✂️ Séparation suggérée :** brève description (ex: "Fichier 1 → NomDossier1, Fichier 2 → NomDossier2")
+        - Utilise uniquement les noms de dossiers listés ci-dessous, sans guillemets ni ponctuation supplémentaire.
+        - Ne suggère pas de dossier si aucun ne correspond.
+
+        Dossiers disponibles :
+        #{folder_list}
+
+      SECTION
+    else
+      <<~SECTION
+
+        Après le résumé, ajoute sur une nouvelle ligne séparée la suggestion de dossier la plus pertinente pour classer ce document.
+        Format exact : **📁 Dossier suggéré :** NomDossier
+        Utilise uniquement les noms de dossiers listés ci-dessous, sans guillemets ni ponctuation supplémentaire.
+
+        Dossiers disponibles :
+        #{folder_list}
+
+      SECTION
+    end
   end
 end
