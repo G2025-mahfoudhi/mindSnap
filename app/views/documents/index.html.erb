@@ -13,11 +13,17 @@
   </div>
 
   <% if @documents.empty? %>
-    <div class="text-center py-5">
-      <div class="icon-circle mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.75rem;">
-        <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+    <div class="empty-state empty-state--card">
+      <div class="empty-state__illustration">
+        <%= image_tag "empty/documents.svg", alt: "" %>
       </div>
-      <p class="text-muted mb-0">Aucun document pour le moment.</p>
+      <h3 class="empty-state__title">Aucun document pour le moment</h3>
+      <p class="empty-state__text">Capture une note, colle un lien ou importe un fichier — l'IA s'occupe du reste.</p>
+      <div class="empty-state__action">
+        <%= link_to new_document_path, class: "btn btn-primary" do %>
+          <i class="fa-solid fa-plus me-1" aria-hidden="true"></i> Ajouter un document
+        <% end %>
+      </div>
     </div>
   <% else %>
     <div class="row g-3">
