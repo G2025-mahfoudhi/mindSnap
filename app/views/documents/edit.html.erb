@@ -5,7 +5,7 @@
       <h1 class="h3 mb-0"><strong>Modifier <%= @document.title %></strong></h1>
     </div>
     <div class="card-body">
-      <%= render "form", document: @document %>
+      <%= render "form", document: @document, back_path: @return_to, return_to: @return_to %>
     </div>
   </div>
 </div>
