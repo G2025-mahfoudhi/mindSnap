@@ -3,4 +3,12 @@
 class Tagging < ApplicationRecord
   belongs_to :tag
   belongs_to :taggable, polymorphic: true
+
+  after_destroy :cleanup_orphan_tag
+
+  private
+
+  def cleanup_orphan_tag
+    tag.destroy if tag.taggings.count.zero?
+  end
 end

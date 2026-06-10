@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_09_095259) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_09_101501) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -269,16 +269,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_095259) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.boolean "auto_tagging", default: true
     t.datetime "created_at", null: false
+    t.string "default_view", default: "grid"
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "first_name"
     t.string "last_name"
     t.string "plan", default: "free", null: false
+    t.string "preferred_language", default: "fr"
     t.string "provider"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
+    t.string "summary_length", default: "medium"
+    t.string "tts_voice", default: "ff_siwis"
     t.string "uid"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true

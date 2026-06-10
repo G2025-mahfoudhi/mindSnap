@@ -223,11 +223,12 @@ export default class extends Controller {
           "Content-Type": "application/json",
           "X-CSRF-Token": this.csrfToken()
         },
-        body: JSON.stringify({ text, voice: "ff_siwis" })
+        body: JSON.stringify({ text })
       })
 
       if (!response.ok) {
         console.error("TTS failed:", response.status)
+        this.isSpeaking = false
         return
       }
 
