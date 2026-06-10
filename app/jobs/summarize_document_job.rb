@@ -1,6 +1,5 @@
 # Job asynchrone de résumé automatique avec streaming token-par-token.
 # Diffuse chaque batch via Turbo Streams → affichage progressif côté client.
-#
 class SummarizeDocumentJob < ApplicationJob
   queue_as :ai
 
