@@ -1,16 +1,20 @@
 import Swal from "sweetalert2"
 import { Turbo } from "@hotwired/turbo-rails"
 
-// Remplace le confirm() natif de Turbo par SweetAlert2 pour tous les
-// data-turbo-confirm dans l'application.
-Turbo.config.forms.confirm = (message) => {
+const confirmHandler = (message) => {
   return Swal.fire(buildOptions(message)).then(r => r.isConfirmed)
 }
 
+Turbo.config.forms.confirm = confirmHandler
+Turbo.config.drive.confirm = confirmHandler
+
 function buildOptions(message) {
   const danger = /supprimer|effacer|réinitialiser|irréversible|définitivement/i.test(message)
+  const isLong = message.length > 80
+
   return {
-    title: message,
+    title: isLong ? (danger ? "Confirmer la suppression" : "Confirmation") : message,
+    text: isLong ? message : undefined,
     icon: danger ? "warning" : "question",
     showCancelButton: true,
     confirmButtonText: danger ? "Supprimer" : "Confirmer",

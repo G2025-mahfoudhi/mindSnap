@@ -1,0 +1,26 @@
+.swal-mindsnap {
+  border-radius: 12px;
+  font-family: inherit;
+
+  .swal2-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #212529;
+  }
+
+  .swal2-html-container {
+    font-size: 0.95rem;
+    color: #5a6370;
+  }
+
+  .swal2-actions {
+    gap: 0.5rem;
+  }
+
+  .swal2-confirm,
+  .swal2-cancel {
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 0.4rem 1.2rem;
+  }
+}
