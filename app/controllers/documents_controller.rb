@@ -174,7 +174,8 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
   private
 
   def set_document
-    @document = current_user.documents.find(params[:id])
+    scope = current_user.documents.includes(file_attachments: :blob)
+    @document = scope.find(params[:id])
   end
 
   def resolve_folder

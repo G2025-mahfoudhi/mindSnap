@@ -8,8 +8,8 @@
 class StreamAiResponseJob < ApplicationJob
   queue_as :default
 
-  FLUSH_INTERVAL_MS = 20
-  FLUSH_SIZE        = 6
+  FLUSH_INTERVAL_MS = 50
+  FLUSH_SIZE        = 12
 
   def perform(message_id)
     @message = Message.find(message_id)
