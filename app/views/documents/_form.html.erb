@@ -1,93 +1,115 @@
-<%= simple_form_for document, defaults: { required: false }, html: { data: { controller: "document-type" } } do |f| %>
-  <%= f.error_notification %>
-  <%= hidden_field_tag :return_to, local_assigns[:return_to] if local_assigns[:return_to].present? %>
+<div data-controller="document-type">
+
+  <%# Liste des fichiers existants — hors du form pour éviter les forms imbriqués %>
+  <% if document.persisted? && document.file.attached? %>
+    <div class="mb-3" data-document-type-target="fileField" hidden>
+      <label class="form-label">Fichiers attachés</label>
+      <ul class="list-group mb-3">
+        <% document.file.each do |attachment| %>
+          <li class="list-group-item d-flex align-items-center justify-content-between py-2">
+            <span class="small text-truncate me-2">
+              <i class="fa-solid fa-paperclip me-1 text-muted"></i><%= attachment.filename %>
+            </span>
+            <%= button_to remove_file_document_path(document, attachment_id: attachment.id, return_to: local_assigns[:return_to]),
+                          method: :delete,
+                          class: "btn btn-sm btn-outline-danger flex-shrink-0",
+                          form: { data: { turbo_confirm: "Supprimer « #{attachment.filename} » ?" } },
+                          aria: { label: "Supprimer #{attachment.filename}" } do %>
+              <i class="fa-solid fa-xmark"></i>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= simple_form_for document, defaults: { required: false } do |f| %>
+    <%= f.error_notification %>
+    <%= hidden_field_tag :return_to, local_assigns[:return_to] if local_assigns[:return_to].present? %>
 
     <div class="mb-3">
       <%= f.input :title, label: "Titre", placeholder: "Titre du document" %>
     </div>
 
-  <div class="mb-3">
-    <%= f.input :document_type,
-                label: "Type",
-                as: :select,
-                collection: ["Note", "Lien", "Fichier"],
-                prompt: "Choisir un type",
-                input_html: {
-                  data: {
-                    "document-type-target": "select",
-                    action: "change->document-type#update"
-                  }
-                } %>
-  </div>
-
-  <div class="mb-3" data-controller="folder-select">
-    <label class="form-label" for="document_folder_id">Dossier</label>
-    <select name="document[folder_id]"
-            id="document_folder_id"
-            class="form-select"
-            data-folder-select-target="select"
-            data-action="change->folder-select#toggle">
-      <option value="">Sans dossier</option>
-      <% current_user.folders.each do |folder| %>
-        <% if document.folder_id == folder.id %>
-          <option value="<%= folder.id %>" selected><%= folder.name %></option>
-        <% else %>
-          <option value="<%= folder.id %>"><%= folder.name %></option>
-        <% end %>
-      <% end %>
-      <option value="new">+ Créer un nouveau dossier...</option>
-    </select>
-
-    <div data-folder-select-target="newFolderField" hidden class="mt-2">
-      <input type="text"
-             name="new_folder_name"
-             class="form-control"
-             placeholder="Nom du nouveau dossier"
-             aria-label="Nom du nouveau dossier"
-             autocomplete="off">
+    <div class="mb-3">
+      <%= f.input :document_type,
+                  label: "Type",
+                  as: :select,
+                  collection: ["Note", "Lien", "Fichier"],
+                  prompt: "Choisir un type",
+                  input_html: {
+                    data: {
+                      "document-type-target": "select",
+                      action: "change->document-type#update"
+                    }
+                  } %>
     </div>
-  </div>
 
-  <%# Affiché pour Fichier %>
-  <div class="mb-3" data-document-type-target="fileField" hidden>
-    <%= f.input :file, label: "Fichiers", as: :file, input_html: { multiple: true } %>
-    <% if document.file.attached? %>
-      <ul class="mt-1 list-unstyled text-muted small">
-        <% document.file.each do |attachment| %>
-          <li><%= attachment.filename %></li>
+    <div class="mb-3" data-controller="folder-select">
+      <label class="form-label" for="document_folder_id">Dossier</label>
+      <select name="document[folder_id]"
+              id="document_folder_id"
+              class="form-select"
+              data-folder-select-target="select"
+              data-action="change->folder-select#toggle">
+        <option value="">Sans dossier</option>
+        <% current_user.folders.each do |folder| %>
+          <% if document.folder_id == folder.id %>
+            <option value="<%= folder.id %>" selected><%= folder.name %></option>
+          <% else %>
+            <option value="<%= folder.id %>"><%= folder.name %></option>
+          <% end %>
         <% end %>
-      </ul>
-    <% end %>
-  </div>
+        <option value="new">+ Créer un nouveau dossier...</option>
+      </select>
 
-  <%# Affiché pour Lien %>
-  <div class="mb-3" data-document-type-target="urlField" hidden>
-    <%= f.input :source_url,
-                label: "URL",
-                placeholder: "https://...",
-                input_html: { type: "url", autocomplete: "off" } %>
-  </div>
+      <div data-folder-select-target="newFolderField" hidden class="mt-2">
+        <input type="text"
+               name="new_folder_name"
+               class="form-control"
+               placeholder="Nom du nouveau dossier"
+               aria-label="Nom du nouveau dossier"
+               autocomplete="off">
+      </div>
+    </div>
 
-  <div class="mb-3" data-document-type-target="contentField" hidden
-       data-controller="voice"
-       data-voice-auto-submit-value="false"
-       data-action="document-type:hide->voice#stopRecording">
-    <%= f.input :content, label: "Contenu", as: :text,
-        input_html: { rows: 8, placeholder: "Contenu du document...",
-                      data: { voice_target: "input" } } %>
-    <button type="button"
-            data-action="voice#toggle"
-            data-voice-target="micButton"
-            class="btn btn-sm btn-outline-secondary mt-2 voice-btn"
-            aria-label="Dicter une note"
-            aria-pressed="false">
-      <i class="fa-solid fa-microphone"></i>
-      <span data-voice-target="timer" class="ms-1 small recording-timer" hidden></span>
-    </button>
-  </div>
+    <%# Affiché pour Fichier %>
+    <div class="mb-3" data-document-type-target="fileField" hidden>
+      <%= f.input :file, label: "Ajouter des fichiers", as: :file,
+                  input_html: { multiple: true },
+                  hint: "Sélectionne un ou plusieurs fichiers à ajouter." %>
+    </div>
 
-  <div class="d-flex gap-2 justify-content-center">
-    <%= f.button :submit, "Valider", class: "btn btn-outline-secondary" %>
-    <%= link_to "Annuler", (local_assigns[:back_path] || (document.folder_id ? folder_path(document.folder_id) : espaces_path)), class: "btn btn-outline-secondary" %>
-  </div>
-<% end %>
+    <%# Affiché pour Lien %>
+    <div class="mb-3" data-document-type-target="urlField" hidden>
+      <%= f.input :source_url,
+                  label: "URL",
+                  placeholder: "https://...",
+                  input_html: { type: "url", autocomplete: "off" } %>
+    </div>
+
+    <div class="mb-3" data-document-type-target="contentField" hidden
+         data-controller="voice"
+         data-voice-auto-submit-value="false"
+         data-action="document-type:hide->voice#stopRecording">
+      <%= f.input :content, label: "Contenu", as: :text,
+          input_html: { rows: 8, placeholder: "Contenu du document...",
+                        data: { voice_target: "input" } } %>
+      <button type="button"
+              data-action="voice#toggle"
+              data-voice-target="micButton"
+              class="btn btn-sm btn-outline-secondary mt-2 voice-btn"
+              aria-label="Dicter une note"
+              aria-pressed="false">
+        <i class="fa-solid fa-microphone"></i>
+        <span data-voice-target="timer" class="ms-1 small recording-timer" hidden></span>
+      </button>
+    </div>
+
+    <div class="d-flex gap-2 justify-content-center">
+      <%= f.button :submit, "Valider", class: "btn btn-outline-secondary" %>
+      <%= link_to "Annuler", (local_assigns[:back_path] || (document.folder_id ? folder_path(document.folder_id) : espaces_path)), class: "btn btn-outline-secondary" %>
+    </div>
+  <% end %>
+
+</div>

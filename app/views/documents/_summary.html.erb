@@ -1,13 +1,15 @@
 <% suggest_doc_id      = document.folder_id.blank? ? document.id : 0 %>
 <% folders_for_suggest  = local_assigns[:suggest_folders] || document.user.folders.includes(:parent).order(:name) %>
 <% suggest_folders_json = folders_for_suggest.map { |f| { id: f.id, name: f.name } }.to_json %>
+<% attachments_json = document.file.map { |a| { id: a.id, filename: a.blob.filename.to_s } }.to_json %>
 <div class="doc-show-content"
      id="doc-summary"
      data-controller="summary-poll folder-suggest"
      data-summary-poll-document-id-value="<%= document.id %>"
      data-summary-poll-has-summary-value="<%= document.summary.present? %>"
      data-folder-suggest-document-id-value="<%= suggest_doc_id %>"
-     data-folder-suggest-folders-value="<%= suggest_folders_json %>">
+     data-folder-suggest-folders-value="<%= suggest_folders_json %>"
+     data-folder-suggest-attachments-value="<%= attachments_json %>">
   <div class="d-flex justify-content-between align-items-center mb-2">
     <p class="text-muted fw-semibold mb-0" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">
       <i class="fa-solid fa-robot me-1" aria-hidden="true"></i> Résumé IA
@@ -25,6 +27,11 @@
   <div id="doc-summary-content" data-summary-poll-target="content">
     <% if document.summary.present? %>
       <div class="markdown-content"><%= markdown document.summary %></div>
+    <% elsif document.file.attached? || document.content.present? %>
+      <p class="text-muted fst-italic mb-0">
+        <i class="fa-solid fa-spinner fa-spin me-1" aria-hidden="true"></i>
+        Génération du résumé en cours…
+      </p>
     <% else %>
       <p class="text-muted fst-italic mb-0">Le résumé généré par l'IA apparaîtra ici.</p>
     <% end %>

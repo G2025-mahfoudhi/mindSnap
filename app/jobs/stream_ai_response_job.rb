@@ -8,7 +8,8 @@
 class StreamAiResponseJob < ApplicationJob
   queue_as :default
 
-  FLUSH_INTERVAL_MS = 50
+  FLUSH_INTERVAL_MS = 20
+  FLUSH_SIZE        = 6
 
   def perform(message_id)
     @message = Message.find(message_id)
@@ -68,7 +69,9 @@ class StreamAiResponseJob < ApplicationJob
   end
 
   def should_flush?
-    Time.current - @last_flush >= FLUSH_INTERVAL_MS / 1000.0 || @buffer.length >= 80
+    Time.current - @last_flush >= FLUSH_INTERVAL_MS / 1000.0 ||
+      @buffer.length >= FLUSH_SIZE ||
+      @buffer.match?(/[\s.,!?;:\n]$/)
   end
 
   def flush_buffer(buffer)

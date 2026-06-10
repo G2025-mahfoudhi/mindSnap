@@ -17,6 +17,8 @@ Rails.application.routes.draw do
       post :summarize
       patch :assign_folder
       delete :reset_chat
+      delete :remove_file
+      post   :split_to_folder
     end
     resources :conversations, only: [:create, :show] do
       resources :messages, only: [:create]
