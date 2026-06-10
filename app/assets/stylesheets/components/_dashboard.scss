@@ -211,6 +211,11 @@
 }
 
 // ── Pricing cards ──────────────────────────────────────────────────────
+.pricing-banner-img {
+  max-width: 180px;
+  height: auto;
+}
+
 .pricing-card {
   border: 1px solid rgba($near-black, .1);
   border-radius: 16px;
