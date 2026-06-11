@@ -293,6 +293,8 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 
@@ -426,4 +428,30 @@
   border-radius: 10px;
   color: #bbb;
   font-size: 0.875rem;
+}
+
+// ─── Mobile ────────────────────────────────────────────────────────────────
+@include media-breakpoint-down(sm) {
+  .folders-page,
+  .folder-show-page,
+  .folder-form-page {
+    padding: 1rem 0.75rem;
+  }
+
+  .show-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .show-actions {
+    width: 100%;
+  }
+
+  .folders-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .item-grid {
+    grid-template-columns: 1fr;
+  }
 }

@@ -6,8 +6,34 @@
     <% end %>
 
     <% if user_signed_in? %>
-      <div class="d-flex align-items-center ms-auto gap-3">
-        <ul class="navbar-nav flex-row gap-3">
+      <div class="d-flex align-items-center ms-auto gap-2">
+
+        <%# Mobile : dropdown nav (Recherche + Mon espace) %>
+        <div class="dropdown d-flex d-md-none">
+          <button class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center justify-content-center"
+                  style="width: 34px; height: 34px; padding: 0;"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  aria-label="Menu de navigation">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <%= link_to search_path, class: "dropdown-item" do %>
+                <i class="fa-solid fa-magnifying-glass me-2"></i>Recherche
+              <% end %>
+            </li>
+            <li>
+              <%= link_to espaces_path, class: "dropdown-item" do %>
+                <i class="fa-solid fa-layer-group me-2"></i>Mon espace
+              <% end %>
+            </li>
+          </ul>
+        </div>
+
+        <%# Desktop : liens de navigation %>
+        <ul class="navbar-nav flex-row gap-3 d-none d-md-flex">
           <li class="nav-item">
             <%= link_to search_path, class: "nav-link fs-6" do %>
               <i class="fa-solid fa-magnifying-glass me-1"></i> Recherche

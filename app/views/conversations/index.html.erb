@@ -1,6 +1,6 @@
 <% content_for :title, "Conversations — MindSnap" %>
 
-<div class="d-flex" style="height: calc(100vh - 56px - 4rem);" role="main" aria-label="Conversations">
+<div class="d-flex" style="height: calc(100vh - var(--navbar-height, 56px) - var(--footer-height, 60px));" role="main" aria-label="Conversations">
   <%= render "conversations/sidebar",
              conversations: @conversations,
              current_conversation: nil %>
@@ -22,6 +22,7 @@
           <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>
           Nouvelle conversation
         <% end %>
+
       </div>
     </div>
   </div>

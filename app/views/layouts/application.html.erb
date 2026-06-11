@@ -54,7 +54,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body style="padding-bottom: 3rem;" class="<%= content_for(:body_class) %>"
+  <body style="padding-bottom: var(--footer-height, 60px);" class="<%= content_for(:body_class) %>"
         data-controller="sidebar-toggle">
     <a href="#main-content" class="visually-hidden-focusable">Aller au contenu principal</a>
     <%= render "shared/navbar" %>

@@ -1,6 +1,6 @@
 <% content_for :title, "#{@document.title} — MindSnap" %>
 <% content_for :body_class, "overflow-hidden" %>
-<% content_for :main_style, "height: calc(100vh - 56px); overflow: hidden;" %>
+<% content_for :main_style, "height: calc(100vh - var(--navbar-height, 56px) - var(--footer-height, 60px)); overflow: hidden;" %>
 
 <%= turbo_stream_from @doc_chat_conversation %>
 <%= turbo_stream_from @document %>
@@ -11,7 +11,7 @@
      aria-labelledby="doc-chat-panel-label"
      data-controller="doc-chat"
      data-doc-chat-url-value="<%= chat_document_path(@document) %>"
-     style="width: 420px;">
+     style="width: min(420px, 100vw);">
   <div class="offcanvas-header border-bottom py-3">
     <h6 class="offcanvas-title fw-semibold mb-0 me-3" id="doc-chat-panel-label">
       <i class="fa-solid fa-comments me-2 text-primary" aria-hidden="true"></i>Discuter avec l'IA
@@ -40,7 +40,7 @@
   </div>
 </div>
 
-<div class="d-flex" style="height: calc(100vh - 56px);">
+<div class="d-flex" style="height: calc(100vh - var(--navbar-height, 56px) - var(--footer-height, 60px));">
 
   <%= render "documents/sidebar",
              folders: @sidebar_folders,
@@ -180,7 +180,7 @@
                   <iframe data-src="<%= document_inline_url(attachment) %>"
                           src="about:blank"
                           width="100%"
-                          height="800px"
+                          class="pdf-iframe" style="height: clamp(300px, 60vh, 800px);"
                           style="border: 1px solid #ebebeb; border-radius: 8px;"
                           title="<%= attachment.filename %>">
                   </iframe>

@@ -300,3 +300,28 @@
     }
   }
 }
+
+// ─── Mobile ────────────────────────────────────────────────────────────────
+@include media-breakpoint-down(sm) {
+  .doc-show-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .doc-show-actions {
+    flex-wrap: wrap;
+  }
+
+  .doc-show-title {
+    font-size: 1.25rem;
+  }
+
+  .doc-show-content {
+    padding: 1rem 0.75rem;
+  }
+
+  .pdf-iframe {
+    height: 60vh !important;
+    min-height: 300px;
+  }
+}
