@@ -33,6 +33,12 @@ body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle {
     min-width: 36px !important;
   }
 
+  // Sidebar conversations : padding-bottom pour que l'avatar ne soit pas
+  // caché par le footer fixe (uniquement sur mobile)
+  aside[aria-label="Panneau de conversations"] {
+    padding-bottom: var(--footer-height, 88px) !important;
+  }
+
   // Formulaire de chat : espace sous le footer fixe
   .d-flex.flex-column.flex-grow-1.overflow-hidden > .border-top {
     padding-bottom: 1rem !important;
