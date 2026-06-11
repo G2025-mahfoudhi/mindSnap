@@ -7,6 +7,7 @@ class TaggingTest < ActiveSupport::TestCase
     @document = Document.create!(
       user: @user,
       title: "Tagged doc",
+      content: "x",
       document_type: "Note"
     )
   end

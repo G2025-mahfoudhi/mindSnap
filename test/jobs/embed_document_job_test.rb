@@ -20,7 +20,7 @@ class EmbedDocumentJobTest < ActiveJob::TestCase
   test "perform skip si contenu vide" do
     doc = @user.documents.create!(
       title: "Doc vide",
-      document_type: "Note"
+      document_type: "Article"
     )
     assert_no_changes -> { doc.reload.embedding_status } do
       EmbedDocumentJob.perform_now(doc.id)

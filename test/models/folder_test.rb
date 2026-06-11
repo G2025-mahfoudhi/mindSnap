@@ -40,7 +40,7 @@ class FolderTest < ActiveSupport::TestCase
 
   test "a des documents" do
     folder = Folder.create!(name: "Avec docs", user: @user)
-    doc = @user.documents.create!(title: "Doc", document_type: "Note", folder: folder)
+    doc = @user.documents.create!(title: "Doc", content: "x", document_type: "Note", folder: folder)
     assert_includes folder.documents, doc
   end
 
@@ -53,7 +53,7 @@ class FolderTest < ActiveSupport::TestCase
 
   test "destroy cascade sur documents" do
     folder = Folder.create!(name: "Avec docs", user: @user)
-    doc = @user.documents.create!(title: "Doc", document_type: "Note", folder: folder)
+    doc = @user.documents.create!(title: "Doc", content: "x", document_type: "Note", folder: folder)
     folder.destroy
     assert_equal 0, Document.where(id: doc.id).count
   end

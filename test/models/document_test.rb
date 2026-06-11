@@ -13,7 +13,8 @@ class DocumentTest < ActiveSupport::TestCase
     document = Document.new(
       user: @user,
       title: "Mon document",
-      document_type: "Note"
+      document_type: "Note",
+      content: "Du contenu"
     )
     assert document.valid?
   end
@@ -24,7 +25,7 @@ class DocumentTest < ActiveSupport::TestCase
       document_type: "Note"
     )
     assert_not document.valid?
-    assert_includes document.errors[:title].map(&:downcase).join, "blank"
+    assert_includes document.errors[:title].map(&:downcase).join, "obligatoire"
   end
 
   test "invalide sans document_type" do
@@ -33,7 +34,67 @@ class DocumentTest < ActiveSupport::TestCase
       title: "Mon document"
     )
     assert_not document.valid?
-    assert_includes document.errors[:document_type].map(&:downcase).join, "blank"
+    assert_includes document.errors[:document_type].map(&:downcase).join, "obligatoire"
+  end
+
+  test "invalide sans fichier quand type Fichier" do
+    document = Document.new(
+      user: @user,
+      title: "Mon document",
+      document_type: "Fichier"
+    )
+    assert_not document.valid?
+    assert_includes document.errors[:file].map(&:downcase).join, "obligatoire"
+  end
+
+  test "valide avec fichier quand type Fichier" do
+    document = Document.new(
+      user: @user,
+      title: "Mon document",
+      document_type: "Fichier"
+    )
+    document.file.attach(io: StringIO.new("contenu test"), filename: "test.txt", content_type: "text/plain")
+    assert document.valid?
+  end
+
+  test "invalide sans URL quand type Lien" do
+    document = Document.new(
+      user: @user,
+      title: "Mon lien",
+      document_type: "Lien"
+    )
+    assert_not document.valid?
+    assert_includes document.errors[:source_url].map(&:downcase).join, "obligatoire"
+  end
+
+  test "valide avec URL quand type Lien" do
+    document = Document.new(
+      user: @user,
+      title: "Mon lien",
+      document_type: "Lien",
+      source_url: "https://example.com"
+    )
+    assert document.valid?
+  end
+
+  test "invalide sans contenu quand type Note" do
+    document = Document.new(
+      user: @user,
+      title: "Ma note",
+      document_type: "Note"
+    )
+    assert_not document.valid?
+    assert_includes document.errors[:content].map(&:downcase).join, "obligatoire"
+  end
+
+  test "valide avec contenu quand type Note" do
+    document = Document.new(
+      user: @user,
+      title: "Ma note",
+      document_type: "Note",
+      content: "Du contenu"
+    )
+    assert document.valid?
   end
 
   test "appartient à un user" do
@@ -49,6 +110,7 @@ class DocumentTest < ActiveSupport::TestCase
     document = Document.create!(
       user: @user,
       title: "Status test",
+      content: "x",
       document_type: "Note"
     )
     assert_equal "pending", document.embedding_status
@@ -58,6 +120,7 @@ class DocumentTest < ActiveSupport::TestCase
     document = Document.create!(
       user: @user,
       title: "Chunks test",
+      content: "x",
       document_type: "Note"
     )
     assert_respond_to document, :document_chunks
@@ -92,7 +155,7 @@ class DocumentTest < ActiveSupport::TestCase
       Document.create!(
         user: @user,
         title: "Sans contenu",
-        document_type: "Note"
+        document_type: "Article"
       )
     end
   end
@@ -112,6 +175,7 @@ class DocumentTest < ActiveSupport::TestCase
     document = Document.create!(
       user: @user,
       title: "Pending doc",
+      content: "x",
       document_type: "Note"
     )
     assert_not document.embedded?
@@ -135,6 +199,7 @@ class DocumentTest < ActiveSupport::TestCase
       Document.create!(
         user: @user,
         title: "Not a link",
+        content: "x",
         document_type: "Note",
         source_url: "https://example.com"
       )
@@ -143,11 +208,12 @@ class DocumentTest < ActiveSupport::TestCase
 
   test "n'enqueue pas ScrapeLinkJob si Lien sans source_url" do
     assert_no_enqueued_jobs(only: ScrapeLinkJob) do
-      Document.create!(
+      doc = @user.documents.build(
         user: @user,
         title: "Link no URL",
         document_type: "Lien"
       )
+      doc.save(validate: false)
     end
   end
 
@@ -180,7 +246,8 @@ class DocumentTest < ActiveSupport::TestCase
     document = Document.new(
       user: @user,
       title: "Empty URL",
-      document_type: "Lien",
+      content: "x",
+      document_type: "Note",
       source_url: ""
     )
     assert document.valid?
@@ -190,7 +257,8 @@ class DocumentTest < ActiveSupport::TestCase
     document = Document.new(
       user: @user,
       title: "Nil URL",
-      document_type: "Lien",
+      content: "x",
+      document_type: "Note",
       source_url: nil
     )
     assert document.valid?
@@ -204,6 +272,7 @@ class DocumentTest < ActiveSupport::TestCase
     doc = @user.documents.create!(
       title: "Legacy link",
       document_type: "Lien",
+      source_url: "https://legacy.example.com",
       content: "https://legacy.example.com"
     )
     doc.update_columns(
@@ -213,7 +282,7 @@ class DocumentTest < ActiveSupport::TestCase
     )
     doc.reload
 
-    # Le save! doit déclencher before_save :migrate_legacy_url
+    # Le save! doit déclencher before_validation :migrate_legacy_url
     doc.save!
     doc.reload
 
@@ -229,6 +298,7 @@ class DocumentTest < ActiveSupport::TestCase
     doc = @user.documents.create!(
       title: "Legacy link 2",
       document_type: "Lien",
+      source_url: "https://legacy2.example.com",
       content: "https://legacy2.example.com"
     )
     doc.update_columns(
@@ -246,15 +316,15 @@ class DocumentTest < ActiveSupport::TestCase
   test "ne migre pas si document_type n'est pas Lien" do
     doc = @user.documents.create!(
       title: "Not a link",
-      document_type: "Note",
-      content: "https://should-not-migrate.example.com"
+      content: "https://should-not-migrate.example.com",
+      document_type: "Note"
     )
     # Pour les Notes, le create! ne déclenche pas migrate_legacy_url
     # (should_migrate_url? vérifie document_type == "Lien")
     doc.update_columns(source_url: nil)
     doc.reload
 
-    doc.save!
+    doc.save(validate: false)
     doc.reload
 
     assert_nil doc.source_url,
@@ -268,12 +338,13 @@ class DocumentTest < ActiveSupport::TestCase
     doc = @user.documents.create!(
       title: "Not an URL",
       document_type: "Lien",
+      source_url: "https://dummy.example.com",
       content: "Ceci n'est pas une URL"
     )
     doc.update_columns(source_url: nil, content: "Ceci n'est pas une URL")
     doc.reload
 
-    doc.save!
+    doc.save(validate: false)
     doc.reload
 
     assert_nil doc.source_url,
@@ -298,6 +369,7 @@ class DocumentTest < ActiveSupport::TestCase
     document = Document.create!(
       user: @user,
       title: "Default scraping status",
+      content: "x",
       document_type: "Note"
     )
     assert_equal "pending", document.scraping_status

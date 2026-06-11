@@ -11,13 +11,16 @@ class Document < ApplicationRecord
   # -- Validations ---------------------------------------------------------
   validates :title, presence: true
   validates :document_type, presence: true
+  validates :source_url, presence: true, if: :link_required?
   validates :source_url, format: { with: URI::DEFAULT_PARSER.make_regexp(%w[http https]),
                                    message: "doit être une URL valide" },
                          allow_blank: true
+  validates :file, presence: true, if: :file_required?
+  validates :content, presence: true, if: :note_required?
 
   # -- Callbacks -----------------------------------------------------------
   # Migre les anciens documents "Lien" où l'URL était stockée dans content
-  before_save :migrate_legacy_url, if: :should_migrate_url?
+  before_validation :migrate_legacy_url, if: :should_migrate_url?
 
   # Après création : si c'est un Lien avec URL, scraper le contenu
   after_commit :scrape_async, on: :create
@@ -48,6 +51,18 @@ class Document < ApplicationRecord
   end
 
   private
+
+  def file_required?
+    document_type == "Fichier"
+  end
+
+  def link_required?
+    document_type == "Lien"
+  end
+
+  def note_required?
+    document_type == "Note"
+  end
 
   # Migration des anciens documents "Lien" : l'URL était stockée dans content
   # au lieu de source_url. On la déplace au prochain save.

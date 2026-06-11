@@ -21,7 +21,7 @@ class TagDocumentJobTest < ActiveJob::TestCase
   test "perform skip si contenu vide" do
     doc = @user.documents.create!(
       title: "Doc sans contenu",
-      document_type: "Note"
+      document_type: "Article"
     )
     assert_no_changes -> { doc.reload.tags.count } do
       TagDocumentJob.perform_now(doc.id)

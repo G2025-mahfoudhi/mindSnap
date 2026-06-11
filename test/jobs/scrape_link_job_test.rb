@@ -19,6 +19,7 @@ class ScrapeLinkJobTest < ActiveJob::TestCase
   test "perform skip si pas un Lien" do
     doc = @user.documents.create!(
       title: "Not a link",
+      content: "x",
       document_type: "Note",
       source_url: "https://example.com"
     )
@@ -28,10 +29,11 @@ class ScrapeLinkJobTest < ActiveJob::TestCase
   end
 
   test "perform skip si pas d'URL source" do
-    doc = @user.documents.create!(
+    doc = @user.documents.build(
       title: "Lien sans URL",
       document_type: "Lien"
     )
+    doc.save(validate: false)
     assert_no_changes -> { doc.reload.scraping_status } do
       ScrapeLinkJob.perform_now(doc.id)
     end

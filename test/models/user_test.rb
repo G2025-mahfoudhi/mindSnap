@@ -13,7 +13,7 @@ class UserTest < ActiveSupport::TestCase
   test "invalide sans email" do
     user = User.new(password: "password123")
     assert_not user.valid?
-    assert_includes user.errors[:email].map(&:downcase).join, "blank"
+    assert_includes user.errors[:email].map(&:downcase).join, "renseigné"
   end
 
   test "invalide sans password" do
@@ -48,7 +48,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "destroy cascade sur documents" do
-    doc = @user.documents.create!(title: "Cascade test", document_type: "Note")
+    doc = @user.documents.create!(title: "Cascade test", content: "x", document_type: "Note")
     assert_equal 1, @user.documents.count
     @user.destroy
     assert_equal 0, Document.where(id: doc.id).count

@@ -40,7 +40,7 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
     sign_in @user
     assert_no_difference("Document.count") do
       post documents_path, params: {
-        document: { title: "", document_type: "Note" }
+        document: { title: "", content: "x", document_type: "Note" }
       }
     end
     assert_response :unprocessable_entity
@@ -48,21 +48,21 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
 
   test "get show" do
     sign_in @user
-    doc = @user.documents.create!(title: "Show test", document_type: "Note")
+    doc = @user.documents.create!(title: "Show test", content: "x", document_type: "Note")
     get document_path(doc)
     assert_response :success
   end
 
   test "get edit" do
     sign_in @user
-    doc = @user.documents.create!(title: "Edit test", document_type: "Note")
+    doc = @user.documents.create!(title: "Edit test", content: "x", document_type: "Note")
     get edit_document_path(doc)
     assert_response :success
   end
 
   test "update document" do
     sign_in @user
-    doc = @user.documents.create!(title: "Old title", document_type: "Note")
+    doc = @user.documents.create!(title: "Old title", content: "x", document_type: "Note")
     patch document_path(doc), params: {
       document: { title: "New title" }
     }
@@ -72,7 +72,7 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
 
   test "destroy document" do
     sign_in @user
-    doc = @user.documents.create!(title: "Destroy test", document_type: "Note")
+    doc = @user.documents.create!(title: "Destroy test", content: "x", document_type: "Note")
     assert_difference("Document.count", -1) do
       delete document_path(doc)
     end
@@ -82,7 +82,7 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
   test "ne peut pas accéder au document d'un autre user" do
     sign_in @user
     other = User.create!(email: "other@test.com", password: "password123")
-    doc = other.documents.create!(title: "Secret", document_type: "Note")
+    doc = other.documents.create!(title: "Secret", content: "x", document_type: "Note")
     get document_path(doc)
     assert_response :not_found
   end
@@ -91,7 +91,7 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
     sign_in @user
     assert_difference("Folder.count", 1) do
       post documents_path, params: {
-        document: { title: "Doc dans nouveau dossier", document_type: "Note", folder_id: "new" },
+        document: { title: "Doc dans nouveau dossier", content: "x", document_type: "Note", folder_id: "new" },
         new_folder_name: "Dossier créé à la volée"
       }
     end
@@ -111,7 +111,7 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
 
   test "summarize redirige avec alerte si contenu vide" do
     sign_in @user
-    doc = @user.documents.create!(title: "Sans contenu", document_type: "Note")
+    doc = @user.documents.create!(title: "Sans contenu", document_type: "Article")
 
     assert_no_enqueued_jobs do
       post summarize_document_path(doc)
@@ -147,7 +147,7 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
 
   test "summary_status retourne null si pas de résumé" do
     sign_in @user
-    doc = @user.documents.create!(title: "Sans résumé", document_type: "Note")
+    doc = @user.documents.create!(title: "Sans résumé", content: "x", document_type: "Note")
 
     get summary_status_document_path(doc)
     assert_response :success
@@ -211,6 +211,7 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
     doc = @user.documents.create!(
       title: "Legacy",
       document_type: "Lien",
+      source_url: "https://ancien-site.com/page",
       content: "https://ancien-site.com/page"
     )
     doc.update_columns(source_url: nil, content: "https://ancien-site.com/page")
