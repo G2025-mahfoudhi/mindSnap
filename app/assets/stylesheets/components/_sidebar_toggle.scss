@@ -1,0 +1,29 @@
+// Animation de la sidebar
+.sidebar-collapsible {
+  transition: width 0.25s ease, min-width 0.25s ease;
+}
+
+// État réduit : bande de 40px
+body.sidebar-collapsed .sidebar-collapsible {
+  width: 40px !important;
+  min-width: 40px !important;
+  overflow: hidden !important;
+}
+
+// Masque tous les enfants directs sauf le handle (header avec le bouton)
+body.sidebar-collapsed .sidebar-collapsible > *:not(.sidebar-toggle-handle) {
+  display: none !important;
+}
+
+// Dans le handle, masque le contenu (texte, boutons) — garde uniquement le chevron
+body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle .sidebar-toggle-content {
+  display: none !important;
+}
+
+// Centre le chevron dans la bande de 40px
+body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle {
+  justify-content: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  gap: 0 !important;
+}
