@@ -1,8 +1,13 @@
-function setVh() {
+function setDimensions() {
   document.documentElement.style.setProperty("--vh", window.innerHeight + "px")
+
+  const footer = document.querySelector(".footer")
+  if (footer) {
+    document.documentElement.style.setProperty("--footer-height", footer.offsetHeight + "px")
+  }
 }
 
-setVh()
-window.addEventListener("resize", setVh)
-document.addEventListener("turbo:load", setVh)
-document.addEventListener("turbo:render", setVh)
+setDimensions()
+window.addEventListener("resize", setDimensions)
+document.addEventListener("turbo:load", setDimensions)
+document.addEventListener("turbo:render", setDimensions)
