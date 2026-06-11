@@ -1,35 +1,46 @@
-<aside class="border-end d-flex flex-column"
+<aside class="border-end d-flex flex-column sidebar-collapsible"
         style="width: 260px; min-width: 260px; background: #f7f5f4; overflow: hidden; padding-bottom: var(--footer-height);"
         data-controller="sidebar-tree doc-drop"
         data-sidebar-tree-open-class="is-open"
         data-sidebar-tree-storage-key-value="mindsnap_sidebar_v1">
 
-  <div class="p-3 border-bottom d-flex justify-content-between align-items-center" style="flex-shrink: 0;">
-    <%= link_to "Mon espace", espaces_path, class: "fw-semibold small text-decoration-none", style: "color: #3d7f7e;" %>
-    <div class="dropdown">
-      <button class="btn btn-sm btn-primary"
-              type="button"
-              data-bs-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-              aria-label="Créer un nouveau contenu">
-        <i class="fa-solid fa-plus" aria-hidden="true"></i>
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end" role="menu">
-        <li role="none">
-          <%= link_to new_folder_path, class: "dropdown-item", role: "menuitem" do %>
-            <i class="fa-solid fa-folder me-2" style="color: #f0ad4e;" aria-hidden="true"></i>
-            Nouveau dossier
-          <% end %>
-        </li>
-        <li role="none">
-          <%= link_to new_document_path, class: "dropdown-item", role: "menuitem" do %>
-            <i class="fa-solid fa-file-lines me-2" style="color: #3d7f7e;" aria-hidden="true"></i>
-            Nouveau document
-          <% end %>
-        </li>
-      </ul>
+  <div class="sidebar-toggle-handle p-3 border-bottom d-flex align-items-center gap-2" style="flex-shrink: 0;">
+    <div class="sidebar-toggle-content d-flex align-items-center justify-content-between flex-grow-1">
+      <%= link_to "Mon espace", espaces_path, class: "fw-semibold small text-decoration-none", style: "color: #3d7f7e;" %>
+      <div class="dropdown">
+        <button class="btn btn-sm btn-primary"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-label="Créer un nouveau contenu">
+          <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" role="menu">
+          <li role="none">
+            <%= link_to new_folder_path, class: "dropdown-item", role: "menuitem" do %>
+              <i class="fa-solid fa-folder me-2" style="color: #f0ad4e;" aria-hidden="true"></i>
+              Nouveau dossier
+            <% end %>
+          </li>
+          <li role="none">
+            <%= link_to new_document_path, class: "dropdown-item", role: "menuitem" do %>
+              <i class="fa-solid fa-file-lines me-2" style="color: #3d7f7e;" aria-hidden="true"></i>
+              Nouveau document
+            <% end %>
+          </li>
+        </ul>
+      </div>
     </div>
+    <button type="button"
+            class="btn btn-sm btn-link p-1 flex-shrink-0"
+            data-action="sidebar-toggle#toggle"
+            data-sidebar-toggle-btn
+            aria-pressed="false"
+            title="Masquer le panneau"
+            style="color: #3d7f7e;">
+      <i class="fa-solid fa-chevron-left" aria-hidden="true" data-sidebar-toggle-icon></i>
+    </button>
   </div>
 
   <div class="overflow-auto flex-grow-1 py-2">
