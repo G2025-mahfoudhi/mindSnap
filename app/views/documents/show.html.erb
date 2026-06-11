@@ -177,13 +177,24 @@
             <% if @document.file.attached? %>
               <% @document.file.each do |attachment| %>
                 <% if attachment.content_type == "application/pdf" %>
+                  <%# Desktop : iframe PDF %>
                   <iframe data-src="<%= document_inline_url(attachment) %>"
                           src="about:blank"
                           width="100%"
-                          class="pdf-iframe" style="height: clamp(300px, 60vh, 800px);"
-                          style="border: 1px solid #ebebeb; border-radius: 8px;"
+                          class="pdf-iframe d-none d-md-block"
+                          style="height: clamp(300px, 60vh, 800px); border: 1px solid #ebebeb; border-radius: 8px;"
                           title="<%= attachment.filename %>">
                   </iframe>
+                  <%# Mobile : lien direct (les iframes PDF ne fonctionnent pas sur mobile) %>
+                  <div class="d-md-none text-center py-4">
+                    <a href="<%= document_inline_url(attachment) %>"
+                       target="_blank"
+                       rel="noopener"
+                       class="btn btn-primary">
+                      <i class="fa-solid fa-file-pdf me-2"></i><%= attachment.filename.to_s.truncate(30) %>
+                    </a>
+                    <p class="text-muted small mt-2">Appuie pour ouvrir le PDF</p>
+                  </div>
                 <% elsif attachment.content_type.start_with?("image/") %>
                   <%= image_tag document_inline_url(attachment), style: "max-width: 100%; border-radius: 8px;", alt: attachment.filename %>
                 <% else %>
