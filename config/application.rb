@@ -28,7 +28,7 @@ module MindSnap
     #
     config.i18n.default_locale = :fr
 
-    # config.time_zone = "Central Time (US & Canada)"
+    config.time_zone = "Paris"
     # config.eager_load_paths << Rails.root.join("extras")
   end
 end
