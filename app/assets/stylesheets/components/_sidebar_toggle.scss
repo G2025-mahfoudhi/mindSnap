@@ -33,8 +33,14 @@ body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle {
     min-width: 36px !important;
   }
 
-  // Formulaire de chat : espace sous le footer fixe
-  .d-flex.flex-column.flex-grow-1.overflow-hidden > .border-top {
-    padding-bottom: 1rem !important;
+  // ── Page conversations : footer masqué, layout plein écran ─────────────
+  body.conversation-layout .footer {
+    display: none !important;
+  }
+
+  // Le footer étant masqué, on récupère toute la hauteur disponible
+  body.conversation-layout #main-content,
+  body.conversation-layout [role="main"] {
+    height: calc(var(--vh, 100vh) - var(--navbar-height, 56px)) !important;
   }
 }
