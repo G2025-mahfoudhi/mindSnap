@@ -10,20 +10,22 @@ body.sidebar-collapsed .sidebar-collapsible {
   overflow: hidden !important;
 }
 
-// Masque tous les enfants directs sauf le handle (header avec le bouton)
+// Masque les enfants directs de l'aside sauf le handle
 body.sidebar-collapsed .sidebar-collapsible > *:not(.sidebar-toggle-handle) {
   display: none !important;
 }
 
-// Dans le handle, masque le contenu (texte, boutons) — garde uniquement le chevron
+// Masque les éléments marqués sidebar-toggle-content dans le handle
 body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle .sidebar-toggle-content {
   display: none !important;
 }
 
-// Centre le chevron dans la bande de 40px
+// Conversations : centre le chevron dans la bande (chevron en position absolute)
 body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle {
-  justify-content: center !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+  position: relative;
+}
+
+// Documents : compense le gap quand les éléments sont masqués
+body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle .d-flex.align-items-center.gap-1 {
   gap: 0 !important;
 }
