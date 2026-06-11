@@ -81,13 +81,8 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
 
   test "ne peut pas accéder au document d'un autre user" do
     sign_in @user
-<<<<<<< Updated upstream
-    other = User.create!(email: "other@test.com", password: "password123")
-    doc = other.documents.create!(title: "Secret", content: "x", document_type: "Note")
-=======
     other = User.create!(email: "other@test.com", password: "password123", first_name: "X", last_name: "Y")
-    doc = other.documents.create!(title: "Secret", document_type: "Note")
->>>>>>> Stashed changes
+    doc = other.documents.create!(title: "Secret", content: "x", document_type: "Note")
     get document_path(doc)
     assert_response :not_found
   end

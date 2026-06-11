@@ -13,11 +13,7 @@ class UserTest < ActiveSupport::TestCase
   test "invalide sans email" do
     user = User.new(password: "password123")
     assert_not user.valid?
-<<<<<<< Updated upstream
-    assert_includes user.errors[:email].map(&:downcase).join, "renseigné"
-=======
     assert_includes user.errors[:email].map(&:downcase).join, "obligatoire"
->>>>>>> Stashed changes
   end
 
   test "invalide sans password" do
