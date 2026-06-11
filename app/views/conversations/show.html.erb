@@ -2,7 +2,7 @@
 
 <%= turbo_stream_from @conversation %>
 
-<div class="d-flex" style="height: calc(100vh - var(--navbar-height, 56px) - var(--footer-height, 60px));" role="main" aria-label="<%= @conversation.name %>">
+<div class="d-flex" style="height: calc(var(--vh, 100vh) - var(--navbar-height, 56px) - var(--footer-height, 60px));" role="main" aria-label="<%= @conversation.name %>">
   <%= render "conversations/sidebar", conversations: @conversations, current_conversation: @conversation %>
 
   <div class="d-flex flex-column flex-grow-1 overflow-hidden"

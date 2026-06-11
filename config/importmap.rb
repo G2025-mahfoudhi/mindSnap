@@ -16,3 +16,4 @@ pin "sweetalert2", to: "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetal
 pin "@popperjs/core", to: "popper.js", preload: true
 pin "cropperjs", to: "https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.esm.min.js"
 pin "local_time", to: "local_time.js"
+pin "viewport_height", to: "viewport_height.js"
