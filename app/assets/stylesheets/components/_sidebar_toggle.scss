@@ -33,8 +33,8 @@ body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle {
     min-width: 36px !important;
   }
 
-  // Formulaire de chat : padding-bottom pour ne pas être caché par le footer fixe
+  // Formulaire de chat : espace sous le footer fixe
   .d-flex.flex-column.flex-grow-1.overflow-hidden > .border-top {
-    padding-bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
+    padding-bottom: 1rem !important;
   }
 }
