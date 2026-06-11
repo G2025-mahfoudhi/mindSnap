@@ -6,7 +6,14 @@ class ExtractTextJob < ApplicationJob
     return unless document.file.attached?
 
     extracted = collect_texts(document)
-    return if extracted.empty?
+
+    if extracted.empty?
+      # Extraction échouée (OCR indisponible, format non supporté…)
+      # On tente quand même le résumé si le document a déjà du contenu
+      SummarizeDocumentJob.perform_later(document_id) if document.content.present?
+      Rails.logger.warn "ExtractTextJob: aucun texte extrait pour doc #{document_id}"
+      return
+    end
 
     document.update!(content: build_content(extracted))
     SummarizeDocumentJob.perform_later(document_id)
