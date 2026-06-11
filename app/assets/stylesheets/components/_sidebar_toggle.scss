@@ -23,3 +23,18 @@ body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle {
   padding-right: 0 !important;
   gap: 0 !important;
 }
+
+// ─── Mobile : sidebar repliée par défaut, contenu lisible ──────────────────
+
+@include media-breakpoint-down(sm) {
+  // Quand repliée sur mobile, bande encore plus fine pour maximiser l'espace chat
+  body.sidebar-collapsed .sidebar-collapsible {
+    width: 36px !important;
+    min-width: 36px !important;
+  }
+
+  // Formulaire de chat : padding-bottom pour ne pas être caché par le footer fixe
+  .d-flex.flex-column.flex-grow-1.overflow-hidden > .border-top {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
+  }
+}
