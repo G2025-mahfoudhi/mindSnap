@@ -6,19 +6,23 @@
              current_conversation: nil %>
 
   <div class="d-flex flex-column flex-grow-1 align-items-center justify-content-center bg-light">
-    <div class="text-center text-muted p-4" style="max-width: 380px;">
-      <i class="fa-regular fa-comments fa-3x mb-3 opacity-50 text-secondary" aria-hidden="true"></i>
-      <h1 class="h5 mb-2 text-dark">Tes conversations IA</h1>
-      <p class="small mb-4">
+    <div class="empty-state empty-state--card">
+      <div class="empty-state__illustration">
+        <%= image_tag "empty/conversations.svg", alt: "" %>
+      </div>
+      <h3 class="empty-state__title">Tes conversations IA</h3>
+      <p class="empty-state__text">
         Sélectionne une conversation dans la liste ou crée-en une nouvelle pour poser des questions sur tes documents.
       </p>
-      <%= button_to conversations_path,
-                    method: :post,
-                    class: "btn btn-primary",
-                    aria: { label: "Créer une nouvelle conversation" } do %>
-        <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>
-        Nouvelle conversation
-      <% end %>
+      <div class="empty-state__action">
+        <%= button_to conversations_path,
+                      method: :post,
+                      class: "btn btn-primary",
+                      aria: { label: "Créer une nouvelle conversation" } do %>
+          <i class="fa-solid fa-plus me-1" aria-hidden="true"></i>
+          Nouvelle conversation
+        <% end %>
+      </div>
     </div>
   </div>
 </div>

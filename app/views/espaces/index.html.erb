@@ -50,9 +50,17 @@
       <% end %>
 
       <% if @folders.empty? && @documents_without_folder.empty? %>
-        <div class="text-center py-5">
-          <i class="fa-solid fa-folder-open fa-3x mb-3" style="color: #f0ad4e;" aria-hidden="true"></i>
-          <p class="text-muted mb-0">Aucun contenu pour le moment.</p>
+        <div class="empty-state empty-state--card">
+          <div class="empty-state__illustration">
+            <%= image_tag "empty/folder.svg", alt: "" %>
+          </div>
+          <h3 class="empty-state__title">Aucun contenu pour le moment</h3>
+          <p class="empty-state__text">Crée un dossier pour organiser tes documents ou importe-en un directement.</p>
+          <div class="empty-state__action">
+            <%= link_to new_folder_path, class: "btn btn-primary" do %>
+              <i class="fa-solid fa-folder-plus me-1" aria-hidden="true"></i> Créer un dossier
+            <% end %>
+          </div>
         </div>
       <% end %>
     </div>

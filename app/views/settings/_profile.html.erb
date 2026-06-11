@@ -14,7 +14,7 @@
             <div class="dropdown d-inline-block mb-2">
               <button type="button" class="avatar-upload-wrapper border-0 bg-transparent p-0" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false" aria-label="Modifier la photo de profil">
                 <% if has_avatar %>
-                  <img src="<%= url_for(user.avatar) %>"
+                  <img src="<%= avatar_url(user.avatar) %>"
                        class="avatar-upload-img"
                        alt="Photo de profil"
                        data-avatar-preview-target="preview">

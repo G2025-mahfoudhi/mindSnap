@@ -89,9 +89,17 @@
         <% end %>
       </div>
     <% else %>
-      <div class="empty-block">
-        Aucun document dans ce dossier —
-        <%= link_to "en créer un", new_document_path(folder_id: @folder.id) %>
+      <div class="empty-state empty-state--card">
+        <div class="empty-state__illustration">
+          <%= image_tag "empty/folder.svg", alt: "" %>
+        </div>
+        <h3 class="empty-state__title">Dossier vide</h3>
+        <p class="empty-state__text">
+          Aucun document dans ce dossier pour l'instant.
+        </p>
+        <div class="empty-state__action">
+          <%= link_to "Ajouter un document", new_document_path(folder_id: @folder.id), class: "btn btn-primary" %>
+        </div>
       </div>
     <% end %>
   </div>
