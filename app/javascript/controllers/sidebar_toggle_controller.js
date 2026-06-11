@@ -1,17 +1,19 @@
 import { Controller } from "@hotwired/stimulus"
 
 const MOBILE_BREAKPOINT = 768
+const KEY_DESKTOP = "mindsnap_sidebar_collapsed"
+const KEY_MOBILE  = "mindsnap_sidebar_collapsed_mobile"
 
 export default class extends Controller {
   connect() {
-    if (this.#isMobile()) {
-      // Sur mobile : toujours replié au démarrage pour laisser la place au contenu
-      this.element.classList.add("sidebar-collapsed")
-      this.#syncIcon(true)
-    } else if (localStorage.getItem("mindsnap_sidebar_collapsed") === "true") {
-      this.element.classList.add("sidebar-collapsed")
-      this.#syncIcon(true)
-    }
+    // Restaure l'état sauvegardé (mobile et desktop séparés)
+    // Premier accès mobile → replié par défaut (null != "false")
+    const collapsed = this.#isMobile()
+      ? localStorage.getItem(KEY_MOBILE) !== "false"
+      : localStorage.getItem(KEY_DESKTOP) === "true"
+
+    this.element.classList.toggle("sidebar-collapsed", collapsed)
+    this.#syncIcon(collapsed)
 
     this._resizeHandler = this.#onResize.bind(this)
     window.addEventListener("resize", this._resizeHandler)
@@ -23,9 +25,7 @@ export default class extends Controller {
 
   toggle() {
     const collapsed = this.element.classList.toggle("sidebar-collapsed")
-    if (!this.#isMobile()) {
-      localStorage.setItem("mindsnap_sidebar_collapsed", String(collapsed))
-    }
+    localStorage.setItem(this.#isMobile() ? KEY_MOBILE : KEY_DESKTOP, String(collapsed))
     this.#syncIcon(collapsed)
   }
 
@@ -34,18 +34,12 @@ export default class extends Controller {
   }
 
   #onResize() {
-    if (this.#isMobile()) {
-      // En passant en mobile : replier si pas déjà replié
-      if (!this.element.classList.contains("sidebar-collapsed")) {
-        this.element.classList.add("sidebar-collapsed")
-        this.#syncIcon(true)
-      }
-    } else {
-      // En passant sur desktop : restaurer la préférence sauvegardée
-      const saved = localStorage.getItem("mindsnap_sidebar_collapsed") === "true"
-      this.element.classList.toggle("sidebar-collapsed", saved)
-      this.#syncIcon(saved)
-    }
+    const collapsed = this.#isMobile()
+      ? localStorage.getItem(KEY_MOBILE) !== "false"
+      : localStorage.getItem(KEY_DESKTOP) === "true"
+
+    this.element.classList.toggle("sidebar-collapsed", collapsed)
+    this.#syncIcon(collapsed)
   }
 
   #syncIcon(collapsed) {

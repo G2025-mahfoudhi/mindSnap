@@ -24,6 +24,15 @@ body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle {
   gap: 0 !important;
 }
 
+// ─── Sidebar conversations : hauteur + avatar ──────────────────────────────
+aside[aria-label="Panneau de conversations"] {
+  // align-self: stretch (défaut flex) suffit si le parent a une hauteur définie.
+  // On force la hauteur avec les variables pour s'affranchir des hiérarchies CSS.
+  height: calc(var(--vh, 100vh) - var(--navbar-height, 56px) - var(--footer-height, 60px)) !important;
+  // Repousse l'avatar au-dessus du footer fixe (padding intérieur, pas de débordement)
+  padding-bottom: var(--footer-height, 60px) !important;
+}
+
 // ─── Mobile : sidebar repliée par défaut, contenu lisible ──────────────────
 
 @include media-breakpoint-down(sm) {
@@ -44,8 +53,14 @@ body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle {
     height: calc(var(--vh, 100vh) - var(--navbar-height, 56px)) !important;
   }
 
-  // L'avatar descend jusqu'en bas : plus de padding-bottom réservé au footer
+  // Footer masqué sur mobile → sidebar prend toute la hauteur, avatar en bas
   body.conversation-layout aside[aria-label="Panneau de conversations"] {
+    height: calc(var(--vh, 100vh) - var(--navbar-height, 56px)) !important;
     padding-bottom: 0 !important;
+  }
+
+  // Formulaire d'envoi : espace au-dessus du bord bas (pas de footer)
+  body.conversation-layout .d-flex.flex-column.flex-grow-1.overflow-hidden > .border-top {
+    padding-bottom: 0.75rem !important;
   }
 }
