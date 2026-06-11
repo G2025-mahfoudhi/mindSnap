@@ -1,40 +1,68 @@
 <%= turbo_frame_tag "doc-chat-frame", class: "d-flex flex-column flex-grow-1", style: "min-height: 0;" do %>
   <% panel_doc_id      = document&.folder_id.blank? ? document&.id.to_i : 0 %>
   <% panel_folders_json = (suggest_folders || []).map { |f| { id: f.id, name: f.name } }.to_json %>
-  <div id="doc-chat-messages"
-       class="flex-grow-1 overflow-auto p-3"
-       data-controller="chat-scroll voice folder-suggest"
-       data-folder-suggest-document-id-value="<%= panel_doc_id %>"
-       data-folder-suggest-folders-value="<%= panel_folders_json %>"
-       style="min-height: 0;">
-    <% if messages.empty? %>
-      <p class="text-center text-muted small py-4">
-        Commence à discuter avec l'IA à propos de ce document.
-      </p>
-    <% else %>
-      <%= render messages %>
-    <% end %>
-  </div>
 
-  <div class="border-top p-3 bg-white flex-shrink-0">
-    <%= turbo_frame_tag "doc-chat-form" do %>
-      <%= simple_form_for [conversation, message],
-                          url: conversation_messages_path(conversation, source: "doc_chat"),
-                          html: { "aria-label": "Envoyer un message" } do |f| %>
-        <div class="d-flex gap-2 align-items-end">
-          <%= f.text_area :content,
-                          class: "form-control rounded-3 flex-grow-1",
-                          placeholder: "Ton message...",
-                          rows: 2,
-                          required: true,
-                          style: "resize: none;",
-                          data: {
-                            controller: "textarea-autoresize",
-                            action: "input->textarea-autoresize#resize keydown->textarea-autoresize#submitOnEnter"
-                          } %>
-          <%= f.submit "Envoyer", class: "btn btn-primary px-3 flex-shrink-0" %>
-        </div>
+  <%# Wrapper voice : englobe messages + formulaire pour que les targets soient accessibles %>
+  <div class="d-flex flex-column flex-grow-1"
+       style="min-height: 0;"
+       data-controller="voice"
+       data-voice-auto-submit-value="true">
+
+    <div id="doc-chat-messages"
+         class="flex-grow-1 overflow-auto p-3"
+         data-controller="chat-scroll folder-suggest"
+         data-folder-suggest-document-id-value="<%= panel_doc_id %>"
+         data-folder-suggest-folders-value="<%= panel_folders_json %>"
+         style="min-height: 0;">
+      <% if messages.empty? %>
+        <p class="text-center text-muted small py-4">
+          Commence à discuter avec l'IA à propos de ce document.
+        </p>
+      <% else %>
+        <%= render messages %>
       <% end %>
-    <% end %>
+    </div>
+
+    <div class="border-top p-3 bg-white flex-shrink-0">
+      <%= turbo_frame_tag "doc-chat-form" do %>
+        <%= simple_form_for [conversation, message],
+                            url: conversation_messages_path(conversation, source: "doc_chat"),
+                            html: {
+                              "aria-label": "Envoyer un message",
+                              data: {
+                                controller: "message-form",
+                                "message-form-messages-id-value": "doc-chat-messages",
+                                action: "turbo:submit-start->message-form#submitStart turbo:submit-end->message-form#submitEnd"
+                              }
+                            } do |f| %>
+          <div class="d-flex gap-2 align-items-end">
+            <button type="button"
+                    class="btn btn-outline-secondary flex-shrink-0 voice-btn"
+                    title="Dicter votre message"
+                    aria-label="Microphone"
+                    aria-pressed="false"
+                    data-voice-target="micButton"
+                    data-action="click->voice#toggle">
+              <i class="fa-solid fa-microphone" aria-hidden="true"></i>
+              <span data-voice-target="timer" class="ms-1 small recording-timer" hidden></span>
+            </button>
+            <%= f.text_area :content,
+                            class: "form-control rounded-3 flex-grow-1",
+                            placeholder: "Ton message...",
+                            rows: 2,
+                            required: true,
+                            style: "resize: none;",
+                            data: {
+                              "voice-target": "input",
+                              "message-form-target": "input",
+                              controller: "textarea-autoresize",
+                              action: "input->textarea-autoresize#resize keydown->textarea-autoresize#submitOnEnter"
+                            } %>
+            <%= f.submit "Envoyer", class: "btn btn-primary px-3 flex-shrink-0",
+                         data: { "voice-target": "submit", "message-form-target": "submit" } %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
   </div>
 <% end %>

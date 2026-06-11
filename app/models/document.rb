@@ -125,9 +125,10 @@ class Document < ApplicationRecord
     SummarizeDocumentJob.perform_later(id)
   end
 
-  # Génère le résumé dès que le contenu est disponible ou change, sauf si c'est
-  # le job lui-même qui met à jour le résumé (évite la boucle infinie)
+  # Auto-génère le résumé uniquement lors de la première extraction (résumé vide).
+  # Les mises à jour ultérieures passent par l'action "Régénérer" → pas de double
+  # déclenchement avec l'appel explicite dans les jobs ou le contrôleur.
   def should_summarize?
-    content.present? && saved_change_to_content? && !saved_change_to_summary?
+    content.present? && saved_change_to_content? && !saved_change_to_summary? && summary.blank?
   end
 end

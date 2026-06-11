@@ -23,6 +23,18 @@
   }
 }
 
+.tts-btn {
+  transition: color 0.2s ease;
+
+  &.is-speaking {
+    color: $red;
+
+    .fa-volume-high::before {
+      content: "\f04d"; // fa-stop
+    }
+  }
+}
+
 .recording-dot {
   width: 8px;
   height: 8px;

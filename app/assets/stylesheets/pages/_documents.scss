@@ -1,13 +1,7 @@
 // ——— HAUTEURS FIXES ———
 :root {
   --navbar-height: 56px;
-  --footer-height: 88px; // mobile : footer wrap sur plusieurs lignes
-}
-
-@include media-breakpoint-up(md) {
-  :root {
-    --footer-height: 60px; // desktop : footer sur une ligne
-  }
+  // --footer-height est setté dynamiquement par viewport_height.js via ResizeObserver
 }
 
 // ——— SIDEBAR ———
@@ -201,6 +195,14 @@
     margin-bottom: .5rem;
     &:first-child { margin-top: 0; }
   }
+
+// Titres réduits dans les bulles de messages (conversations & doc chat)
+#messages &, #doc-chat-messages & {
+    h1 { font-size: 1.1rem; }
+    h2 { font-size: 1.0rem; }
+    h3, h4, h5, h6 { font-size: 0.9rem; }
+  }
+
 
   ul, ol {
     padding-left: 1.4rem;

@@ -72,4 +72,19 @@ module ApplicationHelper
     )
     raw parser.render(text)
   end
+
+  # Version streaming : ferme les marqueurs inline non terminés avant de passer
+  # à Redcarpet. Évite d'afficher ** ou * bruts pendant la génération.
+  # Ordre important : traiter ** avant * pour éviter le double-comptage.
+  def streaming_markdown(text)
+    str = text.to_s
+    return "".html_safe if str.blank?
+
+    padded = str.dup
+    %w[** __ * _ `].each do |m|
+      padded += m if padded.scan(m).length.odd?
+    end
+
+    markdown(padded)
+  end
 end

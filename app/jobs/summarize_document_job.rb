@@ -55,7 +55,7 @@ class SummarizeDocumentJob < ApplicationJob
                                                  fenced_code_blocks: true, strikethrough: true,
                                                  no_intra_emphasis: true)
     inner  = "<div class=\"markdown-content\">#{parser.render(text.to_s)}</div>"
-    html   = "<div id=\"doc-summary-content\" data-summary-poll-target=\"content\">#{inner}</div>"
+    html   = "<div id=\"doc-summary-content\">#{inner}</div>"
 
     Turbo::StreamsChannel.broadcast_replace_to(document, target: "doc-summary-content", html: html)
   rescue StandardError => e

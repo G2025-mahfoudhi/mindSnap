@@ -18,6 +18,8 @@ export default class extends Controller {
     this._timerInterval = null
     this._mimeType = null
     this._format = null
+    this._audio = null
+    this._speakBtn = null
     if (this.hasTimerTarget) {
       this.timerTarget.hidden = true
     }
@@ -211,10 +213,21 @@ export default class extends Controller {
     return null
   }
 
-  async speak({ params: { text } }) {
-    if (!text || this.isSpeaking) return
+  async speak({ params: { text }, currentTarget }) {
+    // Re-clic sur le même bouton pendant la lecture → arrêter
+    if (this.isSpeaking && this._speakBtn === currentTarget) {
+      this._stopAudio()
+      return
+    }
+    // Clic sur un autre bouton → arrêter l'audio en cours avant de démarrer
+    if (this.isSpeaking) this._stopAudio()
+
+    const cleaned = this._stripMarkdown(text || "")
+    if (!cleaned) return
 
     this.isSpeaking = true
+    this._speakBtn = currentTarget
+    currentTarget?.classList.add("is-speaking")
 
     try {
       const response = await fetch("/tts/speak", {
@@ -223,31 +236,66 @@ export default class extends Controller {
           "Content-Type": "application/json",
           "X-CSRF-Token": this.csrfToken()
         },
-        body: JSON.stringify({ text })
+        body: JSON.stringify({ text: cleaned })
       })
 
       if (!response.ok) {
         console.error("TTS failed:", response.status)
-        this.isSpeaking = false
+        this._stopAudio()
         return
       }
 
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)
-      const audio = new Audio(url)
+      this._audio = new Audio(url)
       const cleanup = () => {
         this.isSpeaking = false
+        this._audio = null
+        this._speakBtn?.classList.remove("is-speaking")
+        this._speakBtn = null
         URL.revokeObjectURL(url)
       }
-      audio.addEventListener("ended", cleanup)
-      audio.addEventListener("error", cleanup)
-      await audio.play().catch((err) => {
+      this._audio.addEventListener("ended", cleanup)
+      this._audio.addEventListener("error", cleanup)
+      await this._audio.play().catch((err) => {
         console.error("Playback failed:", err)
         cleanup()
       })
     } catch (err) {
       console.error("Erreur TTS:", err)
+      this._stopAudio()
     }
+  }
+
+  _stopAudio() {
+    if (this._audio) {
+      this._audio.pause()
+      this._audio.src = ""
+      this._audio = null
+    }
+    this._speakBtn?.classList.remove("is-speaking")
+    this._speakBtn = null
+    this.isSpeaking = false
+  }
+
+  _stripMarkdown(text) {
+    return text
+      .replace(/```[\s\S]*?```/g, "")         // blocs de code
+      .replace(/`([^`]+)`/g, "$1")             // code inline
+      .replace(/!\[.*?\]\(.*?\)/g, "")         // images
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // liens → texte
+      .replace(/^#{1,6}\s+/gm, "")             // titres
+      .replace(/\*\*(.+?)\*\*/gs, "$1")        // gras **
+      .replace(/__(.+?)__/gs, "$1")            // gras __
+      .replace(/\*(.+?)\*/gs, "$1")            // italique *
+      .replace(/_([^_]+)_/gs, "$1")            // italique _
+      .replace(/~~(.+?)~~/gs, "$1")            // barré
+      .replace(/^[-*+]\s+/gm, "")              // listes non ordonnées
+      .replace(/^\d+\.\s+/gm, "")              // listes ordonnées
+      .replace(/^>\s*/gm, "")                  // citations
+      .replace(/^---+$/gm, "")                 // séparateurs
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
   }
 
   clearInput() {

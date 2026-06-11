@@ -195,13 +195,15 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
 
   def extract_file_to_folder(attachment, folder)
     new_doc = current_user.documents.create!(
-      title: File.basename(attachment.blob.filename.to_s, ".*"),
+      title: File.basename(attachment.blob.filename.to_s, ".*").gsub(/[_-]+/, " ").strip,
       document_type: "Fichier",
       folder: folder,
       date_injection: Time.current
     )
     new_doc.file.attach(attachment.blob)
-    attachment.destroy
+    # `delete` supprime uniquement l'enregistrement ActiveStorage::Attachment
+    # sans déclencher la purge du blob (qui est maintenant utilisé par new_doc).
+    attachment.delete
     @document.update_columns(content: nil, summary: nil)
     ExtractTextJob.perform_later(@document.id) if @document.file.attached?
     ExtractTextJob.perform_later(new_doc.id)

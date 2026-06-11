@@ -1,5 +1,6 @@
 <div class="d-flex mb-3 <%= message.role == 'user' ? 'justify-content-end' : 'justify-content-start' %>"
-     id="<%= dom_id(message) %>">
+     id="<%= dom_id(message) %>"
+     data-streaming="<%= message.streaming %>">
   <div class="rounded-3 px-3 py-2 <%= message.role == 'user' ? 'bg-primary text-white' : 'bg-light border' %>"
        style="max-width: 75%;">
     <div class="d-flex align-items-center gap-2 mb-1">
@@ -12,7 +13,7 @@
         <button type="button"
                 data-action="click->voice#speak"
                 data-voice-text-param="<%= message.content %>"
-                class="btn btn-sm btn-link p-0"
+                class="btn btn-sm btn-link p-0 tts-btn"
                 aria-label="Lire la réponse à voix haute"
                 style="font-size: 0.75rem;">
           <i class="fa-solid fa-volume-high"></i>
@@ -28,7 +29,11 @@
       <% end %>
     </div>
     <div class="markdown-content">
-      <%= markdown(message.content.to_s) %>
+      <% if message.streaming %>
+        <%= streaming_markdown(message.content.to_s) %>
+      <% else %>
+        <%= markdown(message.content.to_s) %>
+      <% end %>
     </div>
     <div class="text-end mt-1" style="font-size: 0.68rem; opacity: 0.6;">
       <%= local_time(message.created_at, :time) %>

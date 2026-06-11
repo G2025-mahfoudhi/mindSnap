@@ -3,3 +3,4 @@ tesseract-ocr-fra
 tesseract-ocr-eng
 ghostscript
 imagemagick
+poppler-utils

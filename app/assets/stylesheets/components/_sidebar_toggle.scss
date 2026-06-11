@@ -24,12 +24,10 @@ body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle {
   gap: 0 !important;
 }
 
-// ─── Sidebar conversations : hauteur + avatar ──────────────────────────────
-aside[aria-label="Panneau de conversations"] {
-  // align-self: stretch (défaut flex) suffit si le parent a une hauteur définie.
-  // On force la hauteur avec les variables pour s'affranchir des hiérarchies CSS.
+// ─── Sidebar conversations & documents : hauteur explicite ─────────────────
+aside[aria-label="Panneau de conversations"],
+aside[aria-label="Panneau de documents"] {
   height: calc(var(--vh, 100vh) - var(--navbar-height, 56px) - var(--footer-height, 60px)) !important;
-  // Repousse l'avatar au-dessus du footer fixe (padding intérieur, pas de débordement)
   padding-bottom: var(--footer-height, 60px) !important;
 }
 
