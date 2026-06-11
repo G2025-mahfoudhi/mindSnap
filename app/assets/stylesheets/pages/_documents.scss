@@ -300,3 +300,46 @@
     }
   }
 }
+
+// ─── Mobile ────────────────────────────────────────────────────────────────
+@include media-breakpoint-down(sm) {
+  .doc-show-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .doc-show-actions {
+    flex-wrap: wrap;
+  }
+
+  .doc-show-title {
+    font-size: 1.25rem;
+  }
+
+  .doc-show-content {
+    padding: 1rem 0.75rem;
+  }
+
+  .pdf-iframe {
+    height: 60vh !important;
+    min-height: 300px;
+  }
+}
+
+// ─── Padding mobile global (comble le footer fixe) ──────────────────────────
+@include media-breakpoint-down(sm) {
+  // Pages normales : padding-bottom sur le contenu principal
+  #main-content {
+    padding-bottom: var(--footer-height) !important;
+  }
+
+  // Zone de messages scrollable (conversations)
+  #messages {
+    padding-bottom: var(--footer-height) !important;
+  }
+
+  // Zones scrollables des layouts sidebar (espace, dossiers, documents)
+  .flex-grow-1.overflow-auto {
+    padding-bottom: var(--footer-height) !important;
+  }
+}

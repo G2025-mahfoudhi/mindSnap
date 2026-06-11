@@ -4,7 +4,7 @@
       <div class="card-body p-4">
         <h5 class="card-title mb-4">Photo de profil</h5>
 
-        <%= simple_form_for user, url: settings_path, method: :put, html: { multipart: true } do |f| %>
+        <%= simple_form_for user, url: settings_path, method: :put, html: { multipart: true }, defaults: { required: false } do |f| %>
           <%= f.hidden_field :_tab, value: "profile" %>
 
           <% has_avatar = user.avatar.attached? && user.avatar.blob.persisted? %>

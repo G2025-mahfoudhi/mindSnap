@@ -1,31 +1,25 @@
-// Animation de la sidebar
 .sidebar-collapsible {
   transition: width 0.25s ease, min-width 0.25s ease;
 }
 
-// État réduit : bande de 40px
+// Rétréci : bande de 40px (tous écrans)
 body.sidebar-collapsed .sidebar-collapsible {
   width: 40px !important;
   min-width: 40px !important;
   overflow: hidden !important;
 }
 
-// Masque les enfants directs de l'aside sauf le handle
 body.sidebar-collapsed .sidebar-collapsible > *:not(.sidebar-toggle-handle) {
   display: none !important;
 }
 
-// Masque les éléments marqués sidebar-toggle-content dans le handle
 body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle .sidebar-toggle-content {
   display: none !important;
 }
 
-// Conversations : centre le chevron dans la bande (chevron en position absolute)
 body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle {
-  position: relative;
-}
-
-// Documents : compense le gap quand les éléments sont masqués
-body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle .d-flex.align-items-center.gap-1 {
+  justify-content: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
   gap: 0 !important;
 }
