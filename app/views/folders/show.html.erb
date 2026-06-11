@@ -10,6 +10,13 @@
   <main class="flex-grow-1 overflow-auto p-4">
   <div class="folder-show-page">
 
+  <%= link_to espaces_path,
+              class: "d-inline-flex align-items-center gap-2 text-decoration-none small mb-3",
+              style: "color: #5a6370;" do %>
+    <i class="fa-solid fa-arrow-left fa-xs" aria-hidden="true"></i>
+    Mon espace
+  <% end %>
+
   <div class="show-header">
     <div class="show-header-left">
       <span class="show-header-icon" aria-hidden="true">📂</span>
