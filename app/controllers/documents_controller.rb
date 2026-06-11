@@ -26,10 +26,11 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
     @sidebar_folders = current_user.folders.includes(:documents).to_a
     @suggest_folders = current_user.folders.includes(:parent).order(:name).to_a
     @documents_without_folder = current_user.documents.where(folder_id: nil)
-    # Conversation doc-scopee (necessaire pour turbo_stream_from si l'offcanvas est ouvert)
-    @doc_chat_conversation = current_user.conversations.find_or_create_by!(
+    # Conversation doc-scopée : lecture seule, créée seulement si elle existe déjà.
+    # La création se fait à la demande dans l'action `chat` (clic sur "Discuter").
+    @doc_chat_conversation = current_user.conversations.find_by(
       context_type: "Document", context_id: @document.id
-    ) { |c| c.name = "Discussion — #{@document.title}" }
+    )
   end
 
   def chat

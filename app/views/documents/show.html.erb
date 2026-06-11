@@ -2,7 +2,7 @@
 <% content_for :body_class, "overflow-hidden" %>
 <% content_for :main_style, "height: calc(var(--vh, 100vh) - var(--navbar-height, 56px) - var(--footer-height, 60px)); overflow: hidden;" %>
 
-<%= turbo_stream_from @doc_chat_conversation %>
+<%= turbo_stream_from @doc_chat_conversation if @doc_chat_conversation %>
 <%= turbo_stream_from @document %>
 
 <div class="offcanvas offcanvas-end"
