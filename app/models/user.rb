@@ -28,6 +28,7 @@ class User < ApplicationRecord
   has_many :messages, through: :conversations
   has_many :tags, dependent: :destroy
 
+  
   # validates :first_name, presence: true
   # validates :last_name, presence: true
   # validates :email, uniqueness: { scope: :password }
