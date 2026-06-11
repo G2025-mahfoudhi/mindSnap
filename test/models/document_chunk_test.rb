@@ -27,7 +27,7 @@ class DocumentChunkTest < ActiveSupport::TestCase
       content: "Test"
     )
     assert_not chunk.valid?
-    assert_includes chunk.errors[:chunk_index].map(&:downcase).join, "blank"
+    assert_includes chunk.errors[:chunk_index].map(&:downcase).join, "renseigné"
   end
 
   test "requiert content" do
@@ -36,7 +36,7 @@ class DocumentChunkTest < ActiveSupport::TestCase
       chunk_index: 0
     )
     assert_not chunk.valid?
-    assert_includes chunk.errors[:content].map(&:downcase).join, "blank"
+    assert_includes chunk.errors[:content].map(&:downcase).join, "renseigné"
   end
 
   test "peut stocker un embedding vectoriel" do

@@ -55,3 +55,60 @@ fr:
       long: "%A %d %B %Y %H:%M:%S"
     am: "am"
     pm: "pm"
+  activerecord:
+    models:
+<<<<<<< Updated upstream
+      document: "document"
+      folder: "dossier"
+      conversation: "conversation"
+    attributes:
+      document:
+        title: "Titre"
+        document_type: "Type de document"
+        source_url: "URL"
+        content: "Contenu"
+        file: "Fichier"
+      folder:
+        name: "Nom"
+      conversation:
+        name: "Nom"
+=======
+      user: "utilisateur"
+    attributes:
+      user:
+        email: "Email"
+        password: "Mot de passe"
+        first_name: "Prénom"
+        last_name: "Nom"
+>>>>>>> Stashed changes
+    errors:
+      messages:
+        blank: "doit être renseigné(e)"
+        invalid: "n'est pas valide"
+<<<<<<< Updated upstream
+        record_invalid: "Validation impossible"
+      models:
+        document:
+          attributes:
+            title:
+              blank: "est obligatoire"
+            document_type:
+              blank: "est obligatoire"
+            file:
+              blank: "est obligatoire"
+            source_url:
+              blank: "est obligatoire"
+            content:
+=======
+      models:
+        user:
+          attributes:
+            email:
+              blank: "est obligatoire"
+            password:
+              blank: "est obligatoire"
+            first_name:
+              blank: "est obligatoire"
+            last_name:
+>>>>>>> Stashed changes
+              blank: "est obligatoire"

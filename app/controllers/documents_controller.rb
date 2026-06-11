@@ -102,7 +102,7 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
           partial: "documents/summary_regenerating"
         )
       end
-      format.html { redirect_to document_path(@document) }
+      format.html { redirect_to document_path(@document), notice: "Résumé en cours de génération…" }
     end
   end
 

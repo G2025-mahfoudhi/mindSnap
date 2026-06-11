@@ -79,7 +79,7 @@ class FoldersControllerTest < ActionDispatch::IntegrationTest
 
   test "ne peut pas accéder au dossier d'un autre user" do
     sign_in @user
-    other = User.create!(email: "otherfold@test.com", password: "password123")
+    other = User.create!(email: "otherfold@test.com", password: "password123", first_name: "X", last_name: "Y")
     folder = other.folders.create!(name: "Secret folder")
     get folder_path(folder)
     assert_response :not_found

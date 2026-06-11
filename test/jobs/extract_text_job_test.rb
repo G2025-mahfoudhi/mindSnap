@@ -6,7 +6,7 @@ class ExtractTextJobTest < ActiveJob::TestCase
   end
 
   test "extrait le texte et met à jour le contenu" do
-    doc = @user.documents.create!(
+    doc = @user.documents.build(
       title: "Fichier test",
       document_type: "Fichier"
     )
@@ -15,6 +15,7 @@ class ExtractTextJobTest < ActiveJob::TestCase
       filename: "test.txt",
       content_type: "text/plain"
     )
+    doc.save!
 
     ExtractTextJob.perform_now(doc.id)
     assert_equal "Contenu du fichier texte.", doc.reload.content
@@ -23,7 +24,7 @@ class ExtractTextJobTest < ActiveJob::TestCase
   test "ne fait rien si pas de fichier attaché" do
     doc = @user.documents.create!(
       title: "Sans fichier",
-      document_type: "Note"
+      document_type: "Article"
     )
 
     assert_no_changes -> { doc.reload.content } do
@@ -42,7 +43,7 @@ class ExtractTextJobTest < ActiveJob::TestCase
   end
 
   test "concatène plusieurs fichiers joints" do
-    doc = @user.documents.create!(
+    doc = @user.documents.build(
       title: "Multi fichiers",
       document_type: "Fichier"
     )
@@ -56,6 +57,7 @@ class ExtractTextJobTest < ActiveJob::TestCase
       filename: "second.txt",
       content_type: "text/plain"
     )
+    doc.save!
 
     ExtractTextJob.perform_now(doc.id)
     result = doc.reload.content
