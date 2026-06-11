@@ -13,7 +13,11 @@ class UserTest < ActiveSupport::TestCase
   test "invalide sans email" do
     user = User.new(password: "password123")
     assert_not user.valid?
+<<<<<<< Updated upstream
     assert_includes user.errors[:email].map(&:downcase).join, "renseigné"
+=======
+    assert_includes user.errors[:email].map(&:downcase).join, "obligatoire"
+>>>>>>> Stashed changes
   end
 
   test "invalide sans password" do
@@ -21,8 +25,20 @@ class UserTest < ActiveSupport::TestCase
     assert_not user.valid?
   end
 
+  test "invalide sans first_name" do
+    user = User.new(email: "new@test.com", password: "password123", last_name: "User")
+    assert_not user.valid?
+    assert_includes user.errors[:first_name].map(&:downcase).join, "obligatoire"
+  end
+
+  test "invalide sans last_name" do
+    user = User.new(email: "new@test.com", password: "password123", first_name: "Test")
+    assert_not user.valid?
+    assert_includes user.errors[:last_name].map(&:downcase).join, "obligatoire"
+  end
+
   test "email unique" do
-    User.create!(email: "unique@test.com", password: "password123")
+    User.create!(email: "unique@test.com", password: "password123", first_name: "A", last_name: "B")
     duplicate = User.new(email: "unique@test.com", password: "password123")
     assert_not duplicate.valid?
   end

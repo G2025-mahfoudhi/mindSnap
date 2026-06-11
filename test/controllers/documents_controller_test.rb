@@ -81,8 +81,13 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
 
   test "ne peut pas accéder au document d'un autre user" do
     sign_in @user
+<<<<<<< Updated upstream
     other = User.create!(email: "other@test.com", password: "password123")
     doc = other.documents.create!(title: "Secret", content: "x", document_type: "Note")
+=======
+    other = User.create!(email: "other@test.com", password: "password123", first_name: "X", last_name: "Y")
+    doc = other.documents.create!(title: "Secret", document_type: "Note")
+>>>>>>> Stashed changes
     get document_path(doc)
     assert_response :not_found
   end
@@ -123,7 +128,7 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
 
   test "ne peut pas summarize le document d'un autre user" do
     sign_in @user
-    other = User.create!(email: "other2@test.com", password: "password123")
+    other = User.create!(email: "other2@test.com", password: "password123", first_name: "X", last_name: "Y")
     doc = other.documents.create!(title: "Secret", content: "secret", document_type: "Note")
 
     post summarize_document_path(doc)

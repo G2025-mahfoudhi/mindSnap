@@ -25,7 +25,11 @@ class DocumentTest < ActiveSupport::TestCase
       document_type: "Note"
     )
     assert_not document.valid?
+<<<<<<< Updated upstream
     assert_includes document.errors[:title].map(&:downcase).join, "obligatoire"
+=======
+    assert_includes document.errors[:title].map(&:downcase).join, "renseigné"
+>>>>>>> Stashed changes
   end
 
   test "invalide sans document_type" do
@@ -34,6 +38,7 @@ class DocumentTest < ActiveSupport::TestCase
       title: "Mon document"
     )
     assert_not document.valid?
+<<<<<<< Updated upstream
     assert_includes document.errors[:document_type].map(&:downcase).join, "obligatoire"
   end
 
@@ -95,6 +100,9 @@ class DocumentTest < ActiveSupport::TestCase
       content: "Du contenu"
     )
     assert document.valid?
+=======
+    assert_includes document.errors[:document_type].map(&:downcase).join, "renseigné"
+>>>>>>> Stashed changes
   end
 
   test "appartient à un user" do

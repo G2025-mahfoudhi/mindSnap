@@ -57,6 +57,7 @@ fr:
     pm: "pm"
   activerecord:
     models:
+<<<<<<< Updated upstream
       document: "document"
       folder: "dossier"
       conversation: "conversation"
@@ -71,10 +72,20 @@ fr:
         name: "Nom"
       conversation:
         name: "Nom"
+=======
+      user: "utilisateur"
+    attributes:
+      user:
+        email: "Email"
+        password: "Mot de passe"
+        first_name: "Prénom"
+        last_name: "Nom"
+>>>>>>> Stashed changes
     errors:
       messages:
         blank: "doit être renseigné(e)"
         invalid: "n'est pas valide"
+<<<<<<< Updated upstream
         record_invalid: "Validation impossible"
       models:
         document:
@@ -88,4 +99,16 @@ fr:
             source_url:
               blank: "est obligatoire"
             content:
+=======
+      models:
+        user:
+          attributes:
+            email:
+              blank: "est obligatoire"
+            password:
+              blank: "est obligatoire"
+            first_name:
+              blank: "est obligatoire"
+            last_name:
+>>>>>>> Stashed changes
               blank: "est obligatoire"

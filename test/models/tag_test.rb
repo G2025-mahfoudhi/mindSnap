@@ -30,7 +30,8 @@ class TagTest < ActiveSupport::TestCase
     other = User.create!(
       email: "other@test.com",
       password: "password123",
-      first_name: "Other"
+      first_name: "Other",
+      last_name: "User"
     )
     Tag.create!(name: "rails", user: @user)
     tag = Tag.new(name: "rails", user: other)
