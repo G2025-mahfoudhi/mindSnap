@@ -90,7 +90,7 @@
           <span class="doc-show-badge"><%= @document.document_type %></span>
           <h1 class="doc-show-title"><%= @document.title %></h1>
           <p class="doc-show-meta">
-            Ajouté le <%= @document.date_injection&.strftime("%d/%m/%Y à %H:%M") %>
+            Ajouté le <%= local_time(@document.date_injection, :datetime) %>
             <% if @document.folder %>
               &mdash;
               <%= link_to folder_path(@document.folder),

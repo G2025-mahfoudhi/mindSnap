@@ -37,6 +37,23 @@ module ApplicationHelper
     end
   end
 
+  # Affiche une heure en heure locale du navigateur via JS.
+  # Fallback : heure serveur (Paris) si JS désactivé.
+  # format: :time → "15:30"  |  :date → "11/06/2026"  |  :datetime → "11/06/2026 à 15:30"
+  def local_time(datetime, format = :time)
+    return "" unless datetime
+
+    fallback = case format
+               when :date     then datetime.strftime("%d/%m/%Y")
+               when :datetime then datetime.strftime("%d/%m/%Y à %H:%M")
+               else                datetime.strftime("%H:%M")
+               end
+
+    tag.time(fallback,
+             datetime: datetime.utc.iso8601,
+             data: { localtime: format })
+  end
+
   def markdown(text)
     return "" if text.blank?
 
