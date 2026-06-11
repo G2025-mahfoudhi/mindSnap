@@ -15,6 +15,7 @@ class ExtractTextJob < ApplicationJob
       return
     end
 
+    
     document.update!(content: build_content(extracted))
     SummarizeDocumentJob.perform_later(document_id)
   rescue ActiveRecord::RecordNotFound
