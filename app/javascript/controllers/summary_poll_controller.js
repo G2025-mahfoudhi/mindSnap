@@ -62,7 +62,8 @@ export default class extends Controller {
   }
 
   updateContent(text) {
-    this.contentTarget.innerHTML = this.renderMarkdown(text)
+    this.contentTarget.innerHTML =
+      `<div class="markdown-content">${this.renderMarkdown(text)}</div>`
   }
 
   renderMarkdown(text) {

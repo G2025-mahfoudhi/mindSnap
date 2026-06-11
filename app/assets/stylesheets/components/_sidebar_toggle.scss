@@ -43,4 +43,9 @@ body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle {
   body.conversation-layout [role="main"] {
     height: calc(var(--vh, 100vh) - var(--navbar-height, 56px)) !important;
   }
+
+  // L'avatar descend jusqu'en bas : plus de padding-bottom réservé au footer
+  body.conversation-layout aside[aria-label="Panneau de conversations"] {
+    padding-bottom: 0 !important;
+  }
 }

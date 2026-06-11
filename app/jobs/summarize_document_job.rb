@@ -25,11 +25,12 @@ class SummarizeDocumentJob < ApplicationJob
       last_flush = Time.current
     end
 
-    broadcast_summary(document, accumulated) if buffer.present?
-
+    # Un seul broadcast final (version définitive, nettoyée) — évite le double
+    # déclenchement du MutationObserver qui ferait réapparaître / disparaître
+    # le bouton "Dossier suggéré".
     final = accumulated.strip.presence || "Résumé temporairement indisponible. Veuillez réessayer."
-    document.update!(summary: final)
     broadcast_summary(document, final)
+    document.update!(summary: final)
   rescue ActiveRecord::RecordNotFound
     Rails.logger.warn "SummarizeDocumentJob: document #{document_id} introuvable"
   rescue StandardError => e
