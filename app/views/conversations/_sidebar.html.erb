@@ -2,24 +2,23 @@
        aria-label="Panneau de conversations"
        style="width: 260px; min-width: 260px; background-color: #2A4B4B; height: 100%;">
 
-  <div class="sidebar-toggle-handle p-3 border-bottom border-white border-opacity-25 d-flex align-items-center gap-2"
-       style="flex-shrink: 0;">
-    <div class="sidebar-toggle-content flex-grow-1">
-      <%= button_to conversations_path,
-                    method: :post,
-                    class: "btn w-100 d-flex align-items-center justify-content-center gap-2 fw-medium text-white btn-primary",
-                    aria: { label: "Créer une nouvelle conversation" } do %>
-        <i class="fa-solid fa-plus" aria-hidden="true"></i>
-        <span>Nouvelle conversation</span>
-      <% end %>
-    </div>
+  <div class="sidebar-toggle-handle p-3 border-bottom border-white border-opacity-25"
+       style="flex-shrink: 0; position: relative;">
+    <%= button_to conversations_path,
+                  method: :post,
+                  form_class: "sidebar-toggle-content",
+                  class: "btn w-100 d-flex align-items-center justify-content-center gap-2 fw-medium text-white btn-primary",
+                  aria: { label: "Créer une nouvelle conversation" } do %>
+      <i class="fa-solid fa-plus" aria-hidden="true"></i>
+      <span>Nouvelle conversation</span>
+    <% end %>
     <button type="button"
-            class="btn btn-sm btn-link p-1 flex-shrink-0"
+            class="btn btn-sm btn-link p-0"
             data-action="sidebar-toggle#toggle"
             data-sidebar-toggle-btn
             aria-pressed="false"
             title="Masquer le panneau"
-            style="color: rgba(255,255,255,0.6);">
+            style="position: absolute; top: 50%; right: 0.5rem; transform: translateY(-50%); color: rgba(255,255,255,0.5);">
       <i class="fa-solid fa-chevron-left" aria-hidden="true" data-sidebar-toggle-icon></i>
     </button>
   </div>
