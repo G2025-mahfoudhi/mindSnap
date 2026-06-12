@@ -3,7 +3,7 @@
     <%= button_to conversations_path,
                   method: :post,
                   class: "btn btn-primary rounded-circle shadow d-flex align-items-center justify-content-center position-fixed border-0",
-                  style: "width: 48px; height: 48px; bottom: 6rem; right: 1.5rem; z-index: 1030;",
+                  style: "width: 48px; height: 48px; bottom: calc(var(--footer-height, 60px) + 0.75rem); right: 1.5rem; z-index: 1030;",
                   aria: { label: "Nouvelle conversation" },
                   data: { controller: "draggable" } do %>
       <i class="fa-solid fa-comments" aria-hidden="true"></i>
@@ -11,7 +11,7 @@
   <% else %>
     <%= link_to conversations_path,
                 class: "btn btn-primary rounded-circle shadow d-flex align-items-center justify-content-center position-fixed",
-                style: "width: 48px; height: 48px; bottom: 6rem; right: 1.5rem; z-index: 1030;",
+                style: "width: 48px; height: 48px; bottom: calc(var(--footer-height, 60px) + 0.75rem); right: 1.5rem; z-index: 1030;",
                 aria: { label: "Démarrer une conversation" },
                 data: { controller: "draggable" } do %>
       <i class="fa-solid fa-comments" aria-hidden="true"></i>
