@@ -38,7 +38,7 @@
       <% end %>
     </div>
 
-    <div class="border-top p-3 bg-white">
+    <div class="border-top p-2 p-md-3 bg-white conv-form">
       <%= turbo_frame_tag "new_message_form" do %>
         <span id="msg-hint" class="visually-hidden">
           Appuyez sur Entrée pour envoyer, Maj+Entrée pour un saut de ligne.
@@ -53,7 +53,7 @@
                               } do |f| %>
           <div class="d-flex gap-2 align-items-stretch">
             <%= f.text_area :content,
-                            class: "form-control rounded-3 flex-grow-1",
+                            class: "form-control rounded-3 flex-grow-1 conv-textarea",
                             placeholder: "Ton message...",
                             rows: 1,
                             required: true,

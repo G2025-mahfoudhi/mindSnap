@@ -24,11 +24,26 @@ body.sidebar-collapsed .sidebar-collapsible .sidebar-toggle-handle {
   gap: 0 !important;
 }
 
-// ─── Sidebar conversations & documents : hauteur explicite ─────────────────
-aside[aria-label="Panneau de conversations"],
-aside[aria-label="Panneau de documents"] {
-  height: calc(var(--vh, 100vh) - var(--navbar-height, 56px) - var(--footer-height, 60px)) !important;
-  padding-bottom: var(--footer-height, 60px) !important;
+// ─── Sidebars : hauteur desktop ────────────────────────────────────────────
+@include media-breakpoint-up(md) {
+  // Conversations : 100% du parent flex (défini par le d-flex du show.html.erb).
+  // min-height: 0 sur la nav est INDISPENSABLE : sans ça, la nav refuse de
+  // rétrécir en dessous de sa hauteur de contenu (min-height: auto par défaut
+  // en flexbox), elle déborde et l'avatar est poussé hors de la zone visible.
+  aside[aria-label="Panneau de conversations"] {
+    height: 100% !important;
+  }
+
+  aside[aria-label="Panneau de conversations"] > nav {
+    min-height: 0 !important;
+  }
+
+  // Documents : hauteur calculée + padding pour que le contenu scrollable
+  // ne passe pas derrière le footer fixe.
+  aside[aria-label="Panneau de documents"] {
+    height: calc(var(--vh, 100vh) - var(--navbar-height, 56px) - var(--footer-height, 60px)) !important;
+    padding-bottom: var(--footer-height, 60px) !important;
+  }
 }
 
 // ─── Mobile : sidebar repliée par défaut, contenu lisible ──────────────────
@@ -57,8 +72,17 @@ aside[aria-label="Panneau de documents"] {
     padding-bottom: 0 !important;
   }
 
-  // Formulaire d'envoi : espace au-dessus du bord bas (pas de footer)
-  // body.conversation-layout .d-flex.flex-column.flex-grow-1.overflow-hidden > .border-top {
-  //   padding-bottom: 0.75rem !important;
-  // }
+  // ── Pages espaces (documents/dossiers) : footer masqué, sidebar jusqu'en bas
+  body.doc-layout .footer {
+    display: none !important;
+  }
+
+  body.doc-layout #main-content {
+    height: calc(var(--vh, 100vh) - var(--navbar-height, 56px)) !important;
+  }
+
+  body.doc-layout aside[aria-label="Panneau de documents"] {
+    height: calc(var(--vh, 100vh) - var(--navbar-height, 56px)) !important;
+    padding-bottom: 0 !important;
+  }
 }

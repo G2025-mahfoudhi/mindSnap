@@ -263,8 +263,28 @@
 
 // ——— Poignée de redimensionnement du panel chat ———
 #doc-chat-panel {
-  // L'offcanvas doit accepter un overflow visible sur le bord gauche
+  // L'offcanvas doit accepter un overflow visible sur le bord gauche (poignée desktop)
   overflow: visible !important;
+
+  // Mobile : pas de poignée → on rétablit overflow normal + header fixe
+  @include media-breakpoint-down(md) {
+    overflow: hidden !important;
+    top: 0 !important;
+
+    .offcanvas-header {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: white;
+      flex-shrink: 0;
+    }
+
+    .offcanvas-body {
+      flex: 1 1 0;
+      overflow-y: auto;
+      min-height: 0;
+    }
+  }
 }
 
 .doc-chat-resize-handle {
@@ -343,5 +363,18 @@
   // Zones scrollables des layouts sidebar (espace, dossiers, documents)
   .flex-grow-1.overflow-auto {
     padding-bottom: var(--footer-height) !important;
+  }
+}
+
+// ——— FORMULAIRE CONVERSATION MOBILE ———
+// Réduit le padding et la hauteur max de la textarea sur mobile
+// pour économiser de l'espace quand le clavier virtuel est ouvert.
+@include media-breakpoint-down(sm) {
+  .conv-form {
+    padding: 0.5rem !important;
+  }
+
+  .conv-textarea {
+    max-height: 80px !important;
   }
 }

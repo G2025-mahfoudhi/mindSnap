@@ -73,8 +73,7 @@ export default class extends Controller {
     this.element.style.left   = ""
     this.element.style.top    = ""
     this.element.style.right  = "1.5rem"
-    const footerH = getComputedStyle(document.documentElement).getPropertyValue("--footer-height").trim() || "60px"
-    this.element.style.bottom = `calc(${footerH} + 0.75rem)`
+    this.element.style.bottom = "6rem"
   }
 
   onMouseDown(e) {
