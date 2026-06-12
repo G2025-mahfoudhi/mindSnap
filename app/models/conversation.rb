@@ -7,7 +7,9 @@ class Conversation < ApplicationRecord
 
   validates :name, presence: true
 
-  # Vrai si la conversation est scopée à un dossier spécifique
+  # Conversations générales (non liées à un document ou dossier)
+  scope :general, -> { where(context_type: nil) }
+
   def folder_scoped?
     context_type == "Folder" && context_id.present?
   end

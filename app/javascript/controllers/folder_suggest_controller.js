@@ -103,6 +103,7 @@ export default class extends Controller {
     const div = document.createElement("div")
     div.className = "folder-suggest-btn alert alert-warning p-2 mt-2"
     div.style.fontSize = "0.85rem"
+    div.dataset.separationNote = "true"
 
     const header = document.createElement("div")
     header.className = "d-flex align-items-start gap-2 mb-2"
@@ -153,6 +154,10 @@ export default class extends Controller {
       const msg = `Extraire « ${attachment.filename} » dans le dossier « ${folder.name} » et le retirer de ce document ?`
       const { isConfirmed } = await Swal.fire(buildOptions(msg))
       if (isConfirmed) {
+        // Supprimer immédiatement la note de séparation du DOM
+        form.closest("[data-separation-note]")?.remove()
+        // Mettre à jour la liste des pièces jointes pour les prochains scans
+        this.attachmentsValue = this.attachmentsValue.filter(a => a.id !== attachment.id)
         form.removeEventListener("submit", confirmAndSubmit)
         form.requestSubmit()
       }

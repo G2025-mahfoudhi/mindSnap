@@ -1,0 +1,28 @@
+<%# 1. Supprimer le bouton de la pièce jointe extraite %>
+<%= turbo_stream.remove "attachment-btn-#{@attachment.id}" %>
+
+<%# 2. Mettre à jour la sidebar (nouveau document visible dans le dossier) %>
+<%= turbo_stream.replace "doc-sidebar" do %>
+  <%= render "documents/sidebar",
+             folders: @sidebar_folders,
+             documents_without_folder: @documents_without_folder,
+             current_document: @document %>
+<% end %>
+
+<%# 3. Mettre à jour le résumé (nouvelle liste de pièces jointes, note séparation supprimée) %>
+<%= turbo_stream.replace "doc-summary" do %>
+  <%= render "documents/summary",
+             document: @document,
+             suggest_folders: @suggest_folders %>
+<% end %>
+
+<%# 4. Notice de confirmation %>
+<%= turbo_stream.replace "flashes" do %>
+  <div id="flashes" class="flashes" aria-live="polite" aria-atomic="true">
+    <div class="alert alert-success alert-dismissible fade show" role="alert" data-controller="flash">
+      <i class="fa-solid fa-check-circle me-1" aria-hidden="true"></i>
+      « <%= @attachment.blob.filename %> » extrait dans « <%= @folder.name %> ».
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+    </div>
+  </div>
+<% end %>

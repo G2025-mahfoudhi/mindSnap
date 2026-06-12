@@ -1,14 +1,18 @@
 # Job asynchrone de résumé automatique avec streaming token-par-token.
 # Diffuse chaque batch via Turbo Streams → affichage progressif côté client.
-class SummarizeDocumentJob < ApplicationJob
+class SummarizeDocumentJob < ApplicationJob # rubocop:disable Metrics/ClassLength
   queue_as :ai
 
   FLUSH_INTERVAL = 0.05
   FLUSH_SIZE = 12
 
-  def perform(document_id) # rubocop:disable Metrics/MethodLength
+  def perform(document_id, job_token = nil) # rubocop:disable Metrics/MethodLength
     document = Document.find(document_id)
     return if document.content.blank?
+    return if superseded?(document_id, job_token)
+
+    # Parser créé une seule fois pour tout le job (évite la recréation à chaque flush)
+    parser = build_parser
 
     accumulated = +""
     buffer      = +""
@@ -19,27 +23,40 @@ class SummarizeDocumentJob < ApplicationJob
       buffer      << token
 
       next unless should_flush?(last_flush, buffer)
+      return if superseded?(document_id, job_token)
 
-      broadcast_summary(document, accumulated)
+      # Broadcast WebSocket uniquement — pas d'écriture DB intermédiaire
+      stream_broadcast(document, accumulated, parser)
       buffer.clear
       last_flush = Time.current
     end
 
-    broadcast_summary(document, accumulated) if buffer.present?
+    return if superseded?(document_id, job_token)
 
     final = accumulated.strip.presence || "Résumé temporairement indisponible. Veuillez réessayer."
+    # Une seule écriture DB : à la fin, quand le texte est complet
     document.update!(summary: final)
-    broadcast_summary(document, final)
+    stream_broadcast(document, final, parser)
   rescue ActiveRecord::RecordNotFound
     Rails.logger.warn "SummarizeDocumentJob: document #{document_id} introuvable"
   rescue StandardError => e
     Rails.logger.error "SummarizeDocumentJob échec doc #{document_id}: #{e.message}"
     error = "Résumé temporairement indisponible. Veuillez réessayer."
     document&.update!(summary: error)
-    broadcast_summary(document, error) if document
+    stream_broadcast(document, error, build_parser) if document
   end
 
   private
+
+  # Retourne true si un job plus récent a pris la main sur ce document.
+  # Le dernier token écrit en cache (par summarize_async ou enqueue_summarize_job)
+  # représente le job autorisé à broadcaster.
+  def superseded?(document_id, job_token)
+    return false if job_token.nil?
+
+    current = Rails.cache.read("summarize_token_#{document_id}")
+    current != job_token
+  end
 
   def should_flush?(last_flush, buffer)
     Time.current - last_flush >= FLUSH_INTERVAL ||
@@ -47,15 +64,16 @@ class SummarizeDocumentJob < ApplicationJob
       buffer.match?(/[\s.,!?;:\n]$/)
   end
 
-  def broadcast_summary(document, text)
-    document.update_columns(summary: text)
+  def build_parser
     renderer = Redcarpet::Render::HTML.new(hard_wrap: true)
-    parser   = Redcarpet::Markdown.new(renderer, autolink: true, tables: true,
-                                                 fenced_code_blocks: true, strikethrough: true,
-                                                 no_intra_emphasis: true)
-    inner  = "<div class=\"markdown-content\">#{parser.render(text.to_s)}</div>"
-    html   = "<div id=\"doc-summary-content\" data-summary-poll-target=\"content\">#{inner}</div>"
+    Redcarpet::Markdown.new(renderer, autolink: true, tables: true,
+                                      fenced_code_blocks: true, strikethrough: true,
+                                      no_intra_emphasis: true)
+  end
 
+  def stream_broadcast(document, text, parser)
+    inner = "<div class=\"markdown-content\">#{parser.render(text.to_s)}</div>"
+    html  = "<div id=\"doc-summary-content\">#{inner}</div>"
     Turbo::StreamsChannel.broadcast_replace_to(document, target: "doc-summary-content", html: html)
   rescue StandardError => e
     Rails.logger.warn "SummarizeDocumentJob: broadcast failed — #{e.message}"

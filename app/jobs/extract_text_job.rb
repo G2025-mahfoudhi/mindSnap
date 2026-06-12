@@ -1,22 +1,19 @@
 class ExtractTextJob < ApplicationJob
   queue_as :ai
 
-  def perform(document_id)
+  def perform(document_id) # rubocop:disable Metrics/MethodLength
     document = Document.find(document_id)
     return unless document.file.attached?
 
     extracted = collect_texts(document)
 
     if extracted.empty?
-      # Extraction échouée (OCR indisponible, format non supporté…)
-      # On tente quand même le résumé si le document a déjà du contenu
-      SummarizeDocumentJob.perform_later(document_id) if document.content.present?
       Rails.logger.warn "ExtractTextJob: aucun texte extrait pour doc #{document_id}"
       return
     end
 
     document.update!(content: build_content(extracted))
-    SummarizeDocumentJob.perform_later(document_id)
+    # Le callback after_commit :summarize_async du modèle prend le relais.
   rescue ActiveRecord::RecordNotFound
     Rails.logger.warn "ExtractTextJob: document #{document_id} introuvable"
   rescue StandardError => e

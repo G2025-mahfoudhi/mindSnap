@@ -1,6 +1,6 @@
 class ConversationsController < ApplicationController
   def index
-    @conversations = current_user.conversations.order(created_at: :desc)
+    @conversations = current_user.conversations.general.order(created_at: :desc)
   end
 
   def create
@@ -16,7 +16,7 @@ class ConversationsController < ApplicationController
 
   def show
     @conversation = current_user.conversations.find(params[:id])
-    @conversations = current_user.conversations.order(created_at: :desc)
+    @conversations = current_user.conversations.general.order(created_at: :desc)
     @messages = @conversation.messages.order(:created_at)
     @message  = Message.new
     return unless @conversation.context_type == "Document"

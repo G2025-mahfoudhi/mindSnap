@@ -1,8 +1,8 @@
 <% content_for :title, "#{@document.title} — MindSnap" %>
-<% content_for :body_class, "overflow-hidden" %>
+<% content_for :body_class, "overflow-hidden doc-layout" %>
 <% content_for :main_style, "height: calc(var(--vh, 100vh) - var(--navbar-height, 56px) - var(--footer-height, 60px)); overflow: hidden;" %>
 
-<%= turbo_stream_from @doc_chat_conversation %>
+<%= turbo_stream_from @doc_chat_conversation if @doc_chat_conversation %>
 <%= turbo_stream_from @document %>
 
 <div class="offcanvas offcanvas-end"
@@ -101,15 +101,17 @@
             <% end %>
           </p>
           <% if @document.file.attached? %>
-            <div class="d-flex flex-wrap gap-2 mt-2">
+            <div id="doc-attachments" class="d-flex flex-wrap gap-2 mt-2">
               <% @document.file.each do |attachment| %>
-                <%= link_to download_document_path(@document, blob_signed_id: attachment.blob.signed_id),
-                            class: "btn btn-outline-primary btn-sm",
-                            data: { turbo: false },
-                            aria: { label: "Télécharger #{attachment.filename}" } do %>
-                  <i class="fa-solid fa-download fa-xs me-1" aria-hidden="true"></i>
-                  <%= attachment.filename.to_s.truncate(25) %>
-                <% end %>
+                <span id="attachment-btn-<%= attachment.id %>">
+                  <%= link_to download_document_path(@document, blob_signed_id: attachment.blob.signed_id),
+                              class: "btn btn-outline-primary btn-sm",
+                              data: { turbo: false },
+                              aria: { label: "Télécharger #{attachment.filename}" } do %>
+                    <i class="fa-solid fa-download fa-xs me-1" aria-hidden="true"></i>
+                    <%= attachment.filename.to_s.truncate(25) %>
+                  <% end %>
+                </span>
               <% end %>
             </div>
           <% end %>
@@ -177,13 +179,24 @@
             <% if @document.file.attached? %>
               <% @document.file.each do |attachment| %>
                 <% if attachment.content_type == "application/pdf" %>
+                  <%# Desktop : iframe PDF %>
                   <iframe data-src="<%= document_inline_url(attachment) %>"
                           src="about:blank"
                           width="100%"
-                          class="pdf-iframe" style="height: clamp(300px, 60vh, 800px);"
-                          style="border: 1px solid #ebebeb; border-radius: 8px;"
+                          class="pdf-iframe d-none d-md-block"
+                          style="height: clamp(300px, 60vh, 800px); border: 1px solid #ebebeb; border-radius: 8px;"
                           title="<%= attachment.filename %>">
                   </iframe>
+                  <%# Mobile : lien direct (les iframes PDF ne fonctionnent pas sur mobile) %>
+                  <div class="d-md-none text-center py-4">
+                    <a href="<%= document_inline_url(attachment) %>"
+                       target="_blank"
+                       rel="noopener"
+                       class="btn btn-primary">
+                      <i class="fa-solid fa-file-pdf me-2"></i><%= attachment.filename.to_s.truncate(30) %>
+                    </a>
+                    <p class="text-muted small mt-2">Appuie pour ouvrir le PDF</p>
+                  </div>
                 <% elsif attachment.content_type.start_with?("image/") %>
                   <%= image_tag document_inline_url(attachment), style: "max-width: 100%; border-radius: 8px;", alt: attachment.filename %>
                 <% else %>

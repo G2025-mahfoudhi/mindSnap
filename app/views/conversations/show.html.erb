@@ -1,4 +1,6 @@
 <% content_for :title, "#{@conversation.name} — MindSnap" %>
+<% content_for :body_class, "overflow-hidden conversation-layout" %>
+<% content_for :main_style, "height: calc(var(--vh, 100vh) - var(--navbar-height, 56px) - var(--footer-height, 60px)); overflow: hidden;" %>
 
 <%= turbo_stream_from @conversation %>
 
@@ -36,7 +38,7 @@
       <% end %>
     </div>
 
-    <div class="border-top p-3 bg-white">
+    <div class="border-top p-2 p-md-3 bg-white conv-form">
       <%= turbo_frame_tag "new_message_form" do %>
         <span id="msg-hint" class="visually-hidden">
           Appuyez sur Entrée pour envoyer, Maj+Entrée pour un saut de ligne.
@@ -49,9 +51,9 @@
                                   action: "turbo:submit-start->message-form#submitStart turbo:submit-end->message-form#submitEnd"
                                 }
                               } do |f| %>
-          <div class="d-flex gap-2 align-items-end">
+          <div class="d-flex gap-2 align-items-stretch">
             <%= f.text_area :content,
-                            class: "form-control rounded-3 flex-grow-1",
+                            class: "form-control rounded-3 flex-grow-1 conv-textarea",
                             placeholder: "Ton message...",
                             rows: 1,
                             required: true,
@@ -68,14 +70,14 @@
             <button type="button"
                     data-action="voice#toggle"
                     data-voice-target="micButton"
-                    class="btn btn-outline-secondary flex-shrink-0 voice-btn"
+                    class="btn btn-outline-secondary flex-shrink-0 voice-btn d-flex align-items-center"
                     aria-label="Dicter un message"
                     aria-pressed="false">
               <i class="fa-solid fa-microphone"></i>
               <span data-voice-target="timer" class="ms-1 small recording-timer" hidden></span>
             </button>
             <button type="submit"
-                    class="btn btn-primary px-3 flex-shrink-0"
+                    class="btn btn-primary px-3 flex-shrink-0 d-flex align-items-center"
                     aria-label="Envoyer le message"
                     data-message-form-target="submit">
               <i class="fa-solid fa-paper-plane me-md-2" aria-hidden="true"></i>

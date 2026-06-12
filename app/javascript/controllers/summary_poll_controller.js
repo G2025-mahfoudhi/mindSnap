@@ -62,7 +62,8 @@ export default class extends Controller {
   }
 
   updateContent(text) {
-    this.contentTarget.innerHTML = this.renderMarkdown(text)
+    this.contentTarget.innerHTML =
+      `<div class="markdown-content">${this.renderMarkdown(text)}</div>`
   }
 
   renderMarkdown(text) {
@@ -71,9 +72,9 @@ export default class extends Controller {
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
       .replace(/\*(.+?)\*/g, "<em>$1</em>")
       .replace(/`(.+?)`/g, "<code>$1</code>")
-      .replace(/^#{3}\s+(.+)$/gm, "<h3>$1</h3>")
-      .replace(/^#{2}\s+(.+)$/gm, "<h2>$1</h2>")
-      .replace(/^#{1}\s+(.+)$/gm, "<h1>$1</h1>")
+      .replace(/^#{3}\s+(.+)$/gm, "<h4>$1</h4>")
+      .replace(/^#{2}\s+(.+)$/gm, "<h3>$1</h3>")
+      .replace(/^#{1}\s+(.+)$/gm, "<h2>$1</h2>")
       .replace(/^[-*]\s+(.+)$/gm, "<li>$1</li>")
       .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
       .replace(/\n{2,}/g, "</p><p>")

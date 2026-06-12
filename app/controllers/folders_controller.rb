@@ -47,10 +47,9 @@ class FoldersController < ApplicationController
 
   def chat
     @folder = current_user.folders.find(params[:id])
-    @conversation = current_user.conversations.create!(
-      name: @folder.name,
-      context: @folder
-    )
+    @conversation = current_user.conversations.find_or_create_by!(
+      context_type: "Folder", context_id: @folder.id
+    ) { |c| c.name = @folder.name }
     redirect_to conversation_path(@conversation)
   end
 

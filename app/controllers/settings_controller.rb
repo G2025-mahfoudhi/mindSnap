@@ -27,6 +27,9 @@ class SettingsController < ApplicationController
     when "markdown"
       send_data exp.markdown_export_zip, filename: "mindsnap_export_#{timestamp}.zip",
                                          type: "application/zip"
+    when "pdf"
+      send_data exp.pdf_export, filename: "mindsnap_export_#{timestamp}.pdf",
+                                type: "application/pdf"
     else
       redirect_to settings_path(tab: :data), alert: "Format d'export invalide."
     end
@@ -49,6 +52,9 @@ class SettingsController < ApplicationController
     when "markdown"
       send_data exp.markdown_export_by_tags_zip(tags), filename: "mindsnap_tags_#{timestamp}.zip",
                                                        type: "application/zip"
+    when "pdf"
+      send_data exp.pdf_export_by_tags(tags), filename: "mindsnap_tags_#{timestamp}.pdf",
+                                              type: "application/pdf"
     else
       redirect_to settings_path(tab: :data), alert: "Format d'export invalide."
     end

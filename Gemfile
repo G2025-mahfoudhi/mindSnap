@@ -83,6 +83,8 @@ end
 
 gem "redcarpet"
 gem "pdf-reader", "~> 2.15"
+gem "prawn", "~> 2.5"
+gem "prawn-table", "~> 0.2"
 gem "docx", "~> 0.13.0"
 gem "rtesseract", "~> 3.1"
 

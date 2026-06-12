@@ -4,9 +4,7 @@
 <% attachments_json = document.file.map { |a| { id: a.id, filename: a.blob.filename.to_s } }.to_json %>
 <div class="doc-show-content"
      id="doc-summary"
-     data-controller="summary-poll folder-suggest"
-     data-summary-poll-document-id-value="<%= document.id %>"
-     data-summary-poll-has-summary-value="<%= document.summary.present? %>"
+     data-controller="folder-suggest"
      data-folder-suggest-document-id-value="<%= suggest_doc_id %>"
      data-folder-suggest-folders-value="<%= suggest_folders_json %>"
      data-folder-suggest-attachments-value="<%= attachments_json %>">
@@ -24,7 +22,7 @@
       <% end %>
     <% end %>
   </div>
-  <div id="doc-summary-content" data-summary-poll-target="content">
+  <div id="doc-summary-content">
     <% if document.summary.present? %>
       <div class="markdown-content"><%= markdown document.summary %></div>
     <% elsif document.file.attached? || document.content.present? %>

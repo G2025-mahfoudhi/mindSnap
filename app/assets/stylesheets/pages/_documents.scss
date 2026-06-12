@@ -1,13 +1,7 @@
 // ——— HAUTEURS FIXES ———
 :root {
   --navbar-height: 56px;
-  --footer-height: 88px; // mobile : footer wrap sur plusieurs lignes
-}
-
-@include media-breakpoint-up(md) {
-  :root {
-    --footer-height: 60px; // desktop : footer sur une ligne
-  }
+  // --footer-height est setté dynamiquement par viewport_height.js via ResizeObserver
 }
 
 // ——— SIDEBAR ———
@@ -202,6 +196,14 @@
     &:first-child { margin-top: 0; }
   }
 
+// Titres réduits dans les bulles de messages (conversations & doc chat)
+#messages &, #doc-chat-messages & {
+    h1 { font-size: 1.1rem; }
+    h2 { font-size: 1.0rem; }
+    h3, h4, h5, h6 { font-size: 0.9rem; }
+  }
+
+
   ul, ol {
     padding-left: 1.4rem;
     margin-bottom: .75rem;
@@ -261,8 +263,28 @@
 
 // ——— Poignée de redimensionnement du panel chat ———
 #doc-chat-panel {
-  // L'offcanvas doit accepter un overflow visible sur le bord gauche
+  // L'offcanvas doit accepter un overflow visible sur le bord gauche (poignée desktop)
   overflow: visible !important;
+
+  // Mobile : pas de poignée → on rétablit overflow normal + header fixe
+  @include media-breakpoint-down(md) {
+    overflow: hidden !important;
+    top: 0 !important;
+
+    .offcanvas-header {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: white;
+      flex-shrink: 0;
+    }
+
+    .offcanvas-body {
+      flex: 1 1 0;
+      overflow-y: auto;
+      min-height: 0;
+    }
+  }
 }
 
 .doc-chat-resize-handle {
@@ -341,5 +363,18 @@
   // Zones scrollables des layouts sidebar (espace, dossiers, documents)
   .flex-grow-1.overflow-auto {
     padding-bottom: var(--footer-height) !important;
+  }
+}
+
+// ——— FORMULAIRE CONVERSATION MOBILE ———
+// Réduit le padding et la hauteur max de la textarea sur mobile
+// pour économiser de l'espace quand le clavier virtuel est ouvert.
+@include media-breakpoint-down(sm) {
+  .conv-form {
+    padding: 0.5rem !important;
+  }
+
+  .conv-textarea {
+    max-height: 80px !important;
   }
 }
