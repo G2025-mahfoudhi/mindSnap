@@ -101,15 +101,17 @@
             <% end %>
           </p>
           <% if @document.file.attached? %>
-            <div class="d-flex flex-wrap gap-2 mt-2">
+            <div id="doc-attachments" class="d-flex flex-wrap gap-2 mt-2">
               <% @document.file.each do |attachment| %>
-                <%= link_to download_document_path(@document, blob_signed_id: attachment.blob.signed_id),
-                            class: "btn btn-outline-primary btn-sm",
-                            data: { turbo: false },
-                            aria: { label: "Télécharger #{attachment.filename}" } do %>
-                  <i class="fa-solid fa-download fa-xs me-1" aria-hidden="true"></i>
-                  <%= attachment.filename.to_s.truncate(25) %>
-                <% end %>
+                <span id="attachment-btn-<%= attachment.id %>">
+                  <%= link_to download_document_path(@document, blob_signed_id: attachment.blob.signed_id),
+                              class: "btn btn-outline-primary btn-sm",
+                              data: { turbo: false },
+                              aria: { label: "Télécharger #{attachment.filename}" } do %>
+                    <i class="fa-solid fa-download fa-xs me-1" aria-hidden="true"></i>
+                    <%= attachment.filename.to_s.truncate(25) %>
+                  <% end %>
+                </span>
               <% end %>
             </div>
           <% end %>

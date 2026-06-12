@@ -122,7 +122,9 @@ class Document < ApplicationRecord
   end
 
   def summarize_async
-    SummarizeDocumentJob.perform_later(id)
+    token = SecureRandom.hex(8)
+    Rails.cache.write("summarize_token_#{id}", token, expires_in: 15.minutes)
+    SummarizeDocumentJob.perform_later(id, token)
   end
 
   # Auto-génère le résumé uniquement lors de la première extraction (résumé vide).

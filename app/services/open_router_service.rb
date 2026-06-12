@@ -183,9 +183,9 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
       #{@rag_context.presence || 'Aucun contenu pertinent trouvé pour cette question.'}
 
       ## Règles
-      1. #{focused_doc_section.present? ? "Tu es en mode discussion sur un document précis — concentre-toi d'abord sur ce document." : "Tu connais TOUS les documents listés dans l'inventaire."}
-      2. Si du contenu pertinent est fourni → base ta réponse dessus. Cite le titre : *(source: Titre)*.
-      3. Si aucun contenu pertinent → dis "Je n'ai pas le contenu de ce document, mais voici ce que je sais :" puis réponds avec tes connaissances générales.
+      1. #{focused_doc_section.present? ? "Tu es en mode discussion sur un document précis — le contenu t'est fourni directement ci-dessus. Utilise-le comme source principale." : "Tu connais TOUS les documents listés dans l'inventaire."}
+      2. Si du contenu pertinent est fourni (document focalisé ou RAG) → base ta réponse dessus. Cite le titre : *(source: Titre)*.
+      3. #{focused_doc_section.present? ? "Ne dis JAMAIS que tu n'as pas accès au document ou à son contenu — il t'est fourni dans la section 'Document en cours de discussion'." : "Si aucun contenu pertinent → dis 'Je n'ai pas encore le contenu de ce document, mais voici ce que je sais :' puis réponds avec tes connaissances générales."}
       4. #{lang_instruction}
       5. Réponds naturellement à tous les messages, y compris les salutations.
       6. Quand plusieurs documents sont pertinents, fais des connexions explicites entre eux et propose une synthèse globale avant de détailler par source.
@@ -205,11 +205,13 @@ class OpenRouterService # rubocop:disable Metrics/ClassLength
     parts = []
     parts << "Résumé :\n#{doc.summary}" if doc.summary.present?
     parts << "Contenu intégral :\n#{doc.content.truncate(6_000)}" if doc.content.present?
-    body = parts.join("\n\n").presence || "(contenu non encore extrait)"
+    body = parts.join("\n\n").presence || "(contenu en cours d'extraction)"
 
     <<~SECTION
 
       ## Document en cours de discussion — PRIORITÉ ABSOLUE
+      IMPORTANT : Tu AS accès au contenu de ce document. Il t'est fourni ci-dessous.
+      Ne dis JAMAIS que tu n'as pas accès au fichier ou à son contenu.
       Titre : #{doc.title}
       Type  : #{doc.document_type}
       #{body}

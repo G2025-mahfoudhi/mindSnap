@@ -6,10 +6,14 @@ export default class extends Controller {
   }
 
   submitOnEnter(event) {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault()
-      this.element.closest("form").requestSubmit()
-    }
+    if (event.key !== "Enter" || event.shiftKey) return
+    event.preventDefault()
+    if (!this.element.value.trim()) return
+    const form = this.element.closest("form")
+    if (!form) return
+    const submit = form.querySelector("[type='submit']")
+    if (submit?.disabled) return
+    form.requestSubmit()
   }
 
   resize() {

@@ -144,13 +144,24 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
     end
   end
 
-  def split_to_folder
-    attachment = @document.file.find(params[:attachment_id])
-    folder     = current_user.folders.find(params[:folder_id])
-    extract_file_to_folder(attachment, folder)
-    redirect_to document_path(@document),
-                notice: "« #{attachment.blob.filename} » extrait dans « #{folder.name} ».",
-                status: :see_other
+  def split_to_folder # rubocop:disable Metrics/MethodLength
+    @attachment = @document.file.find(params[:attachment_id])
+    @folder     = current_user.folders.find(params[:folder_id])
+    @new_doc    = extract_file_to_folder(@attachment, @folder)
+
+    @document.reload
+    @sidebar_folders          = current_user.folders.includes(:documents).to_a
+    @documents_without_folder = current_user.documents.where(folder_id: nil)
+    @suggest_folders          = current_user.folders.includes(:parent).order(:name).to_a
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html do
+        redirect_to document_path(@document),
+                    notice: "« #{@attachment.blob.filename} » extrait dans « #{@folder.name} ».",
+                    status: :see_other
+      end
+    end
   rescue ActiveRecord::RecordNotFound
     redirect_to document_path(@document), alert: "Dossier introuvable.", status: :see_other
   end
@@ -205,15 +216,18 @@ class DocumentsController < ApplicationController # rubocop:disable Metrics/Clas
     # sans déclencher la purge du blob (qui est maintenant utilisé par new_doc).
     attachment.delete
     @document.update_columns(content: nil, summary: nil)
-    ExtractTextJob.perform_later(@document.id) if @document.file.attached?
+    ExtractTextJob.perform_later(@document.id) if @document.file.reload.attached?
     ExtractTextJob.perform_later(new_doc.id)
+    new_doc
   end
 
   def enqueue_summarize_job
     if @document.file.attached?
       ExtractTextJob.perform_later(@document.id)
     else
-      SummarizeDocumentJob.perform_later(@document.id)
+      token = SecureRandom.hex(8)
+      Rails.cache.write("summarize_token_#{@document.id}", token, expires_in: 15.minutes)
+      SummarizeDocumentJob.perform_later(@document.id, token)
     end
   end
 

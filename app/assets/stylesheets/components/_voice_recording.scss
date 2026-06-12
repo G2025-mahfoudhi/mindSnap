@@ -26,6 +26,16 @@
 .tts-btn {
   transition: color 0.2s ease;
 
+  &.is-loading {
+    opacity: 0.6;
+    pointer-events: none;
+
+    .fa-volume-high::before {
+      content: "\f110"; // fa-spinner
+      animation: fa-spin 1s linear infinite;
+    }
+  }
+
   &.is-speaking {
     color: $red;
 

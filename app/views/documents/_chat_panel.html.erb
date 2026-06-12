@@ -1,4 +1,9 @@
 <%= turbo_frame_tag "doc-chat-frame", class: "d-flex flex-column flex-grow-1", style: "min-height: 0;" do %>
+  <%# Abonnement WebSocket à la conversation : indispensable pour recevoir le
+      streaming de StreamAiResponseJob. Le frame est chargé lazily après la
+      création de la conversation, donc on ne peut pas s'appuyer sur le
+      turbo_stream_from de show.html.erb qui est rendu avant que la conversation existe. %>
+  <%= turbo_stream_from conversation %>
   <% panel_doc_id      = document&.folder_id.blank? ? document&.id.to_i : 0 %>
   <% panel_folders_json = (suggest_folders || []).map { |f| { id: f.id, name: f.name } }.to_json %>
 
@@ -13,6 +18,10 @@
          data-controller="chat-scroll folder-suggest"
          data-folder-suggest-document-id-value="<%= panel_doc_id %>"
          data-folder-suggest-folders-value="<%= panel_folders_json %>"
+         role="log"
+         aria-label="Discussion avec l'IA sur ce document"
+         aria-live="polite"
+         aria-atomic="false"
          style="min-height: 0;">
       <% if messages.empty? %>
         <p class="text-center text-muted small py-4">
@@ -35,17 +44,7 @@
                                 action: "turbo:submit-start->message-form#submitStart turbo:submit-end->message-form#submitEnd"
                               }
                             } do |f| %>
-          <div class="d-flex gap-2 align-items-end">
-            <button type="button"
-                    class="btn btn-outline-secondary flex-shrink-0 voice-btn"
-                    title="Dicter votre message"
-                    aria-label="Microphone"
-                    aria-pressed="false"
-                    data-voice-target="micButton"
-                    data-action="click->voice#toggle">
-              <i class="fa-solid fa-microphone" aria-hidden="true"></i>
-              <span data-voice-target="timer" class="ms-1 small recording-timer" hidden></span>
-            </button>
+          <div class="d-flex gap-2 align-items-stretch">
             <%= f.text_area :content,
                             class: "form-control rounded-3 flex-grow-1",
                             placeholder: "Ton message...",
@@ -58,7 +57,18 @@
                               controller: "textarea-autoresize",
                               action: "input->textarea-autoresize#resize keydown->textarea-autoresize#submitOnEnter"
                             } %>
-            <%= f.submit "Envoyer", class: "btn btn-primary px-3 flex-shrink-0",
+            <button type="button"
+                    class="btn btn-outline-secondary flex-shrink-0 voice-btn d-flex align-items-center"
+                    title="Dicter votre message"
+                    aria-label="Microphone"
+                    aria-pressed="false"
+                    data-voice-target="micButton"
+                    data-action="click->voice#toggle">
+              <i class="fa-solid fa-microphone" aria-hidden="true"></i>
+              <span data-voice-target="timer" class="ms-1 small recording-timer" hidden></span>
+            </button>
+            <%= f.submit "Envoyer",
+                         class: "btn btn-primary px-3 flex-shrink-0 d-flex align-items-center",
                          data: { "voice-target": "submit", "message-form-target": "submit" } %>
           </div>
         <% end %>
